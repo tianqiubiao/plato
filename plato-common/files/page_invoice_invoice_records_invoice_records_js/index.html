@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/invoice/invoice-records/invoice-records.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/invoice/invoice-records/invoice-records.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">77.55</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">205</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">45.99</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.50</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import InvoiceMyListRequest from &#039;/common/network/requests/InvoiceMyListRequest.js&#039;
+import getPageSize from &#039;/common/getPageSize/getPageSize.js&#039;
+Page({
+  data: {
+    invoiceList: [],  //发票列表
+    pageNo: 1,  //当前第一页（默认）
+    pageSize: 10,　//一页多少数据
+    ispullUp: false,// 是否显示上拉加载提示框是否显示
+    pullUpLoading: false,//　显示上拉加载loading
+    notData: false,//没有更多数据显示 
+    loadPromptText: false,// 请求数据失败提示文字
+    isReachBottom: false,// 控制上拉到底部请求数据，避免请求数据中再次请求
+    yearObj: {}, //年月对象
+    invoiceCount: 0,//用于判断是否已经加载全部
+    adaptive: false//适配
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  checkNetworkState() { //判断当前网络状态
+    if (getApp().globalData.network.networkAvailable) {
+      this.getRequest();
+    } else {
+      this.showNetworkError();
+    }
+  },
+  getRequest() {  //请求服务器信息获取信息
+    let pageNo = this.data.pageNo;
+    let pageSize =getPageSize(130);
+    let param = {
+      pageNo,
+      pageSize
+    }
+    let request = new InvoiceMyListRequest();
+    if (pageNo === 1) {
+      my.showLoading({
+        content: &#039;加载中...&#039;
+      });
+    }
+    request.setParam(param);
+    request.doRequest((res) =&gt; {
+      this.numberOfErr(pageNo, res);
+    });
+  },
+  numberOfErr(pageNo, res) { //判断是否是页面加载到底请求数据时候失败
+    if (pageNo &gt; 1) {  //是 (页面滚动到底下进行分页请求)
+      if (res&amp;&amp;res.code === 1) {
+        this.getInvoiceList(res)
+      }else{
+        this.setData({
+            pageNo: pageNo - 1,
+            pullUpLoading: false,
+            loadPromptText: true,
+            isReachBottom: true
+          })
+      }
+    } else { //不是（页面打开第一次请求数据）
+      my.hideLoading();
+      if (res.code === 1) {
+        this.getInvoiceList(res)
+      }else {
+        this.showRequestkError(res);
+      }
+    }
+  },
+  getInvoiceList(res) { //接收服务器信息发票列表信息 按月份分组\
+    let pageNo = this.data.pageNo;
+    let invoiceList = this.data.invoiceList;
+    let invoiceCount = this.data.invoiceCount;
+    let yearObj = this.data.yearObj;
+    let tempData = res.data;
+    let ispullUp = this.data.ispullUp;
+    let pageSize = this.data.pageSize;
+    let pullUpLoading = this.data.pullUpLoading;
+    let notData = this.data.notData;
+    invoiceCount += tempData.length;
+
+    tempData.forEach((value, index, tempData) =&gt; { //数据年月分组
+      value.amount=(value.amount/100).toFixed(2);
+      let year = value.applyTime.slice(0, 4);
+      let month = value.applyTime.slice(5, 7);
+      if (!yearObj[year] || !yearObj[month]) {
+        invoiceList.push({
+          year,
+          month,
+          records: [value]
+        });
+        yearObj[year] = year;
+        yearObj[month] = month;
+      } else {
+        invoiceList.forEach((invoiceValue, index, invoiceList) =&gt; {
+          if (invoiceValue.year == year &amp;&amp; invoiceValue.month == month) {
+            invoiceValue.records.push(value)
+          }
+        })
+      }
+    })
+
+    if (invoiceCount &gt;= res.total) { //判断是否已经加载所有数据
+      ispullUp = true;
+      notData = true;
+    } else {
+      ispullUp = false;
+      notData = false;
+    }
+    this.setData({
+      yearObj,
+      invoiceList,
+      isReachBottom: true,
+      ispullUp,
+      notData,
+      pullUpLoading: false,
+      invoiceCount,
+      errorStatus: false,
+    });
+  },
+  showNetworkError(){ // 网络状态报错显示
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;请检查您的网络&#039;,
+        duration: 2000,
+        success: () =&gt; {
+        },
+      });
+      this.setData({
+        errorStatus: true,
+        errorType: &#039;1&#039;,
+        errorMessage: &quot;请检查您的网络&quot;,
+        refreshText: &#039;刷新重试&#039;
+      });
+  },
+  showRequestkError(res){  //服务器错误状态显示
+    let errorType = &#039;2&#039;;
+    let errorMessage = res.message;
+    let refreshText = &#039;刷新重试&#039;;
+    if(res.code===7){
+      errorType=&#039;3&#039;;
+      errorMessage=&#039;暂时没有开票记录&#039;;
+      refreshText=&#039;您还没有登录，请登录&#039;;
+    }else if(res.code===14){
+      my.showToast({
+          type: &#039;none&#039;,
+          content: &#039;您还没有登录，请登录&#039;,
+          duration: 2000,
+          success: () =&gt; {
+          },
+        });
+      errorType=&#039;0&#039;;
+      errorMessage=&#039;您还没有登录，请登录&#039;;
+      refreshText=&#039;&#039;;
+    }
+    this.setData({
+      errorStatus: true,
+      errorType,
+      errorMessage,
+      refreshText
+    });
+  },
+  onReachBottom() { //页面上拉到底部
+  if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &quot;网络连接失败，请重试&quot; ,
+        success: () =&gt; {
+        },
+      });
+      return
+    };
+
+    let isReachBottom = this.data.isReachBottom;
+    let notData = this.data.notData;
+    if (isReachBottom &amp;&amp; !notData) {
+      this.setData({
+        pullUpLoading: true,
+        ispullUp: true,
+        loadPromptText: false,
+        pageNo: this.data.pageNo + 1,
+        isReachBottom:false
+      });
+      this.getRequest();
+    }
+
+  },
+  onLoad(query) {
+    this.setData({
+      adaptive: getApp().globalData.isAdaptive,
+      invoiceList: [],
+      yearObj: {},
+      loadPromptText: &#039;&#039;,
+      isReachBottom: false,
+      ispullUp: false,
+      errorStatus: false,
+      notData: false,
+      pullUpLoading: false,
+      invoiceCount: 0
+    });
+    this.checkNetworkState();
+  },
+  onShow(){
+    my.setNavigationBar({
+      title: &#039;开票记录&#039;,
+    })
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

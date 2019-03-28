@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/map-index/map-index.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/map-index/map-index.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.69</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1617</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">100.12</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">16.41</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import ReverseGeoRequest from &#039;../../common/network/requests/ReverseGeoRequest.js&#039;;
+import CarNearbyRequest from &#039;../../common/network/requests/CarNearbyRequest.js&#039;;
+import RecommendSpotsRequest from &#039;../../common/network/requests/RecommendSpotsRequest.js&#039;;
+import CouponGetRequest from &#039;../../common/network/requests/CouponGetRequest.js&#039;;
+import PopupDetailsRequest from &#039;../../common/network/requests/PopupDetailsRequest.js&#039;;
+import FlightInformationQueryRequire from &#039;../../common/network/requests/FlightInformationQueryRequire.js&#039;;
+import { getDistance } from &#039;../../common/api/api.js&#039;;
+import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import { LoginBindHelper, LOGINSUCCEESSKEY } from &#039;../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import util from &#039;../../common/util/util&#039;;
+import deepPath from &#039;../../common/lib/deepPath.js&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import GlobalConfigHelper from &#039;../../common/GlobalConfigHelper.js&#039;;
+import mapView from &#039;../../common/mapView/mapView.js&#039;;
+import IndexScheme from &#039;../../common/schema/indexScheme.js&#039;
+import AddHomeStatus from &#039;/common/util/changeAddHomeStatus.js&#039;
+import OrderUtil from &#039;../../common/util/OrderUtil&#039;;
+import OrderNetImplement from &#039;../../service/datacenter/OrderNetImplement.js&#039;;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;;
+
+//TODO
+// class CheckOrderCallBack extends ActionCallBack {
+//   constructor(delegate) {
+//     super();
+//     this._delegate = delegate;
+//   }  
+//   onCheckorderCallBack(error) {
+//     this._delegate.onCheckorderCallBack(error);
+//   }
+
+Page({
+  data: {
+    startPointName: &#039;获取中...&#039;,
+    pageUrl: &#039;page/map-index/map-index&#039;,
+    scale: 17,
+    markers: [],
+    uid: &#039;map_index_uid&#039;,
+    locationMarkers: [{ //起点marker
+      id: 1,
+      iconPath: &#039;/image/index/start.png&#039;,
+      width: 24,
+      height: 31,
+      anchorX: 0.5,
+      anchorY: 0.7,
+      customCallout: {
+        type: 0,
+        time: &#039;1&#039;,
+        descList: [{ desc: &#039;点击立即打车&#039;, descColor: &#039;#ffffff&#039; }],
+        isShow: 0
+      },
+      fixedPoint: {
+        originX: 200,
+        originY: 400,
+      },
+      markerLevel: 2
+    }],
+    airportMarkers:[{ //接送机marker
+      id: 2,
+      iconPath: &#039;/image/index/start.png&#039;,
+      width: 24,
+      height: 31,
+      anchorX: 0.5,
+      anchorY: 0.7,
+      fixedPoint: {
+        originX: 200,
+        originY: 400,
+      },
+      markerLevel: 2
+    }],
+    isRegionChange: false, //防止ios首屏 end-begin-end
+    recommendMarkers: [],//推荐上车点marker
+    carNearMarkers: [], //附近车辆marker
+    isLogin: false,
+    IsHasOrder: false,//判断是否有未完成的订单
+    adsorbentsDistance: 100,
+    travelingMsg: &quot;您有一个正在进行的行程&quot;,
+    amapOrderId: &quot;&quot;,
+    userCenterBtnEnable: true, // 个人中心页面按钮是否可点
+    adcode: &#039;&#039;,// 城市码，
+    positionBottom: &#039;bottom:287rpx&#039;,//定位icon以及个人中心入口icon位置
+    positionBottomCenter: &#039;bottom:287rpx&#039;,
+    isSetPointName: true,// 防止在地图移动的过程中 起始点的设置错误
+    isFirstShow: true,//第几次onshow
+    safeHelperBtn: &#039;bottom:387rpx&#039;,//安全助手icon入口位置
+    markerID: 2,
+    isGetAddressName: true,
+    isFirstReturnCar: false,
+    locationTimer: null,
+    schemeLoading: true,
+    showScheme: 0, //控制scheme弹窗的显示
+    //支付宝scheme起点信息(目前是小程序定位)
+    needEndCss: &#039;&#039;,
+    needStartCss: &#039;&#039;,
+    isUnavailable: true, //网络是否可用
+    isShow: true,        //判断页面是隐藏还是显示状态
+    hasNotPayed: false,
+    isShowCouponList: false, //优惠券列表弹框
+    indexCouponList: {
+      couponList: [],
+      allCoupon: 0
+    },
+    addHomeOption: {
+      show: false
+    },
+    popupShow: false,
+    parseshema: 0,
+    tapClass: &#039;now active-tab&#039;,//tap 选中态 now
+    tapClassShow: false,//切换选中态
+    selectionControl: 0,//输入航班号组件1 起飞城市当地日期2 确认接机城市3 选择送机时间4   0不展示 
+    stateSaveFwitch: true,//保存接送机选中状态
+    flightNumber: &#039;&#039;,                    // 航班号
+    equityGuide: false, //权益引导
+    equityText: &#039;&#039;, //权益引导领劵成功后文案
+    addHome: false,
+    timeData: [],//用车时间数据
+    cityData: {},//接机城市数据
+    flightTapShow: false,//控制接送机tap
+    directAirBubblesShow: false,//新手引导气泡的显示隐藏
+    flightDate: &#039;&#039;,//查询航班的日期参数
+    pickupConfig: &#039;&#039;,//接机时间间隔粒度
+    pickupDateLimit: &#039;&#039;,//接机预约天数
+    dropoffConfig: &#039;&#039;,//送机时间间隔粒度
+    saveTheEnteredFlightNumber: &#039;&#039;,//保存已输入航班号
+    isFirstTap: true,//只拿一次数据
+    isReqCoupon: false,
+    enablenative:false,
+    noLocationPermission:&#039;&#039;,//没有定位权限
+  },
+  onLoad() {
+    if(getApp().isIOS()){
+      this.setData({
+        enablenative:true
+      })
+    }else{
+      this.setData({
+        enablenative:false
+      })
+    }
+    // 监听航班已落地
+    TaxiMessageService.shareInstance().registerMessageObserver(&quot;flight-number-ground&quot;, this, this.flightNumberGround);
+    // 判断版本 如果版本不对 跳转至错误落地页
+    if(!util.isValidAlipay()) {
+    my.redirectTo({
+      url: &#039;../errorpage/errorpage&#039;
+    });
+    return;
+    }
+    //重新设置默认值 因为会有从推送进去为false的情况
+    this.isFirstRender = true;
+    this.needLogin = true;
+    this.isfarst = false;//第一次onshow不执行
+    // 判断当前的系统是安卓还是ios
+    this.isForIOS = getApp().isIOS();
+    TaxiLog(&quot;mapIndex function time onLoad is &quot; + new Date().getTime());
+
+  },
+  onShow() {
+    if(this.data.flightTapShow &amp;&amp; this.data.selectionControl==1){
+      TaxiMessageService.shareInstance().sendMessage(&quot;enter-flight-number&quot;,true);
+    }
+    if (LoginBindHelper.isLogin() == false) {
+      // 清除本地待支付/进行中的订单相关数据
+      DataHelper.getInstance().clearData();
+    }
+    if (!LoginBindHelper.isLogin() || getApp().globalData.equityGuide == false) {
+      this.setData({ equityGuide: false, addHome: true })
+    }
+
+    getApp().globalData.controlClick = true;
+    my.setNavigationBar({
+      title: &quot;高德打车&quot;
+    });
+    if (!getApp().globalData.network.networkAvailable) { //网络状态不可用
+      //获取中.....
+      this.setData({
+        startPointName: &#039;获取中...&#039;
+      })
+      getApp().globalData.startEndObj.startPoint = {
+        &quot;lat&quot;: &#039;&#039;,
+        &quot;lon&quot;: &#039;&#039;,
+        &quot;name&quot;: &#039;&#039;
+      }
+      if(this.data.tapClassShow){
+        this.data.locationMarkers[0].customCallout.isShow = 0;
+      }else{
+        this.data.locationMarkers[0].customCallout.isShow = 1;
+        this.data.locationMarkers[0].customCallout.time = &#039;...&#039;;        
+      }
+      let toMarkers = this.data.locationMarkers;
+      this.mapView &amp;&amp; this.mapView.updateComponentsMarkers(toMarkers);
+      this.mapView &amp;&amp; this.mapView.unifiedUpdateMap()
+    }
+
+    // 地图拖动过程中设置起点问题
+    this.data.isSetPointName = true;
+    if (this.isFirstRender) {
+      this.isFirstRender = false;
+      this.acquisitionLocation();
+      let isPopup = this.processSchema();
+      this.needCach = isPopup;
+      if (isPopup) {
+        return;
+      }
+    } else {
+      //启动长连接
+      OrderNetImplement.getInstance().closeWebsocket();
+      if (getApp().globalData.isNotMap) {
+        this.setData({
+          showScheme: 1
+        })
+      }
+      if (this.processSchema()) {
+        return;
+      }
+      this.onCheckOrder(); //弹窗
+      if (this.needLogin) {
+        this.setData({ equityGuide: true })
+        this.needLogin = false;
+      }
+
+    }
+    this.setData({
+      schemeLoading: false
+    })
+    this.getAllForLocationAddress();
+    //首页carlist
+    this.setData({ isShow: true });
+    if (this.data.isGetCarlist &amp;&amp; this.data.isUnavailable) {
+      if (!getApp().globalData.isNotMap) {
+        this.getCarList();
+      }
+
+    }
+
+    TaxiLog(&quot;mapIndex function time onShow is &quot; + new Date().getTime());
+  },
+  onReady() {
+    let systemInfo = getApp().getSystemInfo();
+    if (systemInfo &amp;&amp; systemInfo.windowWidth &amp;&amp; systemInfo.windowHeight) {
+      this.data.locationMarkers[0].fixedPoint = {
+        originX: systemInfo.windowWidth / 2,
+        originY: systemInfo.windowHeight / 2
+      }
+    }
+    else {
+      my.createSelectorQuery().select(&#039;#map&#039;).boundingClientRect().exec((ret) =&gt; {
+        this.data.locationMarkers[0].fixedPoint = {
+          originX: ret[0] &amp;&amp; ret[0].width / 2,
+          originY: ret[0] &amp;&amp; ret[0].height / 2
+        }
+      })
+    }
+    this.data.airportMarkers[0].fixedPoint = {
+      originX: this.data.locationMarkers[0].fixedPoint.originX,
+      originY: this.data.locationMarkers[0].fixedPoint.originY
+    }
+
+    // if (!systemInfo || !systemInfo.windowWidth) {
+    //   if (isAdaptive) {
+    //     mapH = &#039;calc(100% - 280rpx)&#039;;
+    //     positionB = &#039;bottom:307rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:407rpx&#039;;//安全助手icon入口位置
+    //   } else {
+    //     mapH = &#039;calc(100% - 220rpx)&#039;;
+    //     positionB = &#039;bottom:247rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:347rpx&#039;;//安全助手icon入口位置
+    //   }
+    // } else {
+    //   let sca = 750 / systemInfo.windowWidth;
+    // TaxiLog(&quot;mapIndex function time onReady is &quot; + new Date().getTime());
+    // 0.获取中心点扎标位置
+
+    // 1.定义地图变量 并将指南针 比例尺 隐藏
+    let mapContext = my.createMapContext(&#039;map&#039;);
+    this.mapView = new mapView(mapContext);
+    this.mapView.resetMap();
+    // 有没有tap
+    this.flightTapShowFn()
+  },
+  onHide() {
+    if(this.data.flightTapShow &amp;&amp; this.data.selectionControl==1){
+      TaxiMessageService.shareInstance().sendMessage(&quot;enter-flight-number&quot;,false);
+    }
+    this.setData({ isShow: false });
+    if (this.data.isGetCarlist) {
+      my.hideLoading();
+    }
+    let that = this;
+    // 1.规避快速滑动 到search页面起点不一致的情况
+    this.data.isSetPointName = false;
+    if (!this.data.tapClassShow) {
+      this.lastMarkers = this.data.locationMarkers.concat(this.carNearMarkers).concat(this.data.recommendMarkers);
+    }else{
+      this.lastMarkers = this.data.airportMarkers.concat(this.carNearMarkers).concat(this.data.recommendMarkers);
+    }
+   
+    if (!this.needCach) {
+      // 2.规避返回首页 抖动一下的情况
+      this.mapView &amp;&amp; this.mapView.getCenterLocation((res) =&gt; {
+        this.prevLat = res.latitude;
+        this.prevLon = res.longitude;
+        that.setData({
+          latitude: res.latitude,
+          longitude: res.longitude,
+        })
+      });
+    }
+  },
+  flightNumberGround() {
+    my.navigateBack({
+      delta: 1
+    });
+    this.setData({
+      tapClassShow: false,
+      tapClass: &#039;now active-tab&#039;
+    })
+  },
+  onUnload() {
+    getApp().hideLoading();
+    //TODO
+    // let messageCenter = MessageCenter.getInstance();
+    // messageCenter.removeObserverActionCallback(&#039;search_uid&#039;);
+    this.getCarList = this.carListCallBack = getApp().emptyFn;
+    TaxiMessageService.shareInstance().unregisterMessageObserver(this);
+  },
+  directAirBubblesHide() {
+    if (this.data.flightTapShow) {
+      this.setData({
+        directAirBubblesShow: false
+      })
+    }
+  },
+  onTipsObject(data) {
+    this.setData(data)
+  },
+  onEquity(data) {
+    // 获取优惠券
+    if (data &amp;&amp; data.flag &amp;&amp; data.text) {
+      this.setData({
+        equityText: data.text
+      })
+    }
+  },
+  onShowAddHome(showEquity) {
+    if (showEquity &amp;&amp; showEquity.success) {
+      this.setData({ addHome: false })
+      this.needLogin = false;
+    } else if (showEquity &amp;&amp; (showEquity.fail || showEquity.success == false)) {
+      this.setData({ addHome: true, equityGuide: false })
+      this.needLogin = false;
+    } else if (showEquity &amp;&amp; showEquity.noLogin) {
+      this.needLogin = true;
+      this.setData({ addHome: true, equityGuide: false });
+    }
+  },
+  adaptiveMap() {
+
+    // // 判断当前手机是都是可以适配的手机
+    // let isAdaptive = getApp().globalData.isAdaptive;
+    // // 要适配的地图高度
+    // let mapH = 0;
+    // let positionB = 0;
+    // let safeHelperB = 0;
+    // let systemInfo = getApp().getSystemInfo();
+    // if (!systemInfo || !systemInfo.windowWidth) {
+    //   if (isAdaptive) {
+    //     mapH = &#039;calc(100% - 280rpx)&#039;;
+    //     positionB = &#039;bottom:307rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:407rpx&#039;;//安全助手icon入口位置
+    //   } else {
+    //     mapH = &#039;calc(100% - 220rpx)&#039;;
+    //     positionB = &#039;bottom:247rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:347rpx&#039;;//安全助手icon入口位置
+    //   }
+    // } else {
+    //   let sca = 750 / systemInfo.windowWidth;
+    //   if (isAdaptive) {
+    //     mapH = (systemInfo.windowHeight * sca - 280) + &#039;rpx&#039;
+    //     positionB = &#039;bottom:307rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:407rpx&#039;;//安全助手icon入口位置
+    //   } else {
+    //     mapH = (systemInfo.windowHeight * sca - 220) + &#039;rpx&#039;
+    //     positionB = &#039;bottom:247rpx&#039;;//定位icon以及个人中心入口icon
+    //     safeHelperB = &#039;bottom:347rpx&#039;;//安全助手icon入口位置
+    //   }
+    // }
+    // this.setData({
+    //   adaptive: isAdaptive,
+    //   mapHeight: mapH,
+    //   positionBottom: positionB,
+    //   safeHelperBtn: safeHelperB
+    // })
+  },
+  // 控制有没有接送机tap
+  flightTapShowFn() {
+    // todo
+    GlobalConfigHelper.getInstance().getConfigForKey(&#039;transferSwitch&#039;, (config) =&gt; {
+      console.log(config, &#039;------------开关&#039;)
+      config = true;// TODO
+      if (config) {
+        this.setData({
+          positionBottom: &#039;bottom:387rpx&#039;,
+          flightTapShow: true
+        })
+        // 新手引导接送机气泡
+        this.directAirBubblesFn()
+      } else {
+        this.setData({
+          positionBottom: &#039;bottom:287rpx&#039;
+        })
+      }
+    })
+  },
+  configTransferSwitchFn(transferSwitch) {//拿取服务发的配置
+    if (transferSwitch) {
+      GlobalConfigHelper.getInstance().getConfigForKey(&#039;transferAir&#039;, (data) =&gt; {
+        console.log(data, &#039;---------配置时间粒度&#039;)
+        let configTime =&#039;&#039;
+        if (data) {
+          configTime = data
+        }else{
+          configTime = {
+            pickupConfig: {
+              granularity: 10,
+              upperLimit: 60,
+              lowerLimit: 10,
+              default:20
+            },
+            pickupDateLimit: 7,
+            dropoffConfig: {
+              granularity: 5,
+              upperLimit: 7,
+              lowerLimit: 30
+            }
+          }
+        }
+        this.setData({
+          dropoffConfig: configTime.dropoffConfig ? configTime.dropoffConfig : &#039;&#039;,
+          pickupDateLimit: configTime.pickupDateLimit ? configTime.pickupDateLimit : &#039;&#039;,
+          pickupConfig: configTime.pickupConfig ? configTime.pickupConfig : &#039;&#039;
+        })
+      })
+    }
+  },
+  clickNow() {//点击现在
+    let location = getApp().globalData.userLoc
+    if(location.longitude&amp;&amp;location.latitude){
+      this.mapView.moveToLocation();
+      this.getMessageByChangeregion(location.longitude, location.latitude,this.data.scale, true);
+    }
+    this.setData({
+      tapClassShow: false,
+      tapClass: &#039;now active-tab&#039;
+    })
+  },
+  clickAirport() {//点击接送机
+    let location = getApp().globalData.userLoc
+    if(location.longitude&amp;&amp;location.latitude){
+      this.getMessageByChangeregion(location.longitude, location.latitude,this.data.scale, true);
+    }
+    if (this.data.isFirstTap) {
+      this.configTransferSwitchFn(this.data.flightTapShow)
+    }
+    this.setData({
+      tapClassShow: true,
+      tapClass: &#039;active-tab&#039;,
+      isFirstTap: false
+    })
+  },
+  onClickEnterFlightNumberShow() {//输入航班号显示
+    this.setData({
+      selectionControl: &#039;1&#039;
+    })
+  },
+  onClickCascadeSelect() {//点击输入航班号的确定级联选择的显示
+    this.setData({
+      selectionControl: &#039;2&#039;,
+      flightNumber: getApp().globalData.flightNumber || &#039;&#039;,
+      saveTheEnteredFlightNumber: &#039;&#039;
+    })
+  },
+  onCancelSelect() {//点击级联选择的取消
+    if (this.data.selectionControl == 3) {//确认接机城市 
+      this.setData({
+        flightNumber: getApp().globalData.flightNumber || &#039;&#039;,
+      })
+    }
+    this.setData({
+      selectionControl: &#039;0&#039;,
+    })
+  },
+  onClickEnterFlightNumberHeid() {//点击取消
+    this.setData({
+      selectionControl: &#039;0&#039;,
+      saveTheEnteredFlightNumber: &#039;&#039;
+    })
+  },
+  onStateSave() {
+    this.setData({
+      stateSaveFwitch: !this.data.stateSaveFwitch
+    })
+  },
+  // 点击选择送机时间执行
+  onclickSendMachineTime() {
+    this.setData({
+      selectionControl: &#039;4&#039;,
+      flightNumber: getApp().globalData.flightNumber || &#039;&#039;,
+    })
+  },
+  onConfirmSelect(data) {//点击级联选择控件确定
+    if (this.data.selectionControl == 4) {//请选择送机时间
+      // TODO选择出发时间后，进入接送机首页，并停留送机tab，同时透出送机时间
+      my.showLoading()
+      setTimeout(() =&gt; {
+        my.hideLoading()
+        my.navigateTo({
+          url: &#039;/page/airport-transportation/airport-transportation?flightSegments=&#039; + JSON.stringify(data) + &#039;&amp;&amp;type=send&amp;&amp;noLocationPermission=&#039;+JSON.stringify(this.data.noLocationPermission)
+        });
+      }, 800)
+      this.setData({
+        selectionControl: &#039;0&#039;
+      })
+      getApp().globalData.flightNumber = &#039;&#039;
+    } else if (this.data.selectionControl == 2) {//起飞城市当地日期选择 点击后变4  如果多条就调控件一个直接跳转
+      this.setData({
+        flightDate: data || &#039;&#039;// 日期参数
+      })
+      let flightNo = this.data.flightNumber//航班号参数
+      //航班信息查询请求
+      if (getApp().globalData.network.networkAvailable) {
+        this.flightInformationRequire(this.data.flightDate, flightNo);
+      } else {//请检查网络后重试
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+      }
+    } else if (this.data.selectionControl == 3) {//确认接机城市 跳转
+      // TODO选择航班后，进入接送机首页，并停留接机tab，同时前端透出对应航班信息
+      if (getApp().globalData.network.networkAvailable) {
+        let reg = /(\d{4})\-(\d{2})\-(\d{2})/;
+        let date = this.data.flightDate.replace(reg, &quot;$1年$2月$3日&quot;);
+        this.setData({
+          selectionControl: &#039;0&#039;
+        })
+        // TODO
+        my.showLoading()
+        setTimeout(() =&gt; {
+          my.hideLoading()
+          my.navigateTo({
+            url: &#039;/page/airport-transportation/airport-transportation?flightSegments=&#039; + JSON.stringify(data) + &#039;&amp;&amp;type=join&amp;&amp;flightDate=&#039; + date
+          });
+        }, 800)
+      } else {//请检查网络后重试
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+      }
+    }
+  },
+  flightInformationRequire(flightDate, flightNo) {//航班信息查询请求
+    // TODO 存在都不支持-- 个别不支持--提示： 用车城市不支持 --回到航班号信息输入态 
+    // 航班号没有: 未找到指定日期的航班，请重新输入          --回到航班号信息输入态
+
+    let flightInformationQueryR = new FlightInformationQueryRequire();
+    flightInformationQueryR.setParam({
+      flightDate: flightDate,//&#039;2019-03-11&#039;,
+      flightNo: flightNo,//&#039;SC4678&#039;,
+    });
+    my.showLoading()
+    flightInformationQueryR.doRequest(res =&gt; {
+      my.hideLoading()
+      // res={
+      //   code:7,
+      //   data:{
+      //     subCode:4,
+      //     subMessage:&#039;出现未知问题啦，请重试&#039;
+      //   }
+      // }
+      if (res &amp;&amp; res.code == 1) {
+        if (res.data.flightSegments &amp;&amp; res.data.flightSegments.length &gt; 1) {
+          this.setData({
+            selectionControl: &#039;3&#039;,
+            flightNumber: getApp().globalData.flightNumber || &#039;&#039;,
+            cityData: res.data,
+          })
+        } else {
+          let flightSegments = res.data.flightSegments ? res.data.flightSegments : &#039;&#039;
+          let reg = /(\d{4})\-(\d{2})\-(\d{2})/;
+          let date = this.data.flightDate.replace(reg, &quot;$1年$2月$3日&quot;);
+          this.setData({
+            selectionControl: &#039;0&#039;
+          })
+          my.navigateTo({
+            url: &#039;/page/airport-transportation/airport-transportation?flightSegments=&#039; + JSON.stringify(flightSegments[0]) + &#039;&amp;&amp;type=join&amp;&amp;flightDate=&#039; + date
+          });
+        }
+      } else if (res.code == 702) {
+        // 先定义一个code值，表示航班错误这一块，然后 有个 data ， data 内容是 {&quot;subCode&quot;: 0, &quot;subMessage&quot;: &quot;提示内容&quot;}
+        //  0， 1， 2，  3， 4
+        my.showToast({
+          content: res.data &amp;&amp; res.data.subMessage ? res.data.subMessage : &#039;&#039;
+        });
+        setTimeout(() =&gt; {
+          if (res.data &amp;&amp; res.data.subCode == 4) {
+            // 航班已降落
+            this.setData({
+              selectionControl: &#039;0&#039;,
+              tapClass: &#039;now active-tab&#039;,//tap 选中态 now
+              tapClassShow: false,//切换选中态
+            })
+            getApp().globalData.flightNumber = &#039;&#039;
+          } else if (res.data &amp;&amp; res.data.subCode == 1) {
+            // 供应商返回错误：回到航班号信息输入态，保留已输入航班号
+            this.setData({
+              selectionControl: &#039;1&#039;,
+              saveTheEnteredFlightNumber: getApp().globalData.flightNumber
+            })
+          } else {
+            // 航班号不存在
+            // 航班落地城市为海外
+            // 航班状态异常
+            // 请输入准确航班号
+            this.setData({
+              selectionControl: &#039;1&#039;
+            })
+            getApp().globalData.flightNumber = &#039;&#039;
+          }
+        }, 500)
+      } else {
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+      }
+    })
+
+
+  },
+  clickDirect() {//点击新手引导接送机气泡
+    this.setData({
+      directAirBubblesShow: false
+    })
+  },
+  directAirBubblesFn() {//新手引导接送机气泡疲劳度
+    // my.removeStorage({key: &#039;directAirBubbles&#039;,});//清除历史记录
+    let self = this
+    my.getStorage({
+      key: &#039;directAirBubbles&#039;,
+      success: function (res) {
+        if (res.data == null) {
+          self.setData({
+            directAirBubblesShow: true
+          })
+          my.setStorage({//第一次存储地址key
+            key: &#039;directAirBubbles&#039;,
+            data: {//名字
+              directAirBubblesShow: false
+            }
+          })
+        } else {
+          self.setData({
+            directAirBubblesShow: false
+          })
+        }
+      },
+      fail: function (res) {
+        self.setData({
+          directAirBubblesShow: false
+        })
+      }
+    });
+  },
+  onCouponsTpsThis(than) {
+    this.ctx = than;
+    this.ctx.requestCouponsList();
+  },
+  getCarList(params) {
+    //首页处理carlist信息
+    //首页判断是否坐标是否齐全getApp().globalData.schemeEnd和getApp().globalData.schemeStart
+
+    //说明起终点的信息在schemeEnd和schemeStart中
+    if (!this.data.isGetCarlist) {
+      this.setData({ isGetCarlist: true });
+    }
+    //起终点选定完添加相应的loading状态
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;请检查网络后重试&#039;,
+        success: () =&gt; {
+          this.data.isUnavailable = false //标记成请求过carlist但是没验证通过
+        }
+      });
+      return;
+    }
+
+    my.showLoading({
+      content: &#039;正在查找最快运力&#039;,
+    });
+    //TODO
+    // let messageCenter = MessageCenter.getInstance();
+    // TaxiLog(&#039;Params=&#039; + JSON.stringify(params));
+    // let callback = new carListActionCallback(this);
+
+    // messageCenter.addObserverActionCallback(&#039;search_uid&#039;, callback);
+    // let message = new Message(MessageCode[&quot;codeGetCarList&quot;], params, null);
+    // messageCenter.handleMessage(message);
+    DataHelper.getInstance().fetchCarList(params, (res) =&gt; {
+      this.carListCallBack(res);
+    })
+
+  },
+  carListCallBack(res) {
+    getApp().hideLoading();
+    TaxiLog(&quot;error-----------------------------------------------&quot;, res.code);
+    if (res.code == 1) {
+      // console.log(&quot;code 1 ----- carList请求成功跳转cp-index&quot;)
+      //获取的运力
+      let result = res.data.list;
+      //获取运力页面的tips
+      let tipConfList = res.data.tipsConfList;
+      //TODO
+      //获取tips数据
+      // let messageCenter = MessageCenter.getInstance();
+      // messageCenter.removeObserverActionCallback(this.data.uid);
+      getApp().globalData.transportTips = tipConfList;
+      getApp().globalData.carList = result;
+
+      getApp().globalData.startEndObj.startPoint = getApp().globalData.schemeStart
+      getApp().globalData.startEndObj.endPoint = getApp().globalData.schemeEnd
+      // console.log(&#039;startPointObj:&#039; + JSON.stringify(this.data.startPointObj))
+      // TaxiLog(&#039;from:&#039; + this.data.pageParams.from);
+      this.setData({
+        isUnavailable: true
+      })
+      getApp().globalData.isrefreshCarlist = true;
+      if (this.data.isGetCarlist &amp;&amp; this.data.isShow) {
+        getApp().globalData.schemeEnd = null;
+        this.setData({
+          showScheme: 1
+        })
+        my.navigateTo({
+          url: &#039;/page/cp-index/cp-index&#039;
+        })
+      }
+    } else if (res.code == 3) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;请输入正确的起终点&#039;,
+      });
+      //清空起终点信息，且聚焦到起点输入框
+      this.setData({
+        &#039;startPointObj.name&#039;: &#039;&#039;,
+        &#039;endPointObj.name&#039;: &#039;&#039;,
+        &#039;tipList&#039;: null,
+        historyList: this.data.hisToryListNoSync,
+        focusStart: true,
+        focusEnd: false,
+        isUnavailable: false //标记成请求过carlist但是没验证通过
+      })
+    } else if (res.code == 26) {
+      this.setData({
+        isUnavailable: false //标记成请求过carlist但是没验证通过
+      })
+      //  跨城 26  NOT_SUPPORT_CROSS_CITY
+      my.showToast({
+        content: &#039;暂不支持跨城订单&#039;,
+        success: () =&gt; {
+          if (this.data.isStart) {
+            this.setData({
+              &#039;startPointObj.name&#039;: &#039;&#039;,
+              &#039;tipList&#039;: null,
+              historyList: this.data.hisToryListNoSync
+            })
+          } else if (!this.data.isStart) {
+            this.setData({
+              &#039;endPointObj.name&#039;: &#039;&#039;,
+              &#039;tipList&#039;: null,
+              historyList: this.data.hisToryListNoSync
+            })
+          }
+        }
+      })
+    } else if (res.code == 7) {
+      my.showToast({
+        type: &#039;exception&#039;,
+        content: &#039;当前地区暂不提供网约车服务&#039;,
+      });
+      // 清空终点信息，且聚焦到终点输入框
+      this.setData({
+        &#039;endPointObj.name&#039;: &#039;&#039;,
+        &#039;tipList&#039;: null,
+        historyList: this.data.hisToryListNoSync,
+        focusStart: false,
+        focusEnd: true,
+        isUnavailable: false //标记成请求过carlist但是没验证通过
+      })
+    } else {
+      //其他错误状态
+      my.showToast({
+        type: &#039;exception&#039;,
+        content: &#039;当前网络不佳，请刷新重试&#039;,
+      });
+      // 清空终点信息，且聚焦到终点输入框
+      this.setData({
+        &#039;endPointObj.name&#039;: &#039;&#039;,
+        &#039;tipList&#039;: null,
+        historyList: this.data.hisToryListNoSync,
+        focusStart: false,
+        focusEnd: true,
+        isUnavailable: false //标记成请求过carlist但是没验证通过
+      })
+    }
+  },
+
+
+  processSchema() {
+
+    // 2.渲染首屏数据 ----&gt;逆地理获取起点位置 以及附近车辆信息 推荐上车点
+    if (deepPath(getApp().globalData, [&#039;appOnShowOption&#039;, &#039;query&#039;]) &amp;&amp; deepPath(getApp().globalData, [&#039;appOnShowOption&#039;, &#039;query&#039;, &#039;queryString&#039;])) {
+      IndexScheme.schemeJumpToPage(this);
+      return true;
+    }
+    return false;
+  },
+  regionchange(e) {
+    if (!this.data.isRegionChange) {
+      return;
+    }
+    // TaxiLog(&quot;调用regioncange方法=&quot; + JSON.stringify(e));
+    if (e.type == &#039;begin&#039;) {
+      this.beginScale = e.scale;
+      this.beginLat = e.latitude;
+      this.beginLon = e.longitude;
+    }
+    if (e.type === &#039;end&#039;) {
+      this.endScale = e.scale;
+      this.latitude = e.latitude;
+      this.longitude = e.longitude;
+      if (!this.beginLat || !this.beginLon || !this.beginScale) { // 规避ios的首屏 end-begin-end的情况
+        return;
+      }
+      if (this.beginLat == this.latitude &amp;&amp; this.beginLon == this.longitude &amp;&amp; this.beginScale == this.endScale) {
+        // TaxiLog(&#039;三者相等 重复请求 直接return!!!!&#039;);
+        return;
+      }
+      if (this.isRenderFirst &amp;&amp; this.isIOS) {
+        this.isRenderFirst = false;
+        return;
+      }
+      // TaxiLog(&quot;开始发送请求=&quot; + JSON.stringify(e));
+      this.getMessageByChangeregion(e.longitude, e.latitude, e.scale, true);
+    }
+  },
+  //获取基于当前位置的各种操作
+  getAllForLocationAddress() {
+    let that = this;
+    //获取当前位置 先拿到经纬度 然后逆地理拿到地点名称
+    getApp().obtainLocation().then((res) =&gt; {
+      if (res &amp;&amp; res.longitude) {
+        if (that.prevLat &amp;&amp; that.prevLon) {
+          TaxiLog(&#039;返回首页距离=============&#039; + getDistance(res.latitude, res.longitude, that.prevLat, that.prevLon))
+          let backDis = getDistance(res.latitude, res.longitude, that.prevLat, that.prevLon);
+          if (backDis &lt; 1 &amp;&amp; backDis &gt; 0) { //如果距离一样 回到首页不再重新发送请求 防止页面抖动
+            TaxiLog(&#039;返回首页距离没变=============&#039; + getDistance(res.latitude, res.longitude, that.prevLat, that.prevLon))
+            let lastMarkers = that.lastMarkers;
+            that.mapView.updateComponentsMarkers(lastMarkers);
+            this.mapView.unifiedUpdateMap()
+            if (that.isForIOS) {
+              return;
+            }
+          }
+        }
+        that.setData({
+          latitude: res.latitude,
+          longitude: res.longitude,
+          scale: that.data.scale
+        }, () =&gt; {
+          that.data.isRegionChange = true;
+          that.isRenderFirst = true;
+          that.getMessageByChangeregion(res.longitude, res.latitude, that.data.scale, false);
+        })
+      } else if (res &amp;&amp; res.error) {
+        if (res &amp;&amp; res.error == 11) {
+
+          try {
+            my.showAuthGuide({
+              authType: &quot;LBS&quot;
+            })
+          } catch (e) {
+            TaxiLog(e);
+          }
+        }
+        if (!that.mapView) {
+          let mapContext = my.createMapContext(&#039;map&#039;);
+          setTimeout(() =&gt; {
+            that.mapView = new mapView(mapContext);
+            that.mapView.getCenterLocation((res) =&gt; {
+              that.data.isRegionChange = true;
+              that.isRenderFirst = true;
+              that.setData({
+                noLocationPermission:res
+              })
+              that.getMessageByChangeregion(res.longitude, res.latitude, that.data.scale, false);
+            });
+          }, 1000)
+          return;
+        }
+        that.mapView.getCenterLocation((res) =&gt; {
+          that.setData({
+            noLocationPermission:res
+          })
+          that.data.isRegionChange = true;
+          that.isRenderFirst = true;
+          that.getMessageByChangeregion(res.longitude, res.latitude, that.data.scale, false);
+        });
+      }
+    })
+
+
+  },
+  getMessageByChangeregion(lon, lat, scale, modifyPosion = true) {
+
+    //1.处理吸附
+    let isSuccess = this.handleAdsorb(lon, lat, scale);
+    // TaxiLog(&#039;是否有可以吸附的点==========&#039; + isSuccess);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() =&gt; {
+      if (!isSuccess) {
+        this.getAddressNameByRgeo(lon, lat, scale, this.data.isGetAddressName, modifyPosion).then((name) =&gt; {
+          //2.处理小车
+          this.handleCarNearBy(lon, lat, scale, name);
+          //3.处理推荐上车点
+          this.getRecommandSpots(lon, lat, scale);
+        })
+      }
+    }, 200);
+
+
+  },
+  handleAdsorb(lon, lat, scale) {
+    this.data.isGetAddressName = true;
+
+    let recommendMaArr = this.data.recommendMarkers;
+    if (recommendMaArr.length == 0) {
+      return false;
+    }
+    let isHas = false;
+    let minIdx = 0;
+    let min = getDistance(lat, lon, recommendMaArr[0].latitude, recommendMaArr[0].longitude);
+    for (let i = 0; i &lt; recommendMaArr.length; i++) {
+      let dis = getDistance(lat, lon, recommendMaArr[i].latitude, recommendMaArr[i].longitude);
+      // TaxiLog(&#039;startPointName=&#039; + recommendMaArr[i].iconAppendStr + &#039;RecommandDistance=&#039; + dis);
+      if (min &gt; dis) {
+        min = dis;
+        minIdx = i;
+      }
+    }
+
+    // TaxiLog(&#039;minIdx:&#039; + minIdx + &#039; min:&#039; + min + &#039;max:&#039; + this.data.adsorbentsDistance + &#039;this.beginScale:&#039; + this.beginScale + &#039; scale--&#039; + scale);
+    if (min &gt; 0.5 &amp;&amp; min &lt; this.data.adsorbentsDistance) {
+      // TaxiLog(&#039;minIdx:&#039; + minIdx + &#039; min:&#039; + min + &#039;max:&#039; + this.data.adsorbentsDistance);
+      this.data.adsorbentsDistance = 20;
+      getApp().globalData.startEndObj.startPoint = {
+        &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+        &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+        &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+      }
+      if (getApp().globalData.schemeStart) {
+        getApp().globalData.schemeStart = {
+          &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+          &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+          &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+        }
+      }
+      //this.setDataPosition((parseFloat(recommendMaArr[minIdx].longitude) * 9 + parseFloat(lon)) / 10, (parseFloat(recommendMaArr[minIdx].latitude) * 9 + parseFloat(lat)) / 10, recommendMaArr[minIdx].iconAppendStr);
+      this.data.startPointName = recommendMaArr[minIdx].iconAppendStr;
+      this.setData({
+        &#039;schemeStartPoint.name&#039;: recommendMaArr[minIdx].iconAppendStr
+      })
+      this.setDataPosition(lon, lat, scale, recommendMaArr[minIdx].longitude, recommendMaArr[minIdx].latitude, scale);
+      this.data.isGetAddressName = false;
+      return true;
+    } else if (min &lt;= 0.5 &amp;&amp; this.beginScale == scale) {
+      this.data.isGetAddressName = false;
+      return true;
+    } else if (min &lt;= 0.5 &amp;&amp; this.beginScale !== scale) {
+      this.data.isGetAddressName = false;
+      this.setData({
+        startPointName: recommendMaArr[minIdx].iconAppendStr,
+        &#039;schemeStartPoint.name&#039;: recommendMaArr[minIdx].iconAppendStr
+      })
+    }
+    return false;
+  },
+  handleCarNearBy(lon, lat, scale, name) {
+    if (scale &lt;= 10) { //不显示小车
+      this.carNearMarkers = [];
+      if(!this.data.tapClassShow){
+        this.data.locationMarkers[0].customCallout.time = &#039;...&#039;;
+      }
+      // TaxiLog(&#039;不显示小车设置marker&#039;);
+      this.setDataForMarker(lon, lat, scale, true);
+      return;
+    }
+    // 获取附近车辆
+    this.getCarListNearBy(lon, lat, scale, name);
+  },
+  //获取推荐上车点
+  getRecommandSpots(lon, lat, scale) {
+    if (scale &lt;= 14) { //不显示推荐上车点
+      this.data.recommendMarkers = [];
+      // TaxiLog(&#039;都不显示设置marker&#039;);
+      this.setDataForMarker(lon, lat, scale);
+      return;
+    }
+    let params = {
+      &#039;startLon&#039;: lon,
+      &#039;startLat&#039;: lat
+    }
+    let tmpRecommendArr = [];
+    let getRecommandR = new RecommendSpotsRequest();
+    getRecommandR.setParam(params);
+    let s = +new Date();
+    getRecommandR.doRequest(res =&gt; {
+      if (res &amp;&amp; res.code !== 1) {
+        this.data.recommendMarkers = [];
+        this.setDataForMarker(lon, lat, scale);
+        return;
+      }
+      // TaxiLog(&#039;推荐上车点=&#039; + JSON.stringify(res));
+      let spots = res.data.spots ? res.data.spots : [];
+      spots = spots.reverse();
+      // TaxiLog(&#039;spots=&#039; + JSON.stringify(spots));
+      for (let i = 0; i &lt; spots.length; i++) {
+        for (let j = i + 1; j &lt; spots.length; j++) {
+          let dis = getDistance(spots[i].lat, spots[i].lon, spots[j].lat, spots[j].lon);
+          TaxiLog(`${spots[i].name}跟${spots[j].name}的距离是=========》` + dis);
+          // TaxiLog(&#039;this.getRecommendMarkerDistance(scale)&#039; + this.mapView.getRecommendMarkerDistance(scale))
+          let markerDistance = this.mapView.getRecommendMarkerDistance(scale);
+          if (dis &lt; markerDistance) {
+            TaxiLog(`${spots[i].name}扔掉`)
+            spots.splice(i, 1);
+            i--;
+            break;
+          }
+        }
+      }
+      // TaxiLog(&#039;endSpots=&#039; + JSON.stringify(spots));
+      spots.forEach((item, index) =&gt; {
+        tmpRecommendArr.push({
+          id: 100 + index,
+          iconPath: &quot;/image/index/recopoint.png&quot;,
+          latitude: item.lat,
+          longitude: item.lon,
+          width: 10,
+          height: 10,
+          anchorX: 0.5,
+          anchorY: 0,
+          iconAppendStr: item.name,
+          customCallout: {
+            type: 0,
+            time: &#039;1&#039;,
+            // descList: [{ desc: &#039;点击立即打车&#039;, descColor: &#039;#ffffff&#039; }],
+            isShow: 0
+          },
+        })
+      })
+      this.data.recommendMarkers = tmpRecommendArr;
+      // TaxiLog(&#039;推进上车点设置marker&#039;)
+      this.setDataForMarker(lon, lat, scale);
+      this.handleAdsorb(lon, lat, scale);
+    })
+  },
+  setDataPosition(lon, lat, scale, destlon, destlat, destscale) {
+    let sname = this.data.startPointName;
+    let totalMarker = &#039;&#039;
+    if(!this.data.tapClassShow){
+      totalMarker = this.data.locationMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+    }else{
+      totalMarker = this.data.airportMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+    }
+    this.setData({
+      startPointName: sname
+    })
+    let distance = getDistance(this.beginLat, this.beginLon, destlat, destlon);
+    if (distance &lt; 0.5) {
+      this.data.isAdsorb = true;
+    }
+    this.mapView.updateComponents(totalMarker, destlat, destlon, destscale);
+    this.mapView.unifiedUpdateMap();
+  },
+  //修改markers 重新渲染视图
+  setDataForMarker(lon, lat, scale, isSetCar) {
+    if (this.mapView) {
+      this.mapView.getCenterLocation((res) =&gt; {
+        let distance = getDistance(res.latitude, res.longitude, lat, lon);
+        if ((distance &gt; 1 || res.scale !== scale) &amp;&amp; !this.data.isFirstReturnCar) {
+          this.data.isFirstReturnCar = false;
+          return;
+        }
+        let totalMarker = &#039;&#039;
+        if (isSetCar&amp;&amp;!this.data.tapClassShow) {
+          this.data.locationMarkers[0].customCallout.isShow = 1;
+          totalMarker = this.data.locationMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+        }else if(this.data.tapClassShow){
+          totalMarker = this.data.airportMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+        }
+        this.mapView.updateComponentsMarkers(totalMarker);
+        this.mapView.unifiedUpdateMap();
+      });
+    }
+
+  },
+  // 获取定位
+  acquisitionLocation() {
+    //获取公共参数
+    getApp().initCommonConfig();
+    getApp().obtainLocation().then((res) =&gt; {
+      this.initRequest();
+      if (this.needLogin) {
+        this.setData({ equityGuide: true })
+        this.needLogin = false;
+      }
+    }).catch((res) =&gt; {
+      this.initRequest();
+    });
+  },
+  initRequest() {
+    //这里已经实际调用了云控
+    getApp().initialize();
+    AddHomeStatus.getAddHomeInit();
+    this.checkIsHasOrder();//请求check
+  },
+  //附近车辆信息获取
+  getCarListNearBy(lon, lat, scale, name) {
+    console.log(&quot;lon:&quot; + lon + &quot; lat: &quot; + lat + &quot; name: &quot; + name);
+    let params = {
+      &#039;startLon&#039;: lon,
+      &#039;startLat&#039;: lat,
+      &#039;startName&#039;: name
+    };
+
+    let getCarList = new CarNearbyRequest();
+    getCarList.setParam(params);
+    let s = +new Date();
+    if(!this.data.tapClassShow){
+      this.data.locationMarkers[0].customCallout.time = &#039;...&#039;;
+    }
+    this.setDataForMarker(lon, lat, scale, true);
+    getCarList.doRequest(res =&gt; {
+      this.data.isFirstReturnCar = true;
+      if (res &amp;&amp; res.code !== 1) {
+        this.carNearMarkers = [];
+        if(!this.data.tapClassShow){
+          this.data.locationMarkers[0].customCallout.time = &#039;...&#039;;
+        }
+        this.setDataForMarker(lon, lat, scale, true);
+        return;
+      }
+      this.carListNearBy = res.data;
+      if(!this.data.tapClassShow){
+        if (res.data.etaTime) {
+          this.data.locationMarkers[0].customCallout.time = Math.ceil(parseFloat(res.data.etaTime) / 60).toString();
+        } else {
+          this.data.locationMarkers[0].customCallout.time = &#039;...&#039;;
+        }
+      }
+      TaxiLog(&#039;this.data.locationMarkers[0].customCallout.time=&#039; + this.data.locationMarkers[0].customCallout.time);
+      this.toShowNearByCars(lon, lat, scale);
+    })
+  },
+  toShowNearByCars(longitude, latitude, scale) {
+    // 随机单车数量设置
+    let tmpMarkerArr = [];
+    let carList = this.carListNearBy;
+    [&#039;privateCar&#039;, &#039;expressCar&#039;, &#039;taxi&#039;].forEach((item, index) =&gt; {
+      carList[item] &amp;&amp; carList[item].location.forEach((car, idx) =&gt; {
+        let makerModel = {
+          id: 200 + idx + index * 10,
+          iconPath: `/image/index/${item}.png`,
+          latitude: car.lat,
+          longitude: car.lon,
+          width: 20,
+          height: 40,
+          rotate: parseInt(car.angle),
+          markerLevel: 1,
+          customCallout: {
+            type: 0,
+            descList: [],
+            isShow: 0
+          },
+        }
+        tmpMarkerArr.push(makerModel);
+      })
+    })
+    this.carNearMarkers = tmpMarkerArr;
+    // console.log(&#039; this.data.carNearMarkers&#039; + JSON.stringify(this.carNearMarkers))
+    this.setDataForMarker(longitude, latitude, scale, true);
+  },
+  //逆地理信息获取
+  getAddressNameByRgeo(lon, lat, scale, isGetAddressName, modifyPosion = true) {
+    return new Promise((resolve, reject) =&gt; {
+      // 逆地理获取地址名字
+      let params = {
+        &#039;lon&#039;: lon, &#039;lat&#039;: lat
+      };
+      let reverseGeoRe = new ReverseGeoRequest();
+      reverseGeoRe.setParam(params);
+      reverseGeoRe.doRequest(res =&gt; {
+        if (!this.data.isSetPointName) {
+          return;
+        }
+        if (res &amp;&amp; res.code !== 1) {
+          if (isGetAddressName) {
+            this.setData({
+              startPointName: &#039;获取中...&#039;
+            })
+            this.data.startPointName = &#039;获取中...&#039;;
+            getApp().globalData.startEndObj.startPoint = null;
+          }
+          resolve(&#039;&#039;);
+          return;
+        }
+
+        let resName = deepPath(res.data, [&#039;location&#039;, &#039;name&#039;]);
+        if (isGetAddressName) {
+          // TaxiLog(&quot;逆地理信息获取设置名称======&quot; + resName);
+          this.setData({
+            startPointName: resName,
+          })
+          this.data.startPointName = resName;
+          if (modifyPosion &amp;&amp; res.data &amp;&amp; res.data.location) {
+            res.data.location.lon = lon;
+            res.data.location.lat = lat;
+          }
+          getApp().globalData.schemeStart = res.data.location
+          getApp().globalData.startEndObj.startPoint = res.data.location;
+        }
+        resolve(resName);
+      })
+    })
+  },
+  callOut(e) {
+    if (e.markerId != 1) {
+      return;
+    }
+    if (getApp().isIOS()) {
+      getApp().globalData.isConfirmPay = false;
+    }
+
+    getApp().router.navigateTo({
+      url: &#039;/page/search/search&#039;
+    });
+  },
+  //用于处理场景化打车弹窗逻辑
+  handlePopupScheme() {
+    this.setData({
+      IsHasOrder: false,
+      parseshema: 1
+    });
+  },
+  checkIsHasOrder() {
+    let isLogin = LoginBindHelper.isLogin();
+    if (isLogin) {
+      DataHelper.getInstance().fetchDoingOrderList(res =&gt; {
+        this.onCheckOrder();
+      });
+    } else {
+      //补充请求tips等逻辑
+      this.onCheckOrder();
+      //TODO
+      this.setData({
+        popupShow: true,
+        IsHasOrder: false,
+        &quot;addHomeOption.show&quot;: true
+      })
+      this.handlePopupScheme();
+    }
+    // console.log(&#039;isLogin ==== 登录  ==== &#039;,isLogin)
+    //TODO
+    // this.data.isCallBack = true;
+    // let messageCenter = MessageCenter.getInstance();
+    // messageCenter.removeObserverActionCallback(this.data.uid);
+    // 存在未支付的订单
+    // let unOverOrders = OrderUtil.getUnfinisedOrderIdS();
+    // let unPayOrderIds = OrderUtil.getUnPayOrderIds();
+    // console.log(&#039;unOverOrders ====== &#039;,unOverOrders,&#039;*******************&#039;,&#039;unPayOrderIds ======== &#039;,unPayOrderIds)
+
+    // TaxiLog(&quot;statemachine check order result is unOverOrderIDS &quot; + unPayOrderIds.length + &quot; unOverOrderIDS  &quot; + unOverOrders.length);
+    // this.showUnPayhOrder(unPayOrderIds).then(res =&gt; {
+    //   //有未支付的是1
+    //   //有未结束的是0
+    //   if (res == 0) {
+    //     this.data.hasNotPayed = true
+    //     this.requestCouponsDetauls();
+    //     if (this.data.hasNotPayed) {
+    //       this.HandleScheme();
+    //     }
+    //   }
+    // });
+    // this.showUnFinishOrder(unOverOrders).then(res =&gt; {
+    //   //有未支付的是0
+    //   //有未结束的是1
+    //   if (res != 1) {
+    //     this.requestCouponsList();// 请求优惠券
+    //     if (this.data.hasNotPayed) {
+    //       this.HandleScheme();
+    //     }
+    //   }
+    // });
+
+
+    //TODO
+    //启动长连接
+    OrderNetImplement.getInstance().closeWebsocket();
+    // MessageCenter.getInstance().checkStartOrStopWebSocket();
+
+  },
+  onCheckOrder() {
+    let unPayOrderIds = OrderUtil.getProbablyUnPayOrderIds();
+
+    // 未支付订单处理
+    this.checkUnPayOrder(unPayOrderIds);
+    this.setData({
+      popupShow: true
+    })
+  },
+
+  // 检查未完成订单
+  checkUnPayOrder(unPayOrderIds) {
+    let self = this;
+    let array = [];
+      for (let i in unPayOrderIds) {
+        array.push(this.fetchBill(unPayOrderIds[i]))
+      }
+      let p = Promise.all(array);
+      p.then((val =&gt; {
+        let newIdArray = OrderUtil.getUnPayOrderIds();
+        let isReqCoupon = true;
+        let orderIsFinish = true;
+        if (newIdArray &amp;&amp; newIdArray.length &gt; 0) {
+          orderIsFinish = false;
+          self.showUnPayhOrder(newIdArray);
+        }
+        //行程中订单处理
+        let unFinishIds = OrderUtil.getUnfinisedOrderIdS();
+        let unFinishId = null;
+        if (unFinishIds &amp;&amp; unFinishIds.length &gt; 0) {
+          orderIsFinish = false;
+          isReqCoupon = false;
+          unFinishId = unFinishIds[0];
+          this.showUnFinishOrder(unFinishId, unFinishIds.length);
+        }
+        if(isReqCoupon){
+          this.setData({
+            IsHasOrder: false,
+            isReqCoupon: isReqCoupon
+          })
+          this.data.hasNotPayed = true;
+          if (this.data.hasNotPayed &amp;&amp; orderIsFinish) {
+            this.handlePopupScheme();
+          }
+          // console.log(&quot;this.ctx:&quot; + JSON.stringify(this.ctx));
+          // this.ctx &amp;&amp; this.ctx.requestCouponsList();
+        }
+      }));
+  },
+
+  fetchBill(amapOrderId) {
+    // todo
+    return new Promise((resolve, reject) =&gt; {
+      DataHelper.getInstance().fetchBill(amapOrderId, (res) =&gt; {
+        resolve();
+      })
+    })
+  },
+
+  // DataHelper.getInstance().fetchBill(amapOrderId, (res) =&gt; {
+  //     let showStatus = res.orderDetail.bill.showStatus || 0;
+  //     let payType = res.orderDetail.bill.payType || 0;
+  //     // console.log(&#039;接口数据 =====  #######&#039;, showStatus)
+  //     if ((showStatus == 1 || showStatus == 2) &amp;&amp; payType != 6) {
+  //       self.showUnPayhOrder(unPayOrderIds).then(res =&gt; {
+  //         this.data.hasNotPayed = true
+  //         // this.requestCouponsDetauls();
+  //         if (this.data.hasNotPayed) {
+  //         this.handlePopupScheme();
+
+  //         }
+  //       });
+  //     } else {
+  //       //TODO
+  //     }
+  //   })
+
+  //处理未支付
+  showUnPayhOrder(val) {
+    //存在未完成的订单 即形成中的订单
+    let length = getApp().router.getCurrentPages().length;
+    let topPage = getApp().router.getCurrentPages()[length - 1];
+    if (topPage != this) {
+      // TaxiLog(&#039;不在当前页面&#039;);
+      return
+    }
+    let amapOrderId = &#039;&#039;;
+    let title, text, confirmButtonText;
+    if (val &amp;&amp; val.length &gt; 0) {
+      if (val.length == 1) {
+        amapOrderId = val[0];
+        title = &#039;未支付订单&#039;;
+        text = &#039;您尚有未支付订单，请完成支付&#039;;
+        confirmButtonText = &#039;去支付&#039;;
+      } else if (val.length &gt; 1) {
+        title = &#039;进行中订单&#039;;
+        text = &#039;您有多个行程，请前往查看&#039;;
+        confirmButtonText = &#039;去查看&#039;;
+      }
+      if (!getApp().globalData.isConfirmPay) {
+        getApp().globalData.isConfirmPay = true;
+        this.setData({
+          showDetails: false
+        })
+        my.confirm({
+          title: title,
+          content: text,
+          confirmButtonText: confirmButtonText,
+          cancelButtonText: &#039;知道了&#039;,
+          success: (result) =&gt; {
+            if (result.confirm) {
+              if (val.length &gt; 1) {
+                getApp().router.navigateTo({
+                  url: &quot;/page/my-travel/my-travel?source=travel&quot;
+                });
+              } else {
+                getApp().router.navigateTo({
+                  url: &quot;/page/taxi-over-payment/taxi-over-payment?amapOrderId=&quot; + amapOrderId + &quot;&amp;from=mapIndex&quot;
+                });
+              }
+
+            }
+          },
+          complete: () =&gt; {
+            getApp().globalData.isConfirmPay = false;
+          }
+        });
+      } else {
+      }
+    } else {
+    }
+
+  },
+
+  //处理未完成
+  showUnFinishOrder(amapOrderId, length) {
+    // console.log(&#039;unOverOrders=====&#039;,unOverOrders)
+    let travelingMsg = &#039;当前您有正在进行的行程&#039;;
+    if (length &amp;&amp; length == 1) {
+      travelingMsg = &quot;您有一个正在进行的行程&quot;;
+    }else{
+      that.ctx &amp;&amp; that.ctx.requestCouponsList();// 请求优惠券
+    }
+    if (amapOrderId) {
+      // console.log(&#039;行程中弹窗=========&#039;)
+      this.setData({
+        IsHasOrder: true,
+        travelingMsg: travelingMsg,
+        amapOrderId: amapOrderId,
+        &#039;addHomeOption.show&#039;: true,
+      })
+      this.mapView.resetMap();
+    }
+  },
+
+  moveToLocation() {
+    // this.getAllForLocationAddress();
+    let that = this;
+    if (this.data.locationTimer) {
+      clearTimeout(this.data.locationTimer);
+    }
+    setTimeout(() =&gt; {
+      //获取当前位置 先拿到经纬度 然后逆地理拿到地点名称
+      if (getApp().globalData.cityAdcode &amp;&amp; getApp().globalData.cityAdcode !== &#039;&#039;) {
+        //说明globalData中有cityAdcode和经纬度
+        getApp().globalData.commomConfig.allowLocation = true;//用户允许授权
+        that.setData({
+          noLocationPermission:&#039;&#039;
+        })
+        // 请求优惠券tips
+        that.isRenderFirst = false;
+        that.ctx &amp;&amp; that.ctx.requestCouponsList()
+        that.mapView.moveToLocation();
+        that.setData({ equityGuide: true })
+      } else {
+        my.getLocation({
+          success(res) {
+            getApp().globalData.commomConfig.allowLocation = true;//用户允许授权
+            that.setData({
+              noLocationPermission:&#039;&#039;
+            })
+            that.isRenderFirst = false;
+            that.mapView.moveToLocation();
+            that.ctx &amp;&amp; that.ctx.requestCouponsList();
+            that.setData({ equityGuide: true })
+          },
+          fail(res) {
+            if (res &amp;&amp; res.error == 11) {
+              try {
+                my.showAuthGuide({
+                  authType: &quot;LBS&quot;
+                })
+              } catch (e) {
+                TaxiLog(e);
+              }
+            }
+          }
+        })
+      }
+
+    }, 200)
+  },
+  // 登录成功回调方法，跳转至用户中心
+  loginSuccessFunc(res) {
+    this.needLogin = true;
+    // TaxiLog(&#039;33333----login success +++++++++&#039;);
+    let that = this;
+    setTimeout(() =&gt; {
+      that.goToUserCenter();
+    }, 800);
+  },
+  // 登录失败回调方法
+  loginFailFunc(res) {
+    getApp().globalData.controlClick = true;
+    // TaxiLog(&#039;login failed +++++++++&#039;);
+    // TODO
+  },
+
+  // 跳转用户中心
+  goToUserCenter() {
+    // TaxiLog(&#039;跳转&#039;)
+    if (getApp().isIOS()) {
+      getApp().globalData.isConfirmPay = false;
+    }
+    getApp().router.navigateTo({
+      url: &#039;/page/user-center/user-center&#039;,
+      complete() {
+        setTimeout(() =&gt; {
+          getApp().globalData.controlClick = true;
+        }, 2000);
+      }
+    });
+  },
+  // 跳转至个人中心
+  moveToPersonMsg() {
+    // 判断是否有网络
+
+    my.reportAnalytics(&#039;click_usercenter&#039;, {
+    });
+
+    // let userCenterBtnEnable = this.data.userCenterBtnEnable;
+    // 按钮是否可以点击
+    if (this.data.userCenterBtnEnable) {
+      // 按钮可以点击的话，置为不可点，延迟 1s 后再置为可点
+      // 保证不会出现点击多次进入的 user-center 页面的情况
+      this.data.userCenterBtnEnable = false;
+      setTimeout(() =&gt; {
+        this.data.userCenterBtnEnable = true;
+      }, 1000)
+      if (getApp().globalData.controlClick) {
+        getApp().globalData.controlClick = false;
+        //1.判断是否登录 如果已经登录 跳转用户中心 否则跳转登录
+        let isLogin = LoginBindHelper.isLogin();
+        if (isLogin) {
+          // 已经登录，跳转个人中心页面
+          // TaxiLog(&#039;00000 --- map index ++++++ is login&#039;);
+          this.goToUserCenter();
+        } else {
+          LoginBindHelper.login({
+            onSuccess: this.loginSuccessFunc, // 登录成功回调
+            onFail: this.loginFailFunc,       // 登录失败回调
+            ctx: this                         // this
+          });
+        }
+      }
+    }
+  },
+  // 跳转安全助手
+  moveToSafeHelper() {
+    getApp().router.navigateTo({
+      url: &#039;/page/safe-helper/safe-helper&#039;
+    })
+  },
+  onAddHomeCallback() {
+    this.setData({
+      &#039;addHomeOption.show&#039;: false
+    })
+  },
+  //分享信息设置
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+onGetIndexCouponRequest(res) { //优惠券列表
+    let setobj = {};
+    if (res) {
+      let coupon_list = res.award_list;//将优惠券按金额从大到小排序
+      let allCoupon = res.award_count;
+      let title = res.title;
+      setobj[&quot;indexCouponList.couponList&quot;] = coupon_list
+      setobj[&quot;indexCouponList.allCoupon&quot;] = allCoupon;
+      setobj[&quot;indexCouponList.title&quot;] = title;
+      setobj[&#039;isShowCouponList&#039;] = true;
+    }
+    this.setData(setobj);
+  }
+})
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/schema/indexScheme.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/schema/indexScheme.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">58.13</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">399</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">65.68</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.02</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import deepPath from &#039;../lib/deepPath.js&#039;
+import LoginBindHelper from &#039;../login/LoginBindHelper.js&#039;
+let schemeJumpObject = {};
+let schemeJumpParam = {};
+export default class IndexScheme {
+    /**
+    判断是否有scheme，并且判断是哪种类型的scheme，区分是支付宝端内的scheme还是服务提醒和生活号的
+     @param {options}   进入时传入的配置信息 path,query,...
+     */
+    static hasScheme(options) {
+        let schemeOptions = {
+            optionsInfo: null,
+            judgeTypeOfScheme: &#039;&#039;
+        };
+        if (!options.query) {
+            //说明没有query信息
+            return false
+        }
+        if (options.query.queryString) {
+            //说明是生活号服务提醒的scheme
+            schemeOptions.optionsInfo = options.query.queryString;
+            schemeOptions.judgeTypeOfScheme = &#039;queryString&#039;;
+            return schemeOptions;
+
+        } else if (options.query.schemeQuery) {
+            //说明是支付宝端内场景化打车
+            schemeOptions.optionsInfo = options.query.schemeQuery;
+            schemeOptions.judgeTypeOfScheme = &#039;schemeQuery&#039;;
+            return schemeOptions;
+        }else if(options.query.channel) {
+            schemeOptions.optionsInfo = options.query.channel;
+            schemeOptions.judgeTypeOfScheme = &#039;channelQuery&#039;
+            return schemeOptions
+        }
+    }
+
+    /**
+    处理相应的scheme信息
+     @param {options}   进入时传入的配置信息 path,query,...
+             ctx  传入的this对象   
+     */
+    static handleScheme(options, ctx) {
+        if (!this.hasScheme(options)) {
+            //没有scheme
+            return;
+        } else {
+            let schemeOptions = this.hasScheme(options);
+            let schemeInfo = schemeOptions.optionsInfo;
+            let schemeType = schemeOptions.judgeTypeOfScheme;
+            let schemeDecode = new Buffer(schemeInfo, &#039;base64&#039;);
+            let schemeString = schemeDecode.toString();
+            switch (schemeType) {
+                case &#039;queryString&#039;:
+                    ctx.globalData.appOnShowOption.query.queryString = schemeString
+                    break;
+                case &#039;schemeQuery&#039;:
+                    ctx.globalData.appOnShowOption.query.schemeQuery = schemeString
+                    ctx.globalData.hasSchemeInfo = true
+                    let parseSchema=JSON.parse(schemeString);
+                    if(parseSchema.channel) {
+                        ctx.globalData.schemaChannel=parseSchema.channel
+                    }
+                    break;
+                case &#039;channelQuery&#039;:
+                    ctx.globalData.schemaChannel=schemeInfo
+                    my.reportAnalytics(&#039;schema_jump&#039;, {
+                        channel: schemeInfo,
+                        page:&#039;map-index&#039;
+                    });
+                    break;
+                default:
+                    ctx.globalData.appOnShowOption.query = null;
+                    break;
+            }
+
+        }
+
+    }
+
+    /**
+    处理queryString类型的scheme信息
+     @param  currentPath   进入时传入的配置信息 path,query,...   
+             ctx           传入的指向
+    */
+    static parseScheme(currentPath, ctx) {
+        let schemeConfig = ctx.globalData.appOnShowOption || {};
+        let { path, query } = schemeConfig;
+        if (path === currentPath &amp;&amp; query &amp;&amp; query.queryString !== undefined) {
+            let currentQuery = deepPath(ctx.globalData.appOnShowOption, [&#039;query&#039;, &#039;queryString&#039;]); //&quot;amapOrderId=12345&amp;page=page/going/going&quot;
+            let jumpAddressArr = currentQuery.split(&quot;&amp;&quot;);
+            let paramObj={}
+            for(var i=0;i&lt;jumpAddressArr.length;i++) {
+                var c=jumpAddressArr[i].split(&quot;=&quot;)
+                paramObj[c[0]]=c[1]
+            }
+            let amapOrderId=paramObj[&#039;amapOrderId&#039;]||&#039;&#039;;
+            let page=paramObj[&#039;page&#039;]||&#039;&#039;;
+            query = {
+                amapOrderId:amapOrderId,
+                page:page
+            }
+            ctx.globalData.appOnShowOption = null;
+            return query;
+        } else if (path === currentPath &amp;&amp; query) {
+            ctx.globalData.appOnShowOption = null;
+            return query;
+        }
+        return null;
+    }
+
+    /**
+    处理queryString类型的scheme信息的跳转
+     @param  ctx  传入的this对象   
+     */
+    static schemeJumpToPage(ctx) {
+        
+        let currentPath = &#039;page/map-index/map-index&#039;;
+        let jumpPageUrl = IndexScheme.parseScheme(currentPath,getApp());
+        if (jumpPageUrl) {
+            let jumpUrl = jumpPageUrl[&#039;page&#039;] || &quot;&quot;
+            setTimeout(()=&gt;{
+                ctx.setData({
+                    schemeLoading: false
+                })
+                IndexScheme.goToPage({
+                    mode:&#039;navigateTo&#039;,
+                    param:{&quot;amapOrderId&quot;:jumpPageUrl[&#039;amapOrderId&#039;],&quot;from&quot;:&quot;scheme&quot;},
+                    page:jumpUrl,
+                    type:1
+                })
+            },500)
+           
+        } else {
+            //防止push进入的时候，连续两次show替换了scheme信息，取不到jumpPageUrl
+            if (ctx.data.schemeLoading) {
+                ctx.setData({
+                    schemeLoading: false
+                })
+            }
+        }
+    }
+    /**
+     拼接url
+     * @param {Object} config
+     * @param {String} config.page    必填，地址，可以是映射也可以是完整的地址
+     * @param {Object}  config.param  非必填，跳转参数以对象的方式  
+     * @param {Number} config.type  区分是否是完整还是映射,完整地址可以不传，完整地址的type为0，映射必传，type为1    
+     */
+    static spliceUrl (config={}) {
+        let completeUrl=&#039;&#039;; //最后完整的url
+        let paramArr=[]
+        let paramStr=&#039;&#039;;
+        if(!config.page) {
+            return false;
+        }
+        if(config.param) {
+            Object.keys(config.param).forEach((key)=&gt;{
+                let keyStr=key+&#039;=&#039;+config.param[key]
+                paramArr.push(keyStr);
+            })
+        }
+        paramStr=paramArr.join(&#039;&amp;&#039;);
+        if(config.type===1) {
+            //完整地址
+            switch (config.page) {
+                case &#039;going&#039;:
+                config.page=&#039;/page/going/going&#039;;
+                break;
+                case &#039;payment&#039;:
+                config.page=&#039;/page/taxi-over-payment/taxi-over-payment&#039;;
+                break;
+                case &#039;index&#039;:
+                config.page=&#039;/page/map-index/map-index&#039;
+                break;
+                case &#039;user-center&#039;:
+                config.page=&#039;/page/user-center/user-center&#039;;
+                break;
+                case &#039;search&#039;:
+                config.page=&#039;/page/search/search&#039;;
+                break;
+                case &#039;user-feedback&#039;:
+                config.page=&#039;/page/user-feedback/index/index&#039;
+                break;
+                case &#039;invoice&#039;:
+                config.page=&#039;/page/invoice/invoice-select-type/invoice-select-type&#039;;
+                break;
+                case &#039;coupons&#039;:
+                config.page=&#039;/page/coupons/coupons&#039;;
+                break;
+                case &#039;travel&#039;:
+                config.page=&#039;/page/my-travel/my-travel&#039;;
+                break;
+                default:
+                config.page=&#039;/page/map-index/map-index&#039;
+                break;
+            }
+        }
+        completeUrl=config.page+&#039;?&#039;+paramStr;
+        return completeUrl;
+    }
+    /**
+    跳转到指定的页面
+     * @param {Object} config  
+     * @param {String} config.mode    方式：navigateTo，redirectTo ，reLaunch。默认方式是navigateTo
+     * @param {Object} config.param  跳转参数以对象的方式  
+     * @param {String} config.page  地址，可以是映射也可以是完整的地址 
+     * @param {Number} config.type  区分是否是完整还是映射,完整地址可以不传，完整地址的type为0，映射必传，type为1    
+     IndexScheme.gotoPage({
+        mode:String,
+        param:Object,
+        page:String,
+        type:Number
+     })  
+     */
+    static goToPage (config={}) {
+        let spliceUrlObj={
+            page:config.page,
+            param:config.param||{},
+            type:config.type || 0
+        }
+        let pageUrl=IndexScheme.spliceUrl(spliceUrlObj);
+        if(!pageUrl) {
+            return false;
+        }
+        if(!config.type) {
+            spliceUrlObj.type=0
+            //说明完整地址
+            if(!config.mode) {
+                //默认跳转方式
+                my.redirectTo({
+                   url:pageUrl
+                });
+            }else {
+                IndexScheme.jumpType(config.mode,pageUrl)
+            }
+        }else {
+            IndexScheme.jumpType(config.mode,pageUrl)
+        }
+    }
+    static jumpType(mode,pageUrl) {
+        switch (mode) {
+            case &#039;navigateTo&#039;:
+            my.navigateTo({
+                url:pageUrl
+            })
+            break;
+            case &#039;reLaunch&#039;:
+            my.reLaunch({
+                url:pageUrl
+            })
+            break;
+            case &#039;redirectTo&#039;:
+            my.redirectTo({
+                url:pageUrl
+            })
+            break;
+            default:
+            my.redirectTo({
+                url:pageUrl
+            })
+            break;
+        }
+    }
+
+    /**
+    处理场景化打车类型的scheme信息的展示
+     @param  
+     */
+    static handleAlipayScheme (options) {
+        return new Promise((resolve,reject)=&gt;{
+            let schemeAlipay = IndexScheme.hasScheme(options);
+            let alipayObject={
+                type:null,
+                content:null
+            }
+            if(!schemeAlipay) {
+                return false;
+            }
+            let schemeAlipayInfo=schemeAlipay.optionsInfo || &#039;&#039;;
+            let schemeAlipayType=schemeAlipay.judgeTypeOfScheme || &#039;&#039;;
+            let parseSchemeInfo=JSON.parse(schemeAlipayInfo);
+            if(schemeAlipayType===&#039;schemeQuery&#039;&amp;&amp;!parseSchemeInfo.page) {
+                my.reportAnalytics(&#039;schema_jump&#039;, {
+                  channel: parseSchemeInfo.channel,
+                  page:&#039;map-index&#039;
+                });
+                let endPoint=parseSchemeInfo.end||{};
+                alipayObject.content=endPoint;
+                if(endPoint.name&amp;&amp;endPoint.name!==&#039;&#039;&amp;&amp;endPoint.lat&amp;&amp;endPoint.lon&amp;&amp;endPoint.lat!==&#039;&#039;&amp;&amp;endPoint.lon!==&#039;&#039;) {
+                    //说明经纬度和地址都齐全
+                    alipayObject.type = 1
+                }else if(endPoint.lat&amp;&amp;endPoint.lon&amp;&amp;endPoint.lat!==&#039;&#039;&amp;&amp;endPoint.lon!==&#039;&#039;) {
+                    //需要逆地理
+                    alipayObject.type = 2
+                }else {
+                    //终点取不到
+                    alipayObject.type = 3
+                }
+                resolve(alipayObject);
+            }else if(schemeAlipayType===&#039;schemeQuery&#039;&amp;&amp;parseSchemeInfo.page) {
+                alipayObject.type = 0;
+                alipayObject.content=parseSchemeInfo;
+                resolve(alipayObject)
+            }
+        })
+        
+        
+
+    }
+
+    /**
+    处理schemeQuery类型的跳转，alipayObject.type=0
+     @param  {obj}  {&quot;page&quot;:&quot;&quot;,&quot;amapOrderId&quot;:&quot;&quot;}
+     */
+     static alipaySchemeJump (obj) {
+         let paramObj={};
+         if(!obj.page) {
+             return;
+         }
+         paramObj.page=obj.page;
+         if(obj.page===&#039;user-feedback&#039;&amp;&amp;obj.amapOrderId) {
+             paramObj.amapOrderId=obj.amapOrderId
+         }else if(obj.page===&#039;search&#039;){
+             paramObj.jump=&#039;schemeStart&#039;;
+             if(obj.startPoint&amp;&amp;obj.startPoint.lon&amp;&amp;obj.startPoint.lat) {
+                 getApp().globalData.startEndObj.startPoint=obj.startPoint
+             }
+         }
+         else if(obj.page===&#039;travel&#039;) {
+             paramObj.source=&#039;travel&#039;
+         }
+         this.isNeedLogin(obj,paramObj)
+         
+         
+     }
+    /**
+    判断是否需要登录态，并且进行登录态获取处理
+     @param  page 跳转页面的标识
+     */
+     static isNeedLogin (obj,paramObj) {
+         return new Promise((resolve,reject)=&gt;{
+             schemeJumpObject = obj;
+             schemeJumpParam = paramObj;
+
+             my.reportAnalytics(&#039;schema_jump&#039;, {
+                  channel: obj.channel,
+                  page: obj.page
+             });
+             if(obj.page===&#039;search&#039;) {
+                 setTimeout(()=&gt;{
+                    this.goToPage({
+                        mode:&#039;navigateTo&#039;,
+                        param:schemeJumpParam,
+                        page:schemeJumpObject.page,
+                        type:1
+                    })
+                 },500)
+             }else {
+                let isLogin = LoginBindHelper.isLogin();
+                if (isLogin) {
+                    // 已经登录，跳转
+                    this.goToPage({
+                        mode:&#039;navigateTo&#039;,
+                        param:schemeJumpParam,
+                        page:schemeJumpObject.page,
+                        type:1
+                    })
+                } else {
+                    LoginBindHelper.login({
+                        onSuccess: this.loginSuccessFunc, // 登录成功回调
+                        onFail: this.loginFailFunc,       // 登录失败回调
+                        ctx: this                         // this
+                    });
+                }
+             }
+         })
+     }
+
+      // 登录成功回调方法，跳转
+    static loginSuccessFunc() {
+        setTimeout(() =&gt; {
+            this.goToPage({
+                mode:&#039;navigateTo&#039;,
+                param:schemeJumpParam,
+                page:schemeJumpParam.page,
+                type:1
+            })
+        }, 800);
+    }
+    // 登录失败回调方法
+    static loginFailFunc() {
+        getApp().globalData.controlClick = true;
+    }
+
+
+}
+export {
+    IndexScheme
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

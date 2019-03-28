@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/util/runCallChaining.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/util/runCallChaining.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">68.90</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">245</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">66.50</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.68</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/* option
+ *   model 调用模型
+ *     down 依次执行generator函数
+ * 使用前需要实例化
+ * 链式调用需要返回当前实例
+ * */
+
+class runCallChaining {
+  constructor(option) {
+    this.modelList = {
+      down: true,
+      jump: true,
+      checkout: true
+    };
+    this.model = &quot;down&quot;;
+    this.list = [];
+    this.cloneList = [];
+    this.prevValue = null;
+    this.count = 0;
+    this.i = 0;
+    this.generaList = null;
+    this.context = null;
+    if (typeof option !== &quot;undefined&quot;) {
+      this.init(option);
+    }
+  }
+
+  start(n, p) {
+    this.generaList = this[this.model](p);
+    this.next();
+    if (typeof n !== &quot;undefined&quot;) {
+      this.next(n);
+    }
+  }
+
+  init(option = {}) {
+    let { model, list, init, next, context } = option;
+    model = model || this.model;
+    model = model.toLowerCase();
+    this.model = model;
+    this.list = list || [];
+    this.context = context || null;
+    if (this.has(this.modelList, this.model)) {
+      this.start(next, init);
+    } else {
+      throw new Error(`输入的model不存在`);
+    }
+    return this;
+  }
+
+  push(n) {
+    //在当前函数执行完之后继续执行下一个
+    // if (typeof (n) === &#039;object&#039;) {
+    //   this.list.push(...Object.values(n))
+    // } else if (typeof (n) === &#039;function&#039;) {
+    //   this.list.push(n)
+    // } else {
+    //   throw new Error(`列表增加的参数有误`)
+    // }
+  }
+  *down(n) {
+    this.cloneList = Object.values(this.list);
+    for (let i = this.i; i &lt; this.cloneList.length; i++) {
+      this.i = i;
+      if (typeof this.cloneList[i] === &quot;function&quot;) {
+        let b = yield n;
+        b = typeof b !== &quot;undefined&quot; ? b : this.i;
+        if (
+          this.getDataType(b) === this.getType(&quot;object&quot;) ||
+          typeof this.context === &quot;object&quot; ||
+          typeof this.context === &quot;function&quot;
+        ) {
+          if (
+            this.getDataType(b.resetItem) === this.getType(&quot;number&quot;) &amp;&amp;
+            b.resetItem &lt; this.cloneList.length
+          ) {
+            i = b.resetItem;
+          }
+          if (
+            typeof this.context === &quot;object&quot; ||
+            typeof this.context === &quot;function&quot;
+          ) {
+            this.runContext(this.cloneList[i], this.context, [b]);
+            continue;
+          }
+
+          if (this.has(b, &quot;context&quot;)) {
+            this.runContext(this.cloneList[i], b.context, [b]);
+            continue;
+          }
+        }
+        this.cloneList[i](b, n);
+      }
+    }
+  }
+  jump(n) {}
+  has(n, k) {
+    let flag = {}.hasOwnProperty.call(n, k);
+    return flag;
+  }
+
+  next(n) {
+    if (this.model !== &quot;down&quot;) {
+      this.error(`${this.model}是一个不支持generator的model`);
+    }
+    this.prevValue = this.generaList.next(n);
+
+    return this;
+  }
+  all() {}
+  checkout(key, n) {
+    if (
+      this.getDataType(this.list) === this.getType(&quot;object&quot;) &amp;&amp;
+      this.has(this.list, key)
+    ) {
+      return this.list[key](n);
+    }
+    if (this.getDataType(this.list) === this.getType(&quot;array&quot;) &amp;&amp; isNaN(key)) {
+      if (typeof this.list[key] == &quot;function&quot;) {
+        return this.list[key](n);
+      } else {
+        return this.list[key];
+      }
+    }
+    return this;
+  }
+  changeModel(model) {
+    if (this.has(this.modelList, model)) {
+      this.model = model;
+    } else {
+      this.error(`${model}不是一个正确的model`);
+    }
+    return this;
+  }
+  canUseModel() {}
+  getModel() {
+    return this.model;
+  }
+  getModelList() {
+    return Object.values(this.modelList);
+  }
+  setContext(key, context) {
+    if (this.has(this.list, key)) {
+      return this.list[key].bind(context);
+    } else {
+      this.error(`${key}在列表中不存在,上下文设置失败`);
+    }
+  }
+  runContext(key, context, option) {
+    option = option || [];
+    if (typeof key === &quot;function&quot;) {
+      return key.apply(context, option);
+    }
+    if (
+      this.getDataType(this.list) === this.getType(&quot;array&quot;) &amp;&amp;
+      isNaN(key) &amp;&amp;
+      !this.has(this, key)
+    ) {
+      this.error(`${key}不是一个数字`);
+    }
+    if (this.has(this.list, key)) {
+      return this.list[key].apply(context, option);
+    } else {
+      this.error(`${key}在列表中不存在,上下文设置失败`);
+    }
+  }
+  runContext(key, v) {
+    if (this[key]) {
+      return this[key](v);
+    }
+    return this;
+  }
+  isObject(list) {
+    return typeof list === &quot;object&quot;;
+  }
+  getDataType(data) {
+    return Object.prototype.toString.call(data);
+  }
+  getType(type) {
+    type = type.toLowerCase();
+    switch (type) {
+      case &quot;object&quot;:
+        return &quot;[object Object]&quot;;
+      case &quot;array&quot;:
+        return &quot;[object Array]&quot;;
+      case &quot;number&quot;:
+        return &quot;[object Number]&quot;;
+      case &quot;bool&quot;:
+        return &quot;[object Boolean]&quot;;
+      case &quot;undefined&quot;:
+        return &quot;[object Undefined]&quot;;
+      case &quot;null&quot;:
+        return &quot;[object Null]&quot;;
+      case &quot;string&quot;:
+        return &quot;[object String]&quot;;
+      default:
+        this.error(`${type}不是正确的数据类型`);
+        break;
+    }
+  }
+  error(str) {
+    throw new Error(str);
+  }
+  static error(str) {
+    throw new Error(str);
+  }
+}
+export default runCallChaining;
+// var mod = { model: &quot;yyyyyyy&quot; };
+// let run = new runCallChaining();
+// run.init({
+//   model: `down`
+//   // condition: &quot;&quot;,
+//   // // next: 567,
+//   // init: 9,
+//   // context: mod,
+//   // list: [
+//   //   function(n, b) {
+//   //     console.log(arguments);
+//   //     return run;
+//   //   },
+//   //   function(n, b) {
+//   //     console.log(arguments);
+//   //     return run;
+//   //   }
+//   // ]
+//   // list:{
+//   //   n:function(){
+
+//   //   }
+//   // }
+// });
+// run
+//   .next()
+//   .next({ resetItem: 0 })
+//   .next()
+//   .checkout(0, 30)
+//   .changeModel(&quot;checkout&quot;);
+
+// run.getType(&quot;&quot;);
+// runCallChaining.error(&quot;&quot;);
+// run.setContext(&quot;0&quot;, mod)(99);
+// run.runContext(&quot;error&quot;, [1, 2, 3, 4]);
+// .runContext(&quot;getModel&quot;, run, [1, 2, 3, 4]);
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

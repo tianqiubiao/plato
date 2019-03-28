@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/login/accredit/login-accredit.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/login/accredit/login-accredit.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">51.15</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">292</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">56.08</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.38</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import LoginBindHelper from &#039;../../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../../common/TaxiLog.js&#039;;
+Page({
+  data: {
+    bindTitle: &#039;绑定当前支付宝账号&#039;,
+    phoneNumber: &#039;&#039;,
+    phoneNumberStr: &#039;&#039;,
+    bindDeclareFront: &#039;你的手机号&#039;,
+    bindDeclareLast: &#039;已注册过高德地图，继续绑定，将会使用当前支付宝账号与你手机号注册的高德帐号进行绑定&#039;,
+    bindAccreditName: &#039;确认，继续绑定&#039;,
+    notBindAccreditName: &#039;暂不绑定&#039;,
+    selectType:true,
+    oldPhoneNumber: &#039;&#039;,
+    forceToken: &#039;&#039;,
+    type: &#039;&#039;,
+    code: &#039;&#039;,
+    notBindStyle: &#039;&#039;,
+    notBindBtnEnable: true,
+    loginUseMap:&#039;&#039;,
+    loginUsePay:&#039;&#039;,
+    coverTextFront: &#039;需要将&#039;,
+    coverTextLast: &#039;注册过的高德帐号作为你使用打车服务的帐号，当前支付宝绑定过的高德帐号将会被解绑；你可以在高德地图 APP 内使用手机号登录后，重新与当前支付宝进行绑定。&#039;
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onLoad(query) {
+    // 获取 type，根据 type 判断是 login 绑定手机号进来的还是个人中心替换手机号进来的
+    if(query.type === &#039;login&#039; &amp;&amp; query.phoneNumber &amp;&amp; query.forceToken &amp;&amp; query.code) {
+      this.setData({
+        type: query.type,
+        phoneNumber: query.phoneNumber,
+        forceToken: query.forceToken,
+        code: query.code,
+        phoneNumberStr: query.phoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;)
+      })
+      // 设置标题
+      my.setNavigationBar({
+        title: &#039;登录&#039;
+      })
+      if (this.data.code == 10005) {
+        this.setData({
+          bindDeclareFront: &#039;使用高德打车服务需将手机号与高德地图的打车服务进行绑定。 你的手机号&#039;,
+          bindDeclareLast: &#039;已注册过高德地图，继续使用将会解除该手机号和高德地图的绑定关系，并与小程序内的高德打车服务进行绑定&#039;
+        })
+      }
+    } else if (query.type === &#039;bindphone&#039; &amp;&amp; query.newPhoneNumber &amp;&amp; query.oldPhoneNumber) {
+      this.setData({
+        type: query.type,
+        oldPhoneNumber: query.oldPhoneNumber,
+        newPhoneNumber: query.newPhoneNumber,
+        phoneNumberStr: query.newPhoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;),
+        bindTitle: &#039;确认绑定新的手机号&#039;,
+        bindAccreditName: &#039;确认，绑定新的手机号&#039;,
+        bindDeclareFront: &#039;你的手机号&#039;,
+        bindDeclareLast: &#039;已注册过高德地图，继续绑定，将会解除该手机号与高德帐号的绑定关系，并与小程序进行绑定&#039;
+      })
+      // 设置标题
+      my.setNavigationBar({
+        title: &#039;更换手机号码&#039;
+      })
+    } else if (query.type === &#039;selectPhone&#039; &amp;&amp; query.phoneNumber) {
+      let t=Number(query.queryType)
+      let bindDeclareFront = &#039;你的支付宝已绑定过手机号\n是否用&#039;,
+        bindDeclareLast = &#039;作为司机联系你的手机号&#039;;
+       let  bindTitle= &#039;选择打车使用的手机号&#039;;
+       let  bindAccreditName= &#039;是的，使用这个手机号&#039;;
+       let  notBindAccreditName= &#039;使用其他手机号码&#039;;
+       this.data.selectType=false;
+      if(t === 2){  
+        this.data.selectType =true ;
+         bindTitle= &#039;绑定当前支付宝账号&#039;;
+        bindAccreditName=&#039;确认，继续绑定&#039;;
+        notBindAccreditName=&#039;暂不绑定&#039;;
+        bindDeclareFront = &#039;你的手机号&#039;;
+        bindDeclareLast = &#039;已注册过高德地图，继续绑定，将会使用当前支付宝账号与你手机号注册的高德帐号进行绑定&#039;;
+      }else if(t === 3){
+        this.data.selectType =true ;
+        bindTitle= &#039;绑定当前支付宝账号&#039;;
+        bindAccreditName=&#039;确认，继续绑定&#039;;
+        notBindAccreditName=&#039;暂不绑定&#039;;
+        bindDeclareFront = this.data.coverTextFront;
+        bindDeclareLast = this.data.coverTextLast;
+      }
+      this.data.force=query.force;
+      this.setData({
+        type: query.type,
+        phoneNumber: query.phoneNumber,
+        forceToken: query.forceToken,
+        phoneNumberStr: query.phoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;),
+        bindTitle,
+        bindAccreditName,
+        notBindAccreditName,
+        bindDeclareFront ,
+        bindDeclareLast ,
+        notBindStyle: &#039;width: 350rpx&#039;,
+        loginUseMap:&#039;loginUseMap&#039;,
+        loginUsePay:&#039;loginUsePay&#039;
+      })
+    }
+    // TaxiLog(JSON.stringify(query));
+  },
+  onUnload(){
+
+  },
+  /** 
+    点击确认绑定
+  */
+  bindAlipayAccredit() {
+    // 根据 type 来选择调用 login 接口还是替换手机号接口
+    // 确认绑定当前支付宝
+    if (this.data.type === &#039;login&#039;) {
+      let phoneNumber = this.data.phoneNumber || &#039;&#039;;
+      let forceToken = this.data.forceToken || &#039;&#039;;
+      // 调用登录接口来绑定当前的支付宝
+      my.showLoading({});
+      LoginBindHelper.mobileAuthLogin(phoneNumber, 1, forceToken, (res) =&gt; {
+        my.hideLoading();
+        if (res) {
+          let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+          if (resCode &gt; -1) {
+            if (resCode == 1) {
+
+            } else if (resCode == 10064) {
+              my.showToast({
+                content: &quot;请检查在高德地图内的未支付订单&quot;
+              });
+            } else {
+              // 其他业务 code
+            }
+          } else {
+            my.showToast({
+              content: &#039;未能将当前支付宝帐号和你的高德帐号绑定，你将无法使用打车服务&#039;
+            })
+          }
+        } else {
+          my.showToast({
+            content: &#039;未能将当前支付宝帐号和你的高德帐号绑定，你将无法使用打车服务&#039;
+          })
+        }
+      });
+    
+    // 确认更改手机号
+    } else if (this.data.type === &#039;bindphone&#039;) {
+      let oldPhoneNumber = this.data.oldPhoneNumber || &#039;&#039;;
+      let newPhoneNumber = this.data.newPhoneNumber || &#039;&#039;;
+      // TaxiLog(&#039;旧手机号：&#039; +  oldPhoneNumber +&#039;---------&#039;+ &#039;新手机号:&#039;+ newPhoneNumber)
+      // 调用更改手机号接口
+      my.showLoading({});
+      LoginBindHelper.changePhoneNumber(oldPhoneNumber, newPhoneNumber, 1, (res) =&gt; {
+        my.hideLoading();
+        if (res) {
+          // 如果更改成功
+          let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+          if (resCode &gt; -1) {
+            if (resCode == 1) {
+              my.navigateTo({
+                url: &#039;/page/account/change-phone/change-phone-success/change-phone-success?phoneNumber=&#039; + newPhoneNumber + &#039;&amp;sourceType=forceBind&#039;
+              });
+            } else if (resCode == 10064) {
+              // 绑定的手机有为完成订单
+              my.showToast({
+                content: &quot;请检查在高德地图内的未支付订单&quot;
+              });
+            } else {
+              // 更改手机号失败
+              my.showToast({
+                content: `更换手机号失败，打车服务将继续使用 ${this.data.oldPhoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;)} 号码`
+              })
+            }
+          } else {
+            // 更改手机号失败
+            my.showToast({
+              content: `更换手机号失败，打车服务将继续使用 ${this.data.oldPhoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;)} 号码`
+            })
+          }
+        } else {
+          // 更改手机号失败
+          my.showToast({
+            content: `更换手机号失败，打车服务将继续使用 ${this.data.oldPhoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;)} 号码`
+          })
+        }
+      });
+      // 确认使用当前（支付宝）手机号
+    } else if (this.data.type === &#039;selectPhone&#039;) {
+      // 调用登录接口来进行绑定
+      my.showLoading({});
+      LoginBindHelper.mobileAuthLogin(this.data.phoneNumber || &#039;&#039;, this.data.force || null, this.data.forceToken || null , (res) =&gt; {
+        my.hideLoading();
+        let message = res.message;
+        if (res) {
+          let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+          if (resCode &gt; -1) {
+            if (resCode == 1) {
+               my.showToast({
+                content: `登录成功`
+              })
+              return
+            } else if (resCode == 10064) {
+              message = &quot;请检查在高德地图内的未支付订单&quot;;
+            } else if ( resCode == 10043){             
+              this.data.force = 1;
+              this.data.forceToken = res.data.force_token;
+              this.data.selectType=true;
+              this.setData({
+                  bindTitle: &#039;绑定当前支付宝账号&#039;,
+                  bindAccreditName:&#039;确认，继续绑定&#039;,
+                  notBindAccreditName:&#039;暂不绑定&#039;,
+                  bindDeclareFront: this.data.coverTextFront,
+                  bindDeclareLast: this.data.coverTextLast,
+                  notBindStyle: &#039;width: 350rpx&#039;,
+                  loginUseMap:&#039;loginUseMap&#039;,
+                  loginUsePay:&#039;loginUsePay&#039;
+              })          
+              return  
+            } else if ( resCode == 10042){            
+              this.data.force = 1;
+              this.data.forceToken = res.data.force_token;
+              this.data.selectType=true;
+              this.setData({
+                  bindTitle: &#039;绑定当前支付宝账号&#039;,
+                  bindAccreditName:&#039;确认，继续绑定&#039;,
+                  notBindAccreditName:&#039;暂不绑定&#039;,
+                  bindDeclareFront: `你的手机号`,
+                  bindDeclareLast: `已注册过高德地图，继续绑定，将会使用当前支付宝账号与你手机号注册的高德帐号进行绑定`,
+                  notBindStyle: &#039;width: 350rpx&#039;,
+                  loginUseMap:&#039;loginUseMap&#039;,
+                  loginUsePay:&#039;loginUsePay&#039;
+              })
+              return            
+            } else if (resCode == 0){
+              message = &#039;请检查您的网络后再试&#039;;
+            } else if (resCode == 2 ) {
+               message = &#039;绑定失败&#039;;
+            } else {
+              // 其他业务 code
+              message = &#039;绑定失败&#039;;
+            }
+          } else {
+            message = &#039;手机号绑定失败，请重试&#039;;
+          }
+        } else {
+          message = &#039;手机号绑定失败，请重试&#039;;
+        }
+        my.showToast({
+          content: message
+        })
+      });
+    
+    }
+  },
+  /**
+    点击暂不绑定
+   */
+  notBindAlipayAccredit() {
+    if(this.data.type == &#039;login&#039;) {
+      my.showToast({
+        content: &#039;未能将当前支付宝账号和你的高德帐号绑定，你将无法使用打车服务&#039;
+      })
+    } else if (this.data.type == &#039;bindphone&#039;) {
+      if (!this.data.notBindBtnEnable) {
+        return;
+      }
+      this.setData({
+        notBindBtnEnable: false
+      });
+      my.showToast({
+        content: `更换手机号失败，打车服务将继续使用 ${this.data.oldPhoneNumber.replace(/(\d{3})(\d{6})(\d{2})/,&#039;$1******$3&#039;)} 号码`,
+        complete: () =&gt; {
+          this.setData({
+            notBindBtnEnable: true
+          });
+          my.navigateBack({
+            delta: 2
+          });
+        }
+      })
+    } else if (this.data.type == &#039;selectPhone&#039;) {
+      if(this.data.selectType){
+         my.showToast({
+           content: &#039;未能将当前支付宝账号和你的高德帐号绑定，你将无法使用打车服务&#039;
+        })
+         return
+      }
+      // 跳转到绑定手机号页面
+      my.redirectTo({
+        url: &#039;/page/login/bindphone/login-bindphone?phoneType=true&#039;
+      })
+    }
+  },
+  
+})</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

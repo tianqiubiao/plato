@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/login/LoginBindHelper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/login/LoginBindHelper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">65.26</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">742</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">79.69</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.23</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import CouponUtility from &#039;../../common/CouponUtility/CouponUtility.js&#039;;
+import   GetLocationHelper   from &#039;../../common/util/GetLocationHelper.js&#039;;
+import AlipayAuthRequest from &quot;../../common/network/requests/AlipayAuthRequest.js&quot;
+import ChangeMobileRequest from &quot;../../common/network/requests/ChangeMobileRequest.js&quot;;
+import VerifyCodeGetRequest from &quot;../../common/network/requests/VerifyCodeGetRequest.js&quot;;
+import VerifyCodeCheckRequest from &quot;../../common/network/requests/VerifyCodeCheckRequest.js&quot;;
+import MobileAuthRequest from &quot;../../common/network/requests/MobileAuthRequest.js&quot;;
+import CheckLoginRequest from &quot;../../common/network/requests/CheckLoginRequest.js&quot;;
+import DataHelper from &quot;../../service/datacenter/DataHelper.js&quot;;
+
+const LOGINSUCCEESSKEY = &quot;LOGINSUCCEESSKEY&quot;;
+const USERAUTHORIZEDKEY = &quot;USERAUTHORIZEDKEY&quot;;
+
+const GAPDE_USERINFO_KEY = &quot;GAODE_TAXI_ALIMINI_USERINFO&quot;;
+
+let originPageIndex = -1;
+let onSuccessCallBack = null;
+let onFailCallBack = null;
+
+let isAlipayAuthRequesting = false;
+let isMobileAuthRequesting = false;
+
+let tmpAlipayUserId = undefined;
+
+export default class LoginBindHelper {
+    constructor () {
+        this.userInfo = {
+            userAuthCode: null,
+            amapUserID : null,
+            mobile : null,
+            sessionID : null,
+            token : null,
+            alipayUserID : null,
+            alipayMobile : null,
+        };
+
+        this.tmpAuthInfo = null;
+        
+        this.synLocalStorage = false;
+    }
+
+    //单例
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new LoginBindHelper();
+        }
+        return this.instance;
+    }
+
+
+    /**设置用户的支付宝alipay_user_id，在以后需要用到*/
+    static setUserAuthCode(authCode) {
+
+        LoginBindHelper.getInstance().userInfo.userAuthCode = authCode;
+    }
+
+    /**设置用户的支付宝alipay_user_id，在以后需要用到*/
+    static setAlipayUserId(alipayUserId) {
+
+        if (alipayUserId) {
+            LoginBindHelper.getInstance().userInfo.alipayUserID = String(alipayUserId);
+        } else {
+            LoginBindHelper.getInstance().userInfo.alipayUserID = null;
+        }
+    }
+
+    /**设置用户高德账号id user_id，在以后需要用到*/
+    static setAmapUserId(user_id) {
+
+        if (user_id) {
+            LoginBindHelper.getInstance().userInfo.amapUserID = String(user_id);
+        } else {
+            LoginBindHelper.getInstance().userInfo.amapUserID = null;
+        }
+    }
+
+    /**设置用户的手机号mobile，在以后需要用到*/
+    static setUserMobile(mobile) {
+
+        if (mobile) {
+            LoginBindHelper.getInstance().userInfo.mobile = String(mobile);
+        } else {
+            LoginBindHelper.getInstance().userInfo.mobile = null;
+        }
+    }
+
+    /**设置用户的token，在以后需要用到*/
+    static setUserToken(access_token) {
+
+        LoginBindHelper.getInstance().userInfo.token = access_token;
+    }
+
+    /**设置用户的 sessionId */
+    static setUserSessionId(sessionId) {
+
+        if (sessionId) {
+            LoginBindHelper.getInstance().userInfo.sessionID = String(sessionId);
+        } else {
+            LoginBindHelper.getInstance().userInfo.sessionID = null;
+        }
+    }
+
+    /**设置支付宝返回的手机号，在以后需要用到*/
+    static setAlipayMobile(alipayMobile) {
+
+        LoginBindHelper.getInstance().userInfo.alipayMobile = alipayMobile;
+    }
+
+    /**持久化存储缓存 */
+    static saveLocalStorage() {
+
+        if (!LoginBindHelper.getInstance().userInfo.userAuthCode || LoginBindHelper.getInstance().userInfo.userAuthCode.length &lt;= 0) {
+            return;
+        }
+
+        // TaxiLog(&#039;saveLocalStorage ++++++ &#039; + GAPDE_USERINFO_KEY + &#039; : &#039; + JSON.stringify(LoginBindHelper.getInstance().userInfo));
+
+        my.setStorageSync({
+            key : GAPDE_USERINFO_KEY, // 缓存数据的key
+            data : LoginBindHelper.getInstance().userInfo // 要缓存的数据
+        });
+
+        LoginBindHelper.getInstance().synLocalStorage = true;
+    }
+
+    /**清除缓存 */
+    static clearLocalStorage() {
+        // 登录流程中，返回，不清楚缓存
+        if (isMobileAuthRequesting || isAlipayAuthRequesting) {
+            return;
+        }
+
+        LoginBindHelper.setUserAuthCode(null);
+        LoginBindHelper.setAlipayUserId(null);
+        LoginBindHelper.setAmapUserId(null);
+        LoginBindHelper.setUserMobile(null);
+        LoginBindHelper.setUserToken(null);
+        LoginBindHelper.setUserSessionId(null);
+        LoginBindHelper.setAlipayMobile(null);
+
+        //  console.log(&quot;call clear local   storage   &quot;)
+        my.removeStorageSync({
+            key: GAPDE_USERINFO_KEY,
+        });
+
+        LoginBindHelper.getInstance().synLocalStorage = true;
+    }
+
+    static  fetchLocalStorage() {
+
+        if (!LoginBindHelper.getInstance().synLocalStorage) {
+            let userInfoData = my.getStorageSync({ key: GAPDE_USERINFO_KEY });
+            if (userInfoData.data) {
+                // TaxiLog(&#039;fetchLocalStorage:&#039; + userInfoData.data);
+                LoginBindHelper.getInstance().userInfo = userInfoData.data;
+            }
+            LoginBindHelper.getInstance().synLocalStorage = true;
+        }
+        return LoginBindHelper.getInstance().userInfo;
+    }
+
+    /**获取用户的支付宝alipay_user_id，在以后需要用到*/
+    static getUserAlipayUserId() {
+
+        if (!LoginBindHelper.getInstance().userInfo.alipayUserID) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        return LoginBindHelper.getInstance().userInfo.alipayUserID || &#039;&#039;;
+
+    }
+
+    /**获取用户高德账号id user_id，在以后需要用到*/
+    static getAmapUserId() {
+
+        if (!LoginBindHelper.getInstance().userInfo.amapUserID) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        return LoginBindHelper.getInstance().userInfo.amapUserID || &#039;&#039;;
+    }
+
+    /**获取用户的手机号mobile，在以后需要用到*/
+    static getUserMobile() {
+
+        if (!LoginBindHelper.getInstance().userInfo.mobile) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        return LoginBindHelper.getInstance().userInfo.mobile || &#039;&#039;;
+    }
+
+    /*获取存储用户的token，在以后需要用到*/
+    static getUserToken() {
+
+        if (!LoginBindHelper.getInstance().userInfo.token) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        return LoginBindHelper.getInstance().userInfo.token || &#039;&#039;;
+    }
+
+    /**持久化储存用户的 sessionId */
+    static getUserSessionId() {
+
+        if (!LoginBindHelper.getInstance().userInfo.sessionID) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        let sessionID = LoginBindHelper.getInstance().userInfo.sessionID || &#039;&#039;;
+        // TaxiLog(&quot;LoginBindHelper +++++ getUserSessionId +++ &quot; + sessionID);
+        return LoginBindHelper.getInstance().userInfo.sessionID || &#039;&#039;;
+    }
+
+    /**获取支付宝返回的手机号 预填充 */
+    static getAlipayUserMobile () {
+
+        if (!LoginBindHelper.getInstance().userInfo.alipayMobile) {
+            LoginBindHelper.fetchLocalStorage();
+        }
+
+        return LoginBindHelper.getInstance().userInfo.alipayMobile || &#039;&#039;;
+    }
+
+    /**获取用户授权状态 */
+    static isUserAuthorized() {
+
+        if (LoginBindHelper.getInstance().userInfo &amp;&amp; LoginBindHelper.getInstance().userInfo.userAuthCode &amp;&amp; LoginBindHelper.getInstance().userInfo.userAuthCode.length &gt; 0) {
+            return true;
+        }
+
+        if (LoginBindHelper.isLogin()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** 根据缓存的 userId, alipay_userId, mobile 和 sessionId, 本地判断是否登录 */
+    static isLogin() {
+
+        let alipayUserId = LoginBindHelper.getUserAlipayUserId() || &#039;&#039;;
+        let amapUserId = LoginBindHelper.getAmapUserId() || &#039;&#039;;
+        let mobile = LoginBindHelper.getUserMobile() || &#039;&#039;;
+        let sessionId = LoginBindHelper.getUserSessionId() || &#039;&#039;;
+
+        // TaxiLog(&quot;alipay user id ++ &quot; + alipayUserId + &quot; amap user id ++ &quot; + amapUserId + &quot; mobile ++ &quot; + mobile + &quot; session id ++ &quot; + sessionId);
+
+        if (alipayUserId.length &gt; 0 &amp;&amp; amapUserId.length &gt; 0 &amp;&amp; mobile.length &gt; 0 &amp;&amp; sessionId.length &gt; 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /** 调用登录 
+        @param {options}    传入的元组
+                onSuccess   登录成功回调
+                onFail      登录失败回调
+                ctx         传入的 this 对象
+    */
+    static login(options) {
+
+        onSuccessCallBack = null;
+        onFailCallBack = null;
+
+        let {onSuccess, onFail, ctx} = options;
+    
+        if (onSuccess) {  // 记录登录成功需要的回调，登录成功调用
+             onSuccessCallBack = ctx ? onSuccess.bind(ctx) : onSuccess;
+         } else {
+             onSuccessCallBack = null;
+         }
+
+        if (onFail)  { // 记录登录失败的回调，登录失败调用
+            onFailCallBack = ctx ? onFail.bind(ctx) : onFail;
+        } else {
+            onFailCallBack = null;
+        }
+
+        originPageIndex = getCurrentPages().length;    // 记录登录时候当前页面栈的层级数，成功时候返回到这一层级
+        // 获取支付宝授权 auth_code
+        LoginBindHelper.getUserAuthCode();
+    }
+
+    /** 调用接口获取是否登录状态 */
+    
+    static checkLoginStatus(resFunc) {
+        let loginStatusRequest = new CheckLoginRequest();
+        loginStatusRequest.doRequest((res) =&gt; {
+            let resultCode = res.code || -1;
+            if (resultCode &gt;= 0) {
+                // 请求返回成功
+                if (resultCode == 14) {
+                    // 14代表未登录状态 需要清除本地缓存的 session id
+                    this.clearLocalStorage();
+                }
+            } else {
+                // 请求返回失败
+                // 同样清除本地缓存
+                this.clearLocalStorage();
+            }
+            resFunc(resultCode);
+        });
+    }
+
+    /**
+        针对不同的code，进入不同的跳转逻辑，目前code 为1的时候表示直接就登录成功，不用走下面的逻辑，其他的code需要跳转到输入手机号的验证页面
+        @param  {Datetime} code 服务返回的code。针对不同的code进行不同的业务逻辑的交互
+    */
+    static loginByCode(code,data) {
+        const pageUrl=this.getCurrentPageUrl();
+        if (code == 1) {
+            // 成功
+        } else if (code == 10003) {           
+            /*支付宝绑定过高德，高德没有绑手机号*/
+            my.navigateTo({
+                url: `/page/login/accredit/login-accredit?queryType=1&amp;phoneNumber=${data.alipay_mobile}&amp;type=selectPhone&amp;pageUrl=${pageUrl}`
+            });                      
+        } else if (code == 10030) {
+            /*支付宝没有与高德账号绑定，支付宝手机号绑定过*/ 
+            my.navigateTo({
+                 url: `/page/login/accredit/login-accredit?queryType=1&amp;phoneNumber=${data.alipay_mobile}&amp;type=selectPhone&amp;pageUrl=${pageUrl}`
+            });  
+        } else if (code == 10010) {
+            my.showToast({
+                content: &quot;帐号信息校验失败，请重新登录&quot;
+            });
+        }
+    }
+    /** 获取当前页的url*/
+    static getCurrentPageUrl() {
+        const pages = getCurrentPages()
+        const currentPage = pages[pages.length - 1]
+        if (currentPage &amp;&amp; currentPage.route) {
+            const url = `/${currentPage.route}`
+            return url
+        }   
+    }
+
+    /* 支付宝授权获取authCode */
+    static getUserAuthCode() {
+        /*调用authCode的方法，获取支付宝授权的authCode*/
+        my.getAuthCode({
+            // auth_user_amap : 用户主动授权 ; auth_life_msg : 生活号 ; auth_zhima : 芝麻信用
+            // scopes: [&#039;auth_user_amap&#039;, &#039;auth_life_msg&#039;, &#039;auth_zhima&#039;],
+            scopes: [&#039;auth_user_amap&#039;, &#039;auth_life_msg&#039;, &#039;auth_zhima&#039;],
+
+            success: (res) =&gt; {
+                if (res &amp;&amp; res.authCode) {
+                    // TaxiLog(&#039;get authcode ++++ &#039; + res.authCode)
+                    // 打点记录
+                    my.reportAnalytics(&#039;get_user_authcode&#039;, {
+                        GetUserAuthCodeResult: &#039;success&#039;
+                    });
+
+                    LoginBindHelper.setUserAuthCode(res.authCode);
+
+                    // 服务校验 authCode，获取用户信息
+                    this.getUserAuthInfo(res.authCode);
+                } else {
+                    // 打点记录
+                    my.reportAnalytics(&#039;get_user_authcode&#039;, {
+                        GetUserAuthCodeResult: &#039;fail&#039;
+                    });
+
+                    LoginBindHelper.clearLocalStorage();
+
+                    my.showToast({
+                        content: &quot;授权失败，请重试&quot;
+                    });
+                    my.hideLoading();
+                    // 登录失败回调
+                    this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+                }
+            },
+            fail: (res) =&gt; {
+                // TaxiLog(&#039;authCode Error ++++ &#039; + JSON.stringify(res));
+                // 打点记录
+                my.reportAnalytics(&#039;get_user_authcode&#039;, {
+                    GetUserAuthCodeResult: &#039;fail&#039;
+                });
+
+                LoginBindHelper.clearLocalStorage();
+
+                my.showToast({
+                  content: &quot;授权失败，请重试&quot;
+                });
+                my.hideLoading();
+                // 登录失败回调
+                this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+            },
+        });
+
+        return null;
+    }
+
+    /*传入手机号和获取验证码的场景类型的type 目前和后端约定的，目前这块和后端约定的type是3 (更换绑定手机号除外 ，是) 这块如果有问题可以和高岗沟通 */
+     /**
+        更换手机号的请求
+        @param  {String} phoneNumber 手机号
+        @param  {String} codeType 验证码对应的业务场景
+        @param  {Function} resFunc 请求结果回调函数
+    */
+    static getVerificationCode(phoneNumber, codeType, resFunc) {
+        /*发送获取验证码的网络请求*/
+        let verificationRequest = new VerifyCodeGetRequest();
+        verificationRequest.setParam({
+            /*获取验证码的相关参数*/
+            &#039;mobile&#039;: phoneNumber,
+            &#039;code_type&#039;: codeType
+        });
+        // TaxiLog(&#039;getVerificationCode +++++++++ &#039; + JSON.stringify(verificationRequest.param))
+        verificationRequest.doRequest((res) =&gt; {
+            resFunc(res);
+        });
+    }
+
+    /*传入手机号和获取验证码的场景类型的type 目前和后端约定的，目前这块和后端约定的type是3 (更换绑定手机号除外 ，是) 这块如果有问题可以和高岗沟通 */
+     /**
+        验证手机短信验证码
+        @param  {String} mobile 手机号
+        @param  {String} codeType 验证码对应的业务场景
+        @param  {String} code 短信验证码
+        @param  {Function} resFunc 请求结果回调函数
+    */
+    static checkVerificationCode(mobile, code_Type, code, resFunc) {
+        // TODO
+        // 校验手机收到的短线验证码
+        // TaxiLog(&#039;check code ++++++++++&#039;);
+
+        let codeCheckRequest = new VerifyCodeCheckRequest();
+        codeCheckRequest.setParam({
+            &#039;mobile&#039; : mobile,
+            &#039;code_type&#039; : code_Type,
+            &#039;code&#039; : code
+        });
+        codeCheckRequest.doRequest((res) =&gt; {
+            // TaxiLog(&#039;checkVerificationCode request + &#039; + JSON.stringify(res));
+            resFunc(res);
+        });
+    }
+
+
+    /*拿到支付宝静默授权的authCode，调用自己的服务，获取支付宝和高德账号的关系*/
+    /**
+        更换手机号的请求
+        @param  {Datetime} authCode 授权的authCode
+    */
+    static getUserAuthInfo(authCode) {
+        if (isAlipayAuthRequesting) {
+            return;
+        }
+        isAlipayAuthRequesting = true;
+
+        my.reportAnalytics(&#039;get_user_authinfo_request&#039;, {});
+
+        let app = getApp();
+
+        let alipayRequest = new AlipayAuthRequest();
+        alipayRequest.setParam({
+            &#039;auth_code&#039;: authCode
+        });
+
+        LoginBindHelper.getInstance().tmpAuthInfo = null;
+        app.showLoading(&quot;帐号信息校验中&quot;);
+        alipayRequest.doRequest((res) =&gt; {
+            isAlipayAuthRequesting = false;            
+            // TaxiLog(&#039;alipay-auth request back ++++++++++++&#039;);
+            app.hideLoading();
+            let resultData = res.data || {};           
+            if (JSON.stringify(resultData) != &quot;{}&quot;) {
+
+                let alipay_user_id = resultData.alipay_user_id || &#039;&#039;;
+                let mobile = resultData.mobile || &#039;&#039;;
+                let userId = resultData.user_id || &#039;&#039;;
+                let accessToken = resultData.access_token || &#039;&#039;;
+                let alipayMobile = resultData.alipay_mobile || &#039;&#039;;
+
+                if (alipay_user_id != &#039;&#039;) {
+                    tmpAlipayUserId = alipay_user_id;
+                } else {
+                    tmpAlipayUserId = undefined;
+                }
+
+                LoginBindHelper.getInstance().tmpAuthInfo = {
+                    userAuthCode: authCode,
+                    amapUserID : userId,
+                    mobile : mobile,
+                    sessionID : alipayRequest.sessionID,
+                    token : accessToken,
+                    alipayUserID : alipay_user_id,
+                    alipayMobile : alipayMobile,
+                }
+
+                // 缓存数据
+                LoginBindHelper.setUserAuthCode(authCode);
+                LoginBindHelper.setAlipayUserId(alipay_user_id);
+                LoginBindHelper.setUserMobile(mobile);
+                LoginBindHelper.setAmapUserId(userId);
+                LoginBindHelper.setUserToken(accessToken);
+                LoginBindHelper.setAlipayMobile(alipayMobile);
+                LoginBindHelper.setUserSessionId(alipayRequest.sessionID);
+                LoginBindHelper.saveLocalStorage();
+                
+                // 支付宝用户 id, 手机, amap user Id 三号都有，则三号关联，走登录逻辑
+                if (typeof(alipay_user_id) == &#039;string&#039; &amp;&amp; alipay_user_id.length &gt; 0 &amp;&amp;
+                    typeof(mobile) == &#039;string&#039; &amp;&amp; mobile.length &gt; 0 &amp;&amp;
+                    (typeof(userId) == &#039;number&#039; || (typeof(userId) == &#039;string&#039; &amp;&amp; userId.length &gt; 0))) {
+                    // 三号绑定成功，服务自动登录
+                    // 登录成功逻辑                        
+                    this.loginSuccessFunc(res, false);
+
+                    // 清除内存中的 tmpAlipayUserId
+                    tmpAlipayUserId = undefined;
+                    LoginBindHelper.getInstance().tmpAuthInfo = null;
+                } else {
+                    // 处理错误 code
+                    let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+                    let resData = typeof(res.data) != &#039;undefined&#039; ? res.data : {};
+                    if (resCode &gt; -1) {
+                        this.loginByCode(resCode,resData);
+                    } else {
+                        this.clearLocalStorage();
+                        tmpAlipayUserId = undefined;
+                        LoginBindHelper.getInstance().tmpAuthInfo = null;
+
+                        my.showToast({
+                            content: &quot;帐号信息校验失败，请重新登录&quot;
+                        });
+
+                        // 登录失败回调
+                        this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+
+                    }
+                }
+            } else {
+                this.clearLocalStorage();
+                tmpAlipayUserId = undefined;
+                LoginBindHelper.getInstance().tmpAuthInfo = null;
+                my.showToast({
+                    content: &quot;帐号信息校验失败，请重新登录&quot;
+                });
+
+                // 登录失败回调
+                this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+            }
+        });
+    }
+
+   
+    /**
+        更换手机号的请求
+        @param  {String} code 验证码
+        @param  {String} oldmobile 老手机号
+        @param  {String} newmobile  新手机号
+    */
+    static changePhoneNumber(oldmobile, newmobile, force, resFunc) {
+        let changePhoneRequest = new ChangeMobileRequest();
+        changePhoneRequest.setParam({
+            &#039;old_mobile&#039;: oldmobile,
+            &#039;new_mobile&#039;: newmobile,
+            &#039;force&#039;: force
+        });
+        changePhoneRequest.doRequest((res) =&gt; {
+            if (res.code &amp;&amp; res.code == 1) {
+                LoginBindHelper.setUserMobile(newmobile);
+                LoginBindHelper.saveLocalStorage();
+                let app = getApp();
+                app.emitter.trigger(&#039;CHANGEPHONENUMBERSUCCESS&#039;)
+            }
+            resFunc(res);
+        });
+    }
+
+    /**
+        手机号登陆的请求
+        @param  {String} mobile 手机号
+        @param  {Int}    force  是否踢掉原来的支付宝 1-强制, 0-不强制; 默认0
+        @param  {String} force_token 强制解除绑定的时候提交使用的token
+        @param  {Function} resFunc 调用接口回调箭头函数
+    */
+    static mobileAuthLogin(mobile, force, forceToken, resFunc) {
+        // TaxiLog(&#039;Mobile Auth Login ++++++++ &#039;);
+        if (isMobileAuthRequesting) {
+            return;
+        }
+        isMobileAuthRequesting = true;
+        let loginRequest = new MobileAuthRequest();
+        let params = {};
+        if (force == true) {
+            // 需要替换用户手机之前绑定的支付宝
+            params = {
+                &#039;mobile&#039; : mobile,
+                &#039;auth_id&#039; : tmpAlipayUserId,
+                &#039;force&#039; : force,
+                &#039;force_token&#039; : forceToken
+            };
+        } else {
+            // 默认登录
+            params = {
+                &#039;mobile&#039; : mobile,
+                &#039;auth_id&#039; : tmpAlipayUserId                
+            }
+        }
+        // TaxiLog(&#039;[TEST LOGIN PARAMS] +++++++ &#039;, JSON.stringify(params));
+        loginRequest.setParam(params);
+        loginRequest.doRequest((res) =&gt; {
+            isMobileAuthRequesting = false;
+            let code = res.code || -1;
+            
+            if (code &gt; -1) {
+                if (code == 1) {
+                    // 登陆成功需要保存 userId, accessToken 和 mobile
+
+                    // TaxiLog(&#039;1111111-----LOGIN SUCCESS !!!!!!!!!!!!&#039;);
+                    
+                    let resultData = res.data || {};
+
+                    let mobile = resultData.mobile;
+                    let userId = resultData.profile ? (resultData.profile.uid || &#039;&#039;) : &#039;&#039;;
+                    let accessToken = resultData.access_token;
+
+                    if (LoginBindHelper.getInstance().tmpAuthInfo) {
+                        if (LoginBindHelper.getInstance().tmpAuthInfo.userAuthCode) {
+                            LoginBindHelper.setUserAuthCode(LoginBindHelper.getInstance().tmpAuthInfo.userAuthCode);
+                        }
+
+                        if (LoginBindHelper.getInstance().tmpAuthInfo.alipayUserID) {
+                            LoginBindHelper.setAlipayUserId(LoginBindHelper.getInstance().tmpAuthInfo.alipayUserID);
+                        }
+
+                        if (LoginBindHelper.getInstance().tmpAuthInfo.alipayMobile) {
+                            LoginBindHelper.setAlipayMobile(LoginBindHelper.getInstance().tmpAuthInfo.alipayMobile);
+                        }
+
+                        if (LoginBindHelper.getInstance().tmpAuthInfo.sessionID) {
+                            LoginBindHelper.setUserSessionId(LoginBindHelper.getInstance().tmpAuthInfo.sessionID);
+                        }
+
+                    }
+
+                    LoginBindHelper.setUserMobile(mobile);
+                    LoginBindHelper.setAmapUserId(userId);
+                    LoginBindHelper.setUserToken(accessToken);
+                    if (loginRequest.sessionID &amp;&amp; loginRequest.sessionID.length &gt; 0) {
+                        LoginBindHelper.setUserSessionId(loginRequest.sessionID);
+                    }
+                    LoginBindHelper.saveLocalStorage();
+
+                    // 登录成功逻辑
+                    this.loginSuccessFunc(res, true);
+
+                    // 清除内存中的 tmpAlipayUserId
+                    tmpAlipayUserId = undefined;
+                    LoginBindHelper.getInstance().tmpAuthInfo = null;
+
+                    // 完整登录流程，成功走一遍优惠券接口
+                    GetLocationHelper.getLocation(1).then(res =&gt; {
+                        let cityAdcode = res.cityAdcode;
+                        let dt = new Date().getTime()
+                        let param = {
+                            ts: dt, // 当前时间戳
+                            adcode: cityAdcode
+                        };
+                        
+                        CouponUtility.requestCouponsList(param);
+                    });
+                  
+                    
+                } else {
+
+                    this.clearLocalStorage();
+                    // code 有可能是 10005 或者 10042，暂时不同一当成登录失败处理
+                    // 登录失败回调
+                    // this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+                }
+            } else {
+                this.clearLocalStorage();
+
+                // 登录失败回调
+                this.loginFailedFunc &amp;&amp; this.loginFailedFunc();
+            }
+
+            
+            resFunc(res);
+        });
+    }
+
+    static loginSuccessFunc(res, shouldToast) {
+        if (shouldToast) {
+            my.showToast({
+                content: &quot;登录成功&quot;
+            });
+        }
+        
+        // TaxiLog(&quot;loginSuccessFunc 0000000----登录成功&quot;);
+        // 发送通知，周知登录成功状态
+        let app = getApp();
+        app.emitter.trigger(LOGINSUCCEESSKEY);
+        this.checkOrder();
+
+        // 处理页面栈
+        this.popBackToOriginPage();
+        // 调用 login 传入的登录成功 callback, 业务方自己处理逻辑
+        if (typeof onSuccessCallBack == &#039;function&#039;) {
+            onSuccessCallBack(res);
+        }
+    }
+
+    static loginFailedFunc(res) {
+        // TaxiLog(&quot;loginFailedFunc +++++++&quot;);
+        if (typeof onFailCallBack == &#039;function&#039;) {
+            onFailCallBack(res);
+        } 
+    }
+   
+   static checkOrder(){
+       DataHelper.getInstance().fetchDoingOrderList();
+    }
+
+    // 处理页面栈，退回进入登录流程的初始 page
+    static popBackToOriginPage() {
+        // 处理页面栈
+        let currentPageIndex = getCurrentPages().length;
+        let delta = currentPageIndex - originPageIndex;
+        if (delta &gt; 0) {
+            my.navigateBack({
+                delta: delta
+            });
+        }
+    }
+
+}
+
+export {
+    LoginBindHelper,
+    LOGINSUCCEESSKEY
+}
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

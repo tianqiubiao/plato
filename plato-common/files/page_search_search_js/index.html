@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/search/search.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/search/search.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.34</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1092</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">89.89</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">9.88</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import SyncRequest from &#039;../../common/network/requests/SyncRequest.js&#039;;
+import TipsliteRequest from &#039;../../common/network/requests/TipsliteRequest.js&#039;;
+import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import md5 from &#039;../../common/lib/md5.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import util from &#039;../../common/util/util.js&#039;;
+//TODO
+// class carListActionCallback extends ActionCallBack {
+//     constructor(delegate) {
+//         super();
+//         this._delegate = delegate;
+//     }
+//     carListCallBack(error) {
+//         // TaxiLog(&#039;searh 搜索页面&#039;)
+//         this._delegate.carListCallBack(error);
+
+//     }
+// }
+Page({
+    data: {
+        startPointObj: {
+            name: &#039;&#039;,
+            lat: &#039;&#039;,
+            lon: &#039;&#039;
+        },
+        endPointObj: {
+            name: &#039;&#039;,
+            lat: &#039;&#039;,
+            lon: &#039;&#039;
+        },
+        verStartPointObj: {
+            name: &#039;&#039;,
+            lat: &#039;&#039;,
+            lon: &#039;&#039;
+        },//验证起终点不规格使用的起点
+        verEndPointObj: {
+            name: &#039;&#039;,
+            lat: &#039;&#039;,
+            lon: &#039;&#039;
+        },//验证终点不规范使用的终点
+        isFirstShowForB: false,
+        isFirstShowForE: false,
+        tipList: null,
+        historyList: [],
+        isStart: true,//是否是start  内部判断 无需setData
+        currentCard: -1,
+        currentVersion: &#039;&#039;,
+        pageParams: {
+            from: &#039;&#039;,
+        },
+        cityAdcode: &#039;&#039;,
+        focusStart: false,//起点的自动获取焦点
+        focusEnd: false,//终点的自动获取焦点
+        uid: &#039;search_uid&#039;,
+        isSync: true, //是否允许历史记录同步，false是不允许请求，true是允许
+        timer: null,
+        searchLoading: false,//是否存在loading态,
+        hisToryListNoSync: [],//设置一个变量存放historyList
+        hasHideKeyboard: true, //监听键盘隐藏
+        isShow: true,        //判断页面是隐藏还是显示状态
+        isUnavailable: true,  //是否在网络断网的情况下
+        hisStorageContainer: [],//存放需同步的历史记录，离开搜索页时上传
+        iscleared: false,//是否执行了清除操作,
+        isBlank: true, //输入框是否为空，
+        currentValue: &#039;&#039;, //执行搜索的value值
+        lastValue: &#039;&#039;,//上一次执行搜索的value值
+    },
+    onPageScroll() {
+        //在键盘弹起的时候滑动fixed的input区域会触发此事件，触发时将键盘弹起
+        if (this.data.hasHideKeyboard) {
+            my.hideKeyboard();
+            this.data.hasHideKeyboard = false
+            return;
+        }
+    },
+    onShareAppMessage() {
+        return getApp().getShareAppMessage();
+    },
+    onLoad(query) {
+        // console.log(&#039;我是search页的&#039;+JSON.stringify(getApp().globalData))
+        //每次小程序启动，获取位置地理信息,搜索页去除获取地理位置弹框，启动和首页都调用这个方法，首次进入小程序也只弹一次框
+        if (getApp().globalData.cityAdcode &amp;&amp; getApp().globalData.cityAdcode !== &#039;&#039;) {
+            this.data.cityAdcode = getApp().globalData.cityAdcode
+        } else {
+            GetLocationHelper.getLocation(1).then(res =&gt; {
+                TaxiLog(&#039;定位获取&#039; + JSON.stringify(res));
+                this.data.cityAdcode = res.districtAdcode || res.cityAdcode || &#039;&#039;
+            }).catch(res =&gt; {
+                TaxiLog(&#039;定位获取失败&#039; + res);
+
+            });
+        }
+
+        if (getApp().globalData.startEndObj.startPoint === null) {
+            this.setData({
+                &#039;pageParams.from&#039;: query.from
+            })
+        } else {
+            this.setData({
+                &#039;startPointObj&#039;: getApp().globalData.startEndObj.startPoint,
+                &#039;pageParams.from&#039;: query.from,
+                &#039;verStartPointObj&#039;: getApp().globalData.startEndObj.startPoint //onload的时候将起点信息同样存在verstartpointobj中
+            })
+        }
+        let systemInfo = getApp().getSystemInfo();
+        if (systemInfo.platform !== &#039;Android&#039; &amp;&amp; parseFloat(systemInfo.system) &lt;= 10.5) {
+            //ios小屏机焦点自动聚焦延迟800ms
+            this.showFocus(query, 800)
+        } else {
+            this.showFocus(query, 300)
+        }
+        //处理下scheme弹窗点过来的起终点信息，加个容错
+        if (getApp().globalData.schemeEnd) {
+            this.setData({
+                endPointObj: getApp().globalData.schemeEnd,
+                verEndPointObj: getApp().globalData.schemeEnd
+            }, () =&gt; {
+                getApp().globalData.schemeEnd = null
+            })
+        }
+
+    },
+    // 获取优惠券
+    getCoupons(){
+        // 获取优惠券,获取运力数据需要
+        let coupons = getApp().globalData.couponsList;
+        let couponsList = &#039;&#039;;
+        if (coupons) {
+            if (coupons.code == 1) {
+                couponsList = coupons.data.coupons;
+            } 
+        }
+        return couponsList;
+    },
+    showFocus(query, time) {
+
+        setTimeout(() =&gt; {
+            if (query.jump == &#039;start&#039; || query.jump == &#039;schemeStart&#039;) {
+                //给起点自动获取焦点，终点不自动获取焦点
+                this.setData({
+                    focusStart: true,
+                    focusEnd: false,
+                })
+
+            } else {
+                this.setData({
+                    focusStart: false,
+                    focusEnd: true
+                })
+            }
+
+        }, time)
+    },
+    onShow() {
+        my.setNavigationBar({
+            title: &quot;高德打车&quot;
+        });
+        //判断页面是隐藏还是显示状态
+        this.setData({ isShow: true });
+        getApp().globalData.isNotMap = true
+        if (this.data.isGetCarlist &amp;&amp; this.data.isUnavailable) {
+            this.getCarList();
+        }
+
+    },
+    touchMove() {
+
+        //滚动事件,在滚动事件里写上隐藏系统键盘
+        if (this.data.hasHideKeyboard) {
+            my.hideKeyboard();
+            this.data.hasHideKeyboard = false
+            return;
+        }
+    },
+    //获取焦点事件 一获取焦点 请求历史记录列表
+    searchAddress(e) {
+        this.setData({
+            hasHideKeyboard: true,
+            searchLoading: false
+        })
+        let keywords = e.detail.value;
+        this.data.currentValue = keywords,
+            this.data.isBlank = true
+        //1.判断当前target 区分起始点
+        this.judgeIsEndPoint(e);
+        // TaxiLog(&#039;是否是起点=&#039; + this.data.isStart);
+        if (this.data.isStart) {
+            this.setData({
+                focusEnd: false,
+                focusStart: true
+            })
+        }
+        //为终点的时候起点不合法提示用户
+        if (!this.data.isStart &amp;&amp; this.data.startPointObj.name != &#039;&#039;) {
+            if (this.data.startPointObj.name != this.data.verStartPointObj.name) {
+                my.showToast({
+                    type: &#039;none&#039;,
+                    content: &#039;起点不符合规范&#039;,
+                    duration: 1000,
+                    success: () =&gt; {
+                    }
+                });
+                this.setData({
+                    &quot;startPointObj.name&quot;: &quot;&quot;
+                })
+            }
+        }
+
+        // 根据target 判断显示哪个delete
+        this.showDeleteForBD();
+        //2.调用搜索记录接口 显示用户搜索记录 暂时模拟数据
+        // this.setData({
+        //     tipList: tip_list
+        // })
+        //  从后台接口获取查询的历史
+
+        if (keywords == null || keywords == &quot;&quot;) {
+            this.setData({
+                tipList: null
+            })
+            //焦点聚焦的时候判断是否有搜索词，没有搜索词按是否同步进行历史记录的同步
+            //允许请求的时候才发起请求，否则不发起请求
+            this.requestHistoryList(true)
+        } else {
+            //请求历史记录，暂存起来
+            this.requestHistoryList(false)
+            this.setData({
+                historyList: [],
+                searchLoading: false //loading态消失
+            })
+            this.data.isBlank = false
+            if (getApp().globalData.network.networkAvailable) {
+                if (this.data.currentValue !== &#039;&#039; &amp;&amp; !this.data.tipList || this.data.currentValue !== &#039;&#039; &amp;&amp; this.data.lastValue !== this.data.currentValue) {
+                    this.getSearchHttpRequest(keywords)
+                }
+            } else {
+                this.setData({
+                    tipList: null
+                })
+                this.data.currentValue = keywords
+            }
+
+        }
+    },
+    // 点击时清除value值;
+    // 获取历史记录的请求
+    requestHistoryList(param) {
+        //在验证是否需要同步数据之前，验证下userId
+        let islogin = LoginBindHelper.isLogin();
+        // TaxiLog(&#039;我是islogin&#039;+islogin)
+        if (!islogin) {
+            //说明没有登录不请求历史记录了
+            this.data.isSync = false
+            return;
+        }
+        let userId = LoginBindHelper.getAmapUserId() || &#039;&#039;;
+        if (getApp().globalData.userId &amp;&amp; getApp().globalData.userId === userId) {
+            if(param) {
+                //说明globaldata中有userId和历史记录并且是同一账号，不需要再次请求
+                this.setData({
+                    isSync: false,
+                    historyList: getApp().globalData.reverseHisList,
+                    hisToryListNoSync: getApp().globalData.reverseHisList
+                })
+            }else {
+                this.setData({
+                    isSync: false,
+                    historyList: [],
+                    hisToryListNoSync: getApp().globalData.reverseHisList
+                })
+            }
+            
+        } else {
+            if (this.data.isSync) {
+                //说明globaldata中没有历史记录，或者是换了账号但是globaldata没有清除
+                let pagingUploadAndDownload = new SyncRequest();
+                pagingUploadAndDownload.setParam({
+                    dltype: 310,
+                    done: 1,
+                    items: JSON.stringify([])
+                })
+                pagingUploadAndDownload.doRequest((res) =&gt; {
+
+                    if (res &amp;&amp; res.code == 1) {
+                        //用同步的数据把globalData里面的数据给替换掉
+                        getApp().globalData.historyList = res;
+                        getApp().globalData.userId = LoginBindHelper.getAmapUserId();
+                        getApp().globalData.reverseHisList = (res.items).reverse().slice(0, 20)
+
+                        this.setData({
+                            hisToryListNoSync: getApp().globalData.reverseHisList
+                        })
+                        if (!this.data.isBlank) {
+
+                            //说明输入框不为空，historyList不替换了
+                            this.setData({
+                                historyList: [],
+                                isSync: false
+                            })
+                        } else {
+                            this.setData({
+                                tipList: null,
+                                historyList: this.data.hisToryListNoSync,
+                                isSync: false,
+
+                            })
+                        }
+
+                    } else {
+                        this.setData({
+                            tipList: null,
+                            historyList: []
+                        })
+                    }
+                })
+            } else {
+                this.setData({
+                    historyList: this.data.hisToryListNoSync
+                })
+            }
+
+        }
+
+    },
+    clearFn(e) {
+        // TaxiLog(&#039;clearFnclearFnclearFnclearFnclearFn&#039;);
+        //1.判断当前target 区分起始点
+        this.judgeIsEndPoint(e);
+        //2.清除文本框
+        this.setValueByBlur();
+        //清空了input中的值的话,下次应该是允许同步
+        this.setData({
+            searchLoading: false, //loading态消失
+            iscleared: true //执行了清除的操作
+        })
+        if (this.data.timer) { //事件防抖
+            clearTimeout(this.data.timer);
+        }
+
+    },
+    //input事件 请求输入提示接口
+    requestSearchAddress(e) {
+        this.setData({
+            iscleared: false,
+            isBlank: false
+        })
+        if (this.data.timer) { //事件防抖
+            clearTimeout(this.data.timer);
+        }
+        //1.判断当前target 区分起始点
+        this.judgeIsEndPoint(e);
+        //2.判断是否显示delete 并赋值input
+        this.judgeAndSetValueByInput(e);
+        //3.根据输入内容请求输入提示接口
+        let keywords = e.detail.value;
+        this.data.currentValue = keywords
+        // TaxiLog(&#039;我执行了input事件&#039;)
+
+        if (keywords == &#039;&#039;) {
+            this.setData({
+                tipList: null,
+                isBlank: true
+            })
+            if (getApp().globalData.reverseHisList) {
+                this.setData({
+                    historyList: getApp().globalData.reverseHisList
+                })
+            } else {
+                this.requestHistoryList();
+            }
+
+        } else {
+            //如果有输入内容就清空historyList
+            this.setData({
+                historyList: []
+            })
+        }
+        if (!keywords) {
+            return;
+        }
+        if (this.data.isStart) {
+            this.setData({
+                &#039;startPointObj.name&#039;: keywords
+            })
+        } else if (!this.data.isStart) {
+            this.setData({
+                &#039;endPointObj.name&#039;: keywords
+            })
+        }
+
+        this.data.timer = setTimeout(() =&gt; {
+            my.getNetworkType({
+                success: (res) =&gt; {
+                    if (res.networkAvailable == false) {
+                        this.setData({
+                            tipList: null,
+                            searchLoading: false,
+                        })
+                        my.hideKeyboard();
+
+                        my.showToast({
+                            content: &#039;请检查网络后重试&#039;,
+                            duration: 3000,
+                            success: () =&gt; {
+
+                                return
+                            },
+                        });
+                    } else {
+                        this.getSearchHttpRequest(keywords);
+                    }
+                }
+            })
+
+
+        }, 500)
+
+    },
+    getSearchHttpRequest(kwords) {
+
+        // TaxiLog(&#039;getSearchHttpRequest&#039;);
+        this.setData({
+            searchLoading: true, //当请求搜索的时候，loading态加载
+            tipList: null//将tipList重置
+        })
+
+        let params = {
+            &#039;adcode&#039;: true,
+            &#039;words&#039;: kwords,
+            &#039;city&#039;: this.data.cityAdcode,
+            &#039;need_virtualtip&#039;: true,
+            &#039;filter_result_type&#039;: 1,
+        }
+
+        if (getApp().globalData.userLoc.longitude &amp;&amp; getApp().globalData.userLoc.latitude) {
+            let user_loc = getApp().globalData.userLoc.longitude + &#039;,&#039; + getApp().globalData.userLoc.latitude;
+            params[&#039;user_loc&#039;] = encodeURIComponent(user_loc);
+        }
+        let tipSliteR = new TipsliteRequest();
+        tipSliteR.setParam(params);
+        tipSliteR.doRequest((res) =&gt; {
+            // TaxiLog(&#039;我是搜索事件开始时的点&#039;+searchFocus)
+            // TaxiLog(&#039;我是返回结果回来时的&#039;+this.data.isStart)
+            if (kwords !== this.data.currentValue) {
+                this.setData({
+                    searchLoading: false
+                })
+                return;
+            }
+
+            this.setData({
+                tipList: null
+            })
+             if (this.data.isBlank) {
+                //判断输入框是否为空
+                this.setData({
+                    tipList: null,
+                    searchLoading: false
+                })
+            } else {
+                // 根据返回的code值渲染搜索列表
+                if (res &amp;&amp; (res.code == 1 || res.code == 7)) {
+                    let legitimate = this.removalOfIllegality(res.tip_list);
+                    let legitimateArr = this.tipListProcessData(legitimate);
+                    this.setData({
+                        tipList: legitimateArr,
+                        searchLoading: false //当搜索请求来了的时候，loading态消失
+                    })
+                    this.data.lastValue = kwords;
+                } else {
+                    setTimeout(() =&gt; {
+                        this.setData({
+                            tipList: [],
+                            searchLoading: false
+                        })
+                    }, 3000)
+                }
+
+
+            }
+
+
+
+
+        })
+
+
+    },
+    tipListProcessData(data) {
+        data.map((value, key) =&gt; {
+            if (value.tip.child_nodes) {
+                let valueChild = value.tip.child_nodes;
+                for (let i = 0; i &lt; valueChild.length; i++) {
+                    let childStr = valueChild[i].shortname || &#039;&#039;;
+                    if (childStr.length &gt;= 8) {
+                        let frontStr = childStr.slice(0, 3);
+                        let afterStr = childStr.slice(-3)
+                        let newStr = frontStr + &#039;...&#039; + afterStr;
+                        valueChild[i].shortname = newStr
+                    }
+                }
+            }
+        })
+        return data;
+    },
+    checkAndSetlockingState() {
+        if (this.data.isLocking) {
+            return true;
+        }
+
+        this.data.isLocking = true;
+        this.lockingTimer = setTimeout(() =&gt; {
+            this.data.isLocking = false;
+        }, 2000);
+    },
+    //选中单挑条item 放到起始点的位置
+
+    selectAddress(e) {
+        if (this.checkAndSetlockingState()) {
+            return;
+        };
+        let index = e.target.dataset.index;
+        let selectAddressObj;
+        //添加点击态样式。
+        this.setData({ currentCard: index });
+        if (this.data.tipList == null) {
+            selectAddressObj = e.target.dataset.addressItem.data
+        } else {
+            selectAddressObj = e.target.dataset.addressItem.tip;
+        }
+        this.itemClick(selectAddressObj);
+        this.setData({ currentCard: -1 });
+
+
+    },
+
+    itemTap(e) {
+        if (this.checkAndSetlockingState()) {
+            return;
+        };
+        let selectChildObj = e.target.dataset.childItem;
+        this.itemClick(selectChildObj);
+
+    },
+    uploadHistory() {
+
+        //上传历史记录
+        let pagingUploadAndDownloadHome = new SyncRequest();
+
+        let itemsStr = JSON.stringify(this.data.hisStorageContainer)
+        //   TaxiLog(&#039;我是需要上传的itemStr&#039;+itemsStr)
+        let hisItems = encodeURIComponent(itemsStr);
+        let isLoginStatus = LoginBindHelper.isLogin();
+        if (!isLoginStatus) {
+            getApp().globalData.failedItems = hisItems
+            return;
+        }
+        pagingUploadAndDownloadHome.setParam({// 设置参数
+            dltype: 310,
+            items: JSON.stringify(hisItems),
+            done: 1
+        });
+
+        pagingUploadAndDownloadHome.doRequest((res) =&gt; {
+            // TaxiLog(&#039;我是上传的res+++++++++++++++++++++++++++++&#039;+JSON.stringify(res))
+
+            if (res &amp;&amp; res.code == 1 &amp;&amp; res.failed_items === undefined) {
+                // TaxiLog(&#039;我表示我已经上传成功了&#039;);
+                getApp().globalData.failedItems = false;//上传成功将其置为false
+            } else {
+                //上传失败就把数据存在app.globalData中
+                getApp().globalData.failedItems = hisItems
+                return;
+            }
+        })
+
+
+    },
+    itemClick(item) {
+      if(!item) return;
+
+        if (!this.data.isStart) {
+            this.setData({
+                endPointObj: {
+                    name: item.name,
+                    lat: item.y_entr || item.y,
+                    lon: item.x_entr || item.x
+                }
+            })
+            this.endPointObj = {
+                name: item.name,
+                lat: item.y_entr || item.y,
+                lon: item.x_entr || item.x
+            }
+            this.data.verEndPointObj = this.data.endPointObj  //每次点击item的时更新终点验证值
+
+
+        } else {
+
+            this.setData({
+                startPointObj: {
+                    name: item.name,
+                    lat: item.y_entr || item.y,
+                    lon: item.x_entr || item.x
+                }
+            })
+            this.startPointObj = {
+                name: item.name,
+                lat: item.y_entr || item.y,
+                lon: item.x_entr || item.x
+            }
+            this.data.verStartPointObj = this.data.startPointObj //每次点击item是更新起点验证值;
+
+        }
+
+
+        //在每次选择项的时候就向hisStorageContainer保存搜索记录
+
+        let hisItem = {
+            &quot;type&quot;: 310,
+            &quot;id&quot;: md5(item.name),
+            &quot;act&quot;: &quot;u&quot;,
+            &quot;ts&quot;: Math.round(new Date().getTime() / 1000), //处理下10位的时间戳
+            &quot;data&quot;: item
+        };
+        //在这里处理下里的数据
+        this.data.hisStorageContainer.map((value, key) =&gt; {
+            if (value.data&amp;&amp;hisItem.data.name == value.data.name &amp;&amp; hisItem.data.address == value.data.address) {
+                this.data.hisStorageContainer.splice(key, 1);
+            }
+        })
+        this.data.hisStorageContainer.push(hisItem)
+        // TaxiLog(&#039;我是hisStroageContainer&#039;+JSON.stringify(this.data.hisStorageContainer))
+        this.data.hisToryListNoSync.map((value, key) =&gt; {
+            if (value.data&amp;&amp;hisItem.data.name == value.data.name &amp;&amp; hisItem.data.address == value.data.address) {
+                this.data.hisToryListNoSync.splice(key, 1);
+            }
+        })
+        let newHis = this.data.hisToryListNoSync;
+        newHis.unshift(hisItem);
+
+
+        this.setData({
+            hisToryListNoSync: newHis.slice(0, 20)
+        })
+
+        getApp().globalData.reverseHisList = this.data.hisToryListNoSync
+
+        //先判断选择的是起点还是终点的)
+        if (this.data.startPointObj.name &amp;&amp; this.data.endPointObj.name) {
+
+            //1.校验起始点逻辑
+            //a.起始点名字不能一样
+            if (this.data.startPointObj.name === this.data.endPointObj.name) {
+                //这里说明起终点相同，应该弹出toast提示【起终点不能相同】，
+                my.showToast({
+                    content: &#039;起终点不能相同&#039;,
+                    duration: 3000
+                });
+
+                if (!this.data.isStart) {
+                    this.setData({
+                        endPointObj: {
+                            name: &#039;&#039;,
+                            lat: &#039;&#039;,
+                            lon: &#039;&#039;
+                        }
+                    })
+
+
+                } else {
+                    this.setData({
+                        startPointObj: {
+                            name: &#039;&#039;,
+                            lat: &#039;&#039;,
+                            lon: &#039;&#039;
+                        }
+                    })
+
+                }
+                return;
+            }
+
+            //判断最后选择的起终点和itemclick选择的是否一致
+
+
+
+
+            let startAndEndPoint = {
+                startPointObj: this.data.startPointObj,
+                endPointObj: this.data.endPointObj
+            }
+            //
+            this.setData({
+                focusStart: false,
+                focusEnd: false
+
+            })
+            //  TaxiLog(&#039;我是startAndEndPoint&#039; + JSON.stringify(startAndEndPoint));
+            // TaxiLog(&#039;我是getApp().globalData&#039; + JSON.stringify(getApp().globalData.startEndObj))
+            if (startAndEndPoint.startPointObj.name != this.data.verStartPointObj.name) {
+
+                //说明起始点不符合不能跳转
+                my.showToast({
+                    content: &#039;起点不符合规范&#039;,
+                    success: () =&gt; {
+                        this.setData({
+                            &#039;startPointObj.name&#039;: &#039;&#039;,
+                            &#039;tipList&#039;: null,
+                            historyList: [],
+                            focusStart: true
+                        })
+
+                    }
+                })
+                return;
+
+            }
+
+
+
+            if (this.data.verEndPointObj == null || this.data.verEndPointObj.lon == &quot;&quot; || startAndEndPoint.endPointObj.name != this.data.verEndPointObj.name) {
+                //说明终点不符合不能跳转
+                my.showToast({
+                    content: &#039;终点不符合规范&#039;,
+                    success: () =&gt; {
+                        this.setData({
+                            &#039;endPointObj.name&#039;: &#039;&#039;,
+                            &#039;tipList&#039;: null,
+                            historyList: [],
+                            focusEnd: true
+                        })
+
+                    }
+                })
+                return;
+            }
+
+            //b.起始点距离不能小于200m
+            if (this.GetDistance(this.data.startPointObj, this.data.endPointObj) &lt; 200) {
+                my.showToast({
+                    content: &#039;目的地距您 200m ，建议步行&#039;,
+                    duration: 1000,
+                    success: () =&gt; {
+                        this.getCarList();
+                    }
+                });
+
+                // return;
+            } else if (this.GetDistance(this.data.startPointObj, this.data.endPointObj) &gt; 250000) {
+                my.showToast({
+                    type: &#039;exception&#039;,
+                    content: &#039;暂不支持长途行程&#039;,
+                });
+                this.setData({
+                    &#039;endPointObj.name&#039;: &#039;&#039;,
+                    tipList: null,
+                    historyList: this.data.hisToryListNoSync,
+                    focusStart: false,
+                    focusEnd: true
+                })
+                return;
+
+            }
+            else {
+                this.getCarList();
+            }
+            //2.获取车辆列表
+
+
+        } else {
+
+            if (this.data.isStart) {
+                //  TaxiLog(&#039;我执行了焦点转换并且我的终点焦点状态为&#039;+this.data.focusEnd);
+                this.setData({
+                    tipList: null,
+                    historyList: []
+                })
+                setTimeout(() =&gt; {
+                    this.setData({
+                        focusEnd: true,
+                        focusStart: false
+                    })
+                }, 200)
+                // TaxiLog(&#039;我是终点的焦点&#039;+this.data.focusEnd)
+            }
+        }
+    },
+    GetDistance(start, end) {
+        let radLat1 = start.lat * Math.PI / 180.0;
+        let radLat2 = end.lat * Math.PI / 180.0;
+        let a = radLat1 - radLat2;
+        let b = start.lon * Math.PI / 180.0 - end.lon * Math.PI / 180.0;
+        let s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+            Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+        s = s * 6378.137;// EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10000 * 1000;
+        return s;
+    },
+    //判断是否是终点
+    judgeIsEndPoint(e) {
+        // TaxiLog(&#039;判断是否是终点的 &#039; + JSON.stringify(e.currentTarget.id));
+        if (e.currentTarget.id === &#039;start&#039;) {
+            this.data.isStart = true;
+        } else if (e.currentTarget.id === &#039;end&#039;) {
+            this.data.isStart = false;
+        }
+
+    },
+    setValueByBlur() {
+        if (this.data.isStart) {
+            this.setData({
+                &#039;startPointObj.name&#039;: &#039;&#039;,
+                &#039;tipList&#039;: null,
+                historyList: []
+            })
+        } else if (!this.data.isStart) {
+            this.setData({
+                &#039;endPointObj.name&#039;: &#039;&#039;,
+                &#039;tipList&#039;: null,
+                historyList: []
+            })
+        }
+    },
+    showDeleteForBD() {
+        if (this.data.isStart) {
+            this.setData({
+                isFirstShowForB: true,
+                isFirstShowForE: false
+            })
+        } else {
+            this.setData({
+                isFirstShowForE: true,
+                isFirstShowForB: false
+            })
+        }
+    },
+    hideDeleteByBlur() {
+        setTimeout(() =&gt; {
+            if (this.data.isStart) {
+                this.setData({
+                    isFirstShowForB: false
+                })
+            } else {
+                this.setData({
+                    isFirstShowForE: false
+                })
+            }
+        }, 200)
+    },
+    judgeAndSetValueByInput(e) {
+        let value = e.detail.value;
+        if (this.data.isStart) {
+            this.setData({
+                &#039;startPointObj.name&#039;: value
+            })
+        } else if (!this.data.isStart) {
+            this.setData({
+                &#039;endPointObj.name&#039;: value
+            })
+        }
+    },
+    onHide() {
+        // let messageCenter = MessageCenter.getInstance();
+        // messageCenter.removeObserverActionCallback(this.data.uid);
+        //控制页面是隐藏还是显示状态。
+        this.setData({ isShow: false });
+        if (this.data.isGetCarlist) {
+            my.hideLoading();
+        }
+
+    },
+    onUnload() {
+        getApp().hideLoading();
+        //TODO
+        // let messageCenter = MessageCenter.getInstance();
+        // messageCenter.removeObserverActionCallback(this.data.uid);
+        // this.getCarList = this.carListCallBack = getApp().emptyFn;
+        this.uploadHistory();
+
+
+        //todo: 替换下边方法
+        // this.clearPageCallback(this.getCarList, this.carListCallBack);
+    },
+
+    //由于页面销毁后 页面里被引用callback 并没有被销毁，所以需要手动处理一下
+    clearPageCallback(...cbs) {
+        this.getCarList = this.carListCallBack = getApp().emptyFn;
+        cbs.forEach((item) =&gt; {
+            item = getApp().emptyFn;
+        });
+    },
+
+    //获取车辆列表
+    getCarList() {
+        if (!this.data.isGetCarlist) {
+            this.setData({ isGetCarlist: true });
+        }
+        //起终点选定完添加相应的loading状态
+        if (!getApp().globalData.network.networkAvailable) {
+            my.showToast({
+                type: &#039;none&#039;,
+                content: &#039;请检查网络后重试&#039;,
+                success: () =&gt; {
+                    this.setData({
+                        &#039;endPointObj.name&#039;: &#039;&#039;,
+                        &#039;tipList&#039;: null,
+                        historyList: this.data.hisToryListNoSync,
+                        focusStart: false,
+                        focusEnd: true,
+                        isUnavailable: false //标记成请求过carlist但是没验证通过
+                    })
+                }
+            });
+            return;
+        }
+
+        my.showLoading({
+            content: &#039;正在查找最快运力&#039;,
+        });
+        
+        // 获取优惠券数据
+        let couponsList = this.getCoupons();
+        // let messageCenter = MessageCenter.getInstance();
+        let params = {
+            &#039;startLon&#039;: this.startPointObj ? this.startPointObj.lon : this.data.startPointObj.lon,
+            &#039;startLat&#039;: this.startPointObj ? this.startPointObj.lat : this.data.startPointObj.lat,
+            &#039;startName&#039;: this.startPointObj ? this.startPointObj.name : this.data.startPointObj.name,
+            &#039;endLon&#039;: this.endPointObj ? this.endPointObj.lon : this.data.endPointObj.lon,
+            &#039;endLat&#039;: this.endPointObj ? this.endPointObj.lat : this.data.endPointObj.lat,
+            &#039;endName&#039;: this.endPointObj ? this.endPointObj.name : this.data.endPointObj.name,
+            &#039;couponsInfo&#039;:JSON.stringify(couponsList)
+        };
+        this.startPointObj = {
+            &#039;lon&#039;: params.startLon,
+            &#039;lat&#039;: params.startLat,
+            &#039;name&#039;: params.startName,
+        }
+        this.endPointObj = {
+            &#039;lon&#039;: params.endLon,
+            &#039;lat&#039;: params.endLat,
+            &#039;name&#039;: params.endName
+        }
+        DataHelper.getInstance().fetchCarList(params, (res) =&gt; {
+            this.carListCallBack(res);
+        })
+        //TODO
+        // TaxiLog(&#039;Params=&#039; + JSON.stringify(params));
+        // let callback = new carListActionCallback(this);
+        // messageCenter.addObserverActionCallback(this.data.uid, callback);
+        // let message = new Message(MessageCode[&quot;codeGetCarList&quot;], params, null);
+        // messageCenter.handleMessage(message);
+
+    },
+    carListCallBack(res) {
+        getApp().hideLoading();
+        if (res.code == 1) {
+            //获取的运力
+            let result = res.data.list;
+            //获取运力页面的tips
+            let tipConfList = res.data.tipsConfList;
+            //TODO
+            //获取tips数据
+            if (res.data.rideTypeSwitchConf) {
+                if (!getApp().globalData.rideTypeSwitchConf) {
+                    my.setStorage({
+                        key: &#039;rideTypeSwitchConf&#039;, // 缓存数据的key
+                        data: {
+                            rideTypeSwitchConf: res.data.rideTypeSwitchConf
+                        } // 要缓存的数据
+                    });
+                } else {
+                    let rideTypeSwitchConf = res.data.rideTypeSwitchConf;
+                    let oldRideTypeSwitchConf = getApp().globalData.rideTypeSwitchConf;
+                    if (JSON.stringify(rideTypeSwitchConf) != JSON.stringify(oldRideTypeSwitchConf)) {
+                        my.setStorage({
+                            key: &#039;rideTypeSwitchConf&#039;, // 缓存数据的key
+                            data: {
+                                rideTypeSwitchConf: res.data.rideTypeSwitchConf
+                            } // 要缓存的数据
+                        });
+                    }
+                }
+                getApp().globalData.rideTypeSwitchConf = res.data.rideTypeSwitchConf || {};
+            }
+            getApp().globalData.transportTips = tipConfList;
+            getApp().globalData.carList = result;
+            getApp().globalData.startEndObj.startPoint = this.startPointObj;
+            getApp().globalData.firstCarListRequsetTime = res.timestamp;
+            TaxiLog(&#039;startPointObj:&#039; + JSON.stringify(this.startPointObj))
+            getApp().globalData.startEndObj.endPoint = this.endPointObj;
+            // TaxiLog(&#039;from:&#039; + this.data.pageParams.from);
+            this.setData({
+                isUnavailable: true
+            })
+            getApp().globalData.isrefreshCarlist = true;
+            if (this.data.isGetCarlist &amp;&amp; this.data.isShow) {
+                if (this.data.pageParams.from === &#039;cp&#039;) {
+                    getApp().router.navigateBack({
+                        delta: 1,
+                    });
+                } else {
+                    getApp().router.redirectTo({
+                        url: &#039;/page/cp-index/cp-index&#039;
+                    })
+                }
+            }
+        } else if (res.code == 3) {
+            my.showToast({
+                type: &#039;none&#039;,
+                content: &#039;请输入正确的起终点&#039;,
+            });
+            //清空起终点信息，且聚焦到起点输入框
+            this.setData({
+                &#039;startPointObj.name&#039;: &#039;&#039;,
+                &#039;endPointObj.name&#039;: &#039;&#039;,
+                &#039;tipList&#039;: null,
+                historyList: this.data.hisToryListNoSync,
+                focusStart: true,
+                focusEnd: false,
+                isUnavailable: false //标记成请求过carlist但是没验证通过
+            })
+        } else if (res.code == 26) {
+            this.setData({
+                isUnavailable: false //标记成请求过carlist但是没验证通过
+            })
+            //  跨城 26  NOT_SUPPORT_CROSS_CITY
+            my.showToast({
+                content: &#039;暂不支持跨城订单&#039;,
+                success: () =&gt; {
+                    if (this.data.isStart) {
+                        this.setData({
+                            &#039;startPointObj.name&#039;: &#039;&#039;,
+                            &#039;tipList&#039;: null,
+                            historyList: this.data.hisToryListNoSync
+                        })
+                    } else if (!this.data.isStart) {
+                        this.setData({
+                            &#039;endPointObj.name&#039;: &#039;&#039;,
+                            &#039;tipList&#039;: null,
+                            historyList: this.data.hisToryListNoSync
+                        })
+                    }
+                }
+            })
+
+        } else if (res.code == 7) {
+            my.showToast({
+                type: &#039;exception&#039;,
+                content: &#039;当前地区暂不提供网约车服务&#039;,
+            });
+            // 清空终点信息，且聚焦到终点输入框
+            this.setData({
+                &#039;endPointObj.name&#039;: &#039;&#039;,
+                &#039;tipList&#039;: null,
+                historyList: this.data.hisToryListNoSync,
+                focusStart: false,
+                focusEnd: true,
+                isUnavailable: false //标记成请求过carlist但是没验证通过
+            })
+        } else {
+            //其他错误状态
+            my.showToast({
+                type: &#039;exception&#039;,
+                content: &#039;当前网络不佳，请刷新重试&#039;,
+            });
+            // 清空终点信息，且聚焦到终点输入框
+            this.setData({
+                &#039;endPointObj.name&#039;: &#039;&#039;,
+                &#039;tipList&#039;: null,
+                historyList: this.data.hisToryListNoSync,
+                focusStart: false,
+                focusEnd: true,
+                isUnavailable: false //标记成请求过carlist但是没验证通过
+            })
+        }
+    },
+    removalOfIllegality(data) {
+        let legitimateLest = [];
+        for (let i = 0; i &lt; data.length; i++) {
+            if (data[i].tip.x != &#039;&#039; &amp;&amp; data[i].tip.y != &#039;&#039; &amp;&amp; data[i].tip.x &amp;&amp; data[i].tip.y) {
+                legitimateLest.push(data[i])
+            }
+        }
+        return legitimateLest
+    }
+});
+
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

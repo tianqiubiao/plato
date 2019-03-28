@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/login/captcha/login-captcha.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/login/captcha/login-captcha.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">56.32</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">377</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">61.52</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.63</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import LoginBindHelper from &#039;../../../common/login/LoginBindHelper.js&#039;;
+const maxTimeInterval = 60;
+// 计时器id
+let intervalId;
+// 重新发送锁
+let reSendLock = true;
+Page({
+  data: {
+    // 重发时间
+    timeout: maxTimeInterval,
+    // 验证码数组
+    captchaArr: [&#039;&#039;, &#039;&#039;, &#039;&#039;, &#039;&#039;],
+    // 输入的验证码
+    captcha: &#039;&#039;,
+    // 验证码错误
+    error: false,
+    // 添加完空格的手机号码
+    phonestr: &#039;&#039;,
+    // 手机号码
+    phoneNumber: &#039;&#039;,
+    // 文本框是否获得焦点
+    isFocus: true,
+    // 当前view索引
+    cursorIndex: 0,
+    // 点击的是否是label
+    isInLabel: false,
+    // 是否重发
+    isResend: false,
+    // 重发按钮显示的内容
+    resendContent: &#039;&#039;,
+    // 手机号码参数来源
+    type: &#039;&#039;,
+    // 请求的手机号是否是高德账号 1: 是 0: 不是
+    bindStatus: 0,
+    // 锁
+    // lock: true,
+    // 暂停定时器开关
+    pause: false,
+    // hide时时间戳
+    hideDate: &#039;&#039;,
+    // show时时间戳
+    showDate: &#039;&#039;,
+    // 时间间隔
+    currentTime: 0,
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onLoad(query) {
+    // 如果验证码是用于登录
+    if (query.type == &#039;login&#039; &amp;&amp; query.phoneNumber) {
+      // 获取用户输入的手机号码
+      this.setData({
+        phoneNumber: query.phoneNumber,
+        phonestr: query.phoneNumber.replace(/(\d{3})(\d{4})/, &#039;$1 $2 &#039;),
+        type: query.type
+      })
+      // 设置导航栏文字及样式
+      my.setNavigationBar({
+        title: &#039;登录&#039;
+      })
+    }
+    // 如果验证码是用于更改手机号码
+    if (query.type == &#039;changePhone&#039; &amp;&amp; query.newPhoneNumber &amp;&amp; query.oldPhoneNumber) {
+      this.setData({
+        phoneNumber: query.newPhoneNumber,
+        newPhoneNumber: query.newPhoneNumber,
+        oldPhoneNumber: query.oldPhoneNumber,
+        phonestr: query.newPhoneNumber.replace(/(\d{3})(\d{4})/, &#039;$1 $2 &#039;),
+        type: query.type
+      })
+      my.setNavigationBar({
+        title: &#039;更换手机号码&#039;
+      })
+    }
+    // 调用倒计时方法
+    this.requestToGetVerificationCode();
+  },
+  onShow() {
+    // 如果存在暂停
+    if (this.data.pause) {
+      this.data.showDate = new Date().getTime();
+      // 页面隐藏的时间
+      this.data.currentTime = Math.floor( (this.data.showDate - this.data.hideDate) / 1000)
+      // 重新开启计时器
+      this.packagingInterval();
+    }
+  },
+  onHide() {
+    // 页面隐藏
+    // 清除计时器
+    this.packagingInterval(true);
+    // 获取隐藏时的时间戳
+    this.data.hideDate = new Date().getTime();
+    // 打开暂停开关
+    this.data.pause = true
+  },
+  onUnload() {
+    // 页面被关闭
+    // 清楚定时器
+    clearInterval(intervalId);
+  },
+  /** 
+    输入事件
+  */
+  inputCaptcha(event) {
+    let codes = event.detail.value;
+    let codeArray = new Array();
+    let codesLength = codes.length;
+    let lastcaptcha = this.data.captcha
+
+    // 处理显示的四个label
+    for (let i = 0; i &lt; (codesLength &gt; 4 ? 4 : codesLength); i++) {
+      let code = codes.substr(i, 1);
+      codeArray[i] = (code);
+    }
+    for (let i = codeArray.length; i &lt; 4; i++) {
+      codeArray.push(&quot;&quot;);
+    }
+    this.setData({
+      cursorIndex: codesLength,
+      captchaArr: codeArray,
+      captcha: codes
+    })
+    
+    // 输入的验证码到达四位且两次验证码不相同
+    if (this.data.cursorIndex == 4 &amp;&amp; this.data.captcha != lastcaptcha) {
+      // 显示加载中
+      my.showLoading({
+        content: &#039;校验中...&#039;
+      });
+      // 调用校验验证码接口
+      LoginBindHelper.checkVerificationCode(this.data.phoneNumber, &#039;3&#039;, this.data.captcha, (res) =&gt; {
+        // 隐藏加载
+        my.hideLoading();
+        // 如果验证码正确
+        if (res.code == 1) {
+          this.setData({
+            error: false
+          });
+          // 验证码成功更换手机号
+          if (this.data.type == &#039;changePhone&#039;) {
+            if (this.data.bindStatus == 1) {
+              // 已经绑定另一个高德账号，跳转替换页面，把 type, oldPhoneNumber 和 newPhoneNumber 传过去
+              my.redirectTo({
+                url: `/page/login/accredit/login-accredit?oldPhoneNumber=${this.data.oldPhoneNumber}&amp;newPhoneNumber=${this.data.newPhoneNumber}&amp;type=bindphone`
+              })
+            } else {
+              // 新手机号没绑定另一个高德账号，直接调替换接口 changePhone
+              my.showLoading({});
+              LoginBindHelper.changePhoneNumber(this.data.oldPhoneNumber, this.data.newPhoneNumber, 0, (res) =&gt; {
+                my.hideLoading();
+                if (res) {
+                  let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+                  if (resCode &gt; -1) {
+                    if (resCode == 1) {
+                      my.redirectTo({
+                        url: `/page/account/change-phone/change-phone-success/change-phone-success?phoneNumber=${this.data.newPhoneNumber}&amp;sourceType=natureBind`
+                      })
+                    } else if (resCode == 10064) {
+                      // 绑定的手机有为完成订单
+                      my.showToast({
+                        content: &quot;请检查在高德地图内的未支付订单&quot;
+                      });
+                    } else if(resCode==10043){
+                      let forceToken = res.data.force_token;
+                      let phoneNumber = this.data.phoneNumber;
+                      my.navigateTo({
+                          url: `/page/login/accredit/login-accredit?queryType=3&amp;phoneNumber=${phoneNumber}&amp;type=selectPhone&amp;force=${forceToken}`
+                      });
+                    }
+                    else {
+                      // TODO
+                      // 其他 业务 code
+                    }
+                  } else {
+                    // TODO
+                    // 失败处理
+                  }
+                } else {
+                  // TODO
+                  // 替换失败
+                }
+              })
+            }
+          }
+          // 验证码成功登录跳转
+          if (this.data.type == &#039;login&#039;) {
+            // 调用登录接口
+            my.showLoading({});
+            LoginBindHelper.mobileAuthLogin(this.data.phoneNumber, null, null, (res) =&gt; {
+              my.hideLoading();
+              // 根据登录接口返回的数据判断是登录成功还是跳转替换绑定支付宝页面
+              let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+              // 接口调用成功
+              if (resCode &gt; -1) {
+                  // 如果手机没有绑定另一支付宝
+                if (resCode == 1) {
+                  
+                } else if (resCode == 10042 || resCode == 10005) {
+                  // 跳转绑定替换页面，提醒用户手机号解绑另一个高德/支付宝
+                  // 参数带上服务下发的 force_token，用户点击确认则带回调用登录接口
+                  let forceToken = res.data.force_token;
+                  let phoneNumber = this.data.phoneNumber;
+                  let code = resCode;
+
+                  my.navigateTo({
+                      url: `/page/login/accredit/login-accredit?queryType=2&amp;phoneNumber=${phoneNumber}&amp;type=selectPhone&amp;forceToken=${forceToken}&amp;force=1`
+                  });
+                } else if (resCode == 10064) {
+                  // 绑定的手机有为完成订单
+                  my.showToast({
+                    content: &quot;请检查在高德地图内的未支付订单&quot;
+                  });
+                } else if (resCode == 10019) {
+                  // 授权信息过期
+                  my.showToast({
+                    content: &quot;授权已过期，请重试&quot;,
+                    duration: 1000,
+                    success: () =&gt; {
+                      my.navigateBack({
+                        delta: 2
+                      });
+                    },
+                  })
+                } else if(resCode==10043){
+                  let forceToken = res.data.force_token;
+                  let phoneNumber = this.data.phoneNumber;
+                  my.navigateTo({
+                      url: `/page/login/accredit/login-accredit?queryType=3&amp;phoneNumber=${phoneNumber}&amp;type=selectPhone&amp;forceToken=${forceToken}&amp;force=1`
+                  });
+                }
+                 else {
+                  // 其他 业务 code
+                  // -------- TMP ------------
+                  let message = res.message || &quot;无错误信息&quot;;
+                  my.showToast({
+                    content: &quot;操作失败，请重试&quot;
+                  });
+                  // -------- TMP ------------
+                }
+              } else {
+                // 登录失败，处理网络请求错误
+                // TODO
+              }
+            });
+          }
+        } else { 
+          //如果验证码不正确
+          this.setData({
+            error: true
+          });
+        }
+      });
+    } else if (this.data.cursorIndex != 4) {
+      // 输入验证码不是四位
+      this.setData({
+        error: false
+      });
+    }
+
+  },
+  /** 
+    文本框失去焦点
+  */
+  bluerCaptcha() {
+    let timeoutId = setTimeout(() =&gt; {
+        clearTimeout(timeoutId);
+        return;
+      },0)
+  },
+  /** 
+    点击重新发送时
+  */
+  resendTap() {
+    if (this.data.isResend &amp;&amp; reSendLock) {
+      reSendLock = false
+      this.setData({
+        timeout: maxTimeInterval,
+        isFocus: true,
+        captcha: &#039;&#039;,
+        error: false,
+        captchaArr: [&#039;&#039;, &#039;&#039;, &#039;&#039;, &#039;&#039;],
+      })
+      this.requestToGetVerificationCode();
+    }
+  },
+  /**
+    调用计时器方法
+  */
+  packagingInterval(clear) {
+    // 如果清除开关打开
+    if (clear) {
+      clearInterval(intervalId);
+      return;
+    }
+    intervalId = setInterval(() =&gt; {
+      // 如果暂停开关打开
+      if (this.data.pause) {
+        if (this.data.currentTime &gt;= this.data.timeout) {
+          this.setData({
+            timeout: 0
+          })
+        } else {
+          this.setData({
+            timeout: this.data.timeout - this.data.currentTime,
+            resendContent: `${this.data.timeout}s 后重新发送`
+          })
+        }
+        this.data.pause = false;
+      }
+      if (this.data.timeout == 0) {
+        clearInterval(intervalId);
+        this.setData({
+          isResend: true,
+          resendContent: &#039;重新发送&#039;,
+          timeout: maxTimeInterval
+        })
+        // 重新发送锁打开
+        reSendLock = true;
+        return;
+      }
+      this.setData({
+        isResend: false,
+        resendContent: `${this.data.timeout}s 后重新发送`,
+        timeout: this.data.timeout - 1
+      })
+    }, 1000)
+  },
+
+  /**
+    调用获取验证码接口，开始计时器
+   */
+  requestToGetVerificationCode() {
+    if (getApp().globalData.network.networkAvailable == false) {
+      this.setData({
+        isResend: true,
+        resendContent: &#039;重新发送&#039;,
+        timeout: maxTimeInterval
+      })
+      my.showToast({
+        content: &#039;发送失败，请重试&#039;
+      });
+      reSendLock = true;
+      return
+    }
+    // 开始计时
+    this.packagingInterval();
+    // 调用获取验证码接口
+    LoginBindHelper.getVerificationCode(this.data.phoneNumber, &#039;3&#039;, (res) =&gt; {
+      let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+      if (resCode == 1) {
+        let resultData = res.data || {};
+        let status = resultData.status || -1;
+        if (status &gt;= 0) {
+          // 手机是否绑定高德账号，0 不是，1 是
+          this.setData({
+            bindStatus: status
+          })
+        }
+      } else {
+        // 接口请求失败 或者接口请求失败，弹错误信息，重置重新发送按钮
+        if (resCode == 10001 || resCode == 10002) {
+          my.showToast({
+            content: &#039;验证码发送次数超限，请稍后重试&#039;
+          });
+        }
+        this.setData({
+          isResend: true,
+          resendContent: &#039;重新发送&#039;,
+          timeout: maxTimeInterval
+        })
+      }
+    });
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

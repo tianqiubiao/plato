@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/user-feedback/progress-list/list-details/list-details.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/user-feedback/progress-list/list-details/list-details.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">53.85</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">154</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">30.04</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.13</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import FeedbackDetailRequest from &#039;/common/network/requests/FeedbackDetailRequest.js&#039;;
+import DataFormatter from &#039;/common/DataFormatter.js&#039;;
+import TaxiMessageService from &#039;../../../../service/messagecenter/TaxiMessageService.js&#039;
+
+Page({
+  data: {
+    switch: false,//控制订单状态显示的开关
+    progressList: [],//底部列表
+    control: 0,//一共几个信息，用于做样式判断
+    record_id: 0,//报错id
+    order:{},
+    type: &#039;&#039;,//反馈类型的type
+    errorType: &#039;2&#039;,//报错页
+    showErrorPage: false,
+    errorText: &#039;加载失败，请&#039;,
+    refreshText: &#039;刷新重试&#039;,
+    showPage: false,//是否显示页面，防止闪屏
+    complete: false,//是否处理完成
+    success: &#039;&#039;,//是否从成功页过来
+    continue: true,//控制继续投诉是否显示
+    description: &#039;&#039;,
+    createdAt: &#039;&#039;,
+  },
+  onLoad(query) {
+    //拿到参数
+    this.setData({
+      recordid: query.recordid,
+      success: query.success,
+      proposal: query.proposal,
+      type: query.type,
+      createdAt: query.createdAt,
+    })
+    if( this.data.proposal == &#039;proposal&#039; || this.data.type == &#039;反馈与建议&#039; ){
+      //如果是反馈与建议界面隐藏继续投诉和顶部order
+      this.setData({
+        continue: false
+      })
+    }
+    this.networkRequest();
+  },
+  networkRequest(){
+    // 网络请求
+    // 加载动画
+    getApp().showLoading();
+    // 判断是否有网络
+    if(getApp().globalData.network.networkAvailable === true){
+      //发送请求
+      this.sendRequest();
+    }else {
+      my.hideLoading();
+      this.setData({
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        errorText: &#039;当前网络错误，请&#039;,
+        refreshText: &#039;点击刷新&#039;,
+        showPage: true
+      })
+    }
+  },
+  sendRequest() {
+    
+    let request = new FeedbackDetailRequest();
+
+    request.setParam({
+      record_id: this.data.recordid
+    });
+     
+    request.doRequest(res =&gt; {
+      if (res) {
+          if (res.code == 1) {
+            // 请求成功
+            my.hideLoading();
+            this.getInvoiceData(res);
+            this.setData({
+              showPage: true,
+              showErrorPage: false
+            })
+          } else {
+            my.hideLoading();
+            this.setData({// 没网显示错误页
+              errorType: &#039;2&#039;,
+              showErrorPage: true,
+              errorText: &#039;加载失败，请&#039;,
+              refreshText: &#039;刷新重试&#039;,
+              showPage: true
+            })
+          }
+      } else {
+        my.hideLoading();
+        this.setData({// 没网显示错误页
+          errorType: &#039;2&#039;,
+          showErrorPage: true,
+          errorText: &#039;加载失败，请&#039;,
+          refreshText: &#039;刷新重试&#039;,
+          showPage: true
+        })
+      }
+    });
+  },
+  getInvoiceData(res) {
+    // 处理时间
+    for(let i=0;i&lt;=(res.detail.operateInfos.length-1);i++){
+      let oldTime = res.detail.operateInfos[i].operateTime
+      res.detail.operateInfos[i].day = oldTime.slice(5,10)
+      res.detail.operateInfos[i].time = oldTime.slice(11,16)
+    }
+    this.setData({
+      progressList: res.detail.operateInfos,
+      order: res.detail.reportInfo.order,
+      type: res.detail.reportInfo.subType,
+      description: res.detail.reportInfo.description,
+      createdAt: res.detail.reportInfo.time,
+    })
+    //拿到有几条反馈进展信息
+    let controlVice = ((this.data.progressList.length)-1);
+    this.setData({
+      control: controlVice
+    })
+    //判断是否处理完成
+    if(this.data.progressList[0].title == &quot;处理完成&quot;){
+      this.setData({
+        complete: true
+      })
+    }else {
+      this.setData({
+        complete: false
+      })
+    }
+  },
+  onContinue(){
+    if(this.data.success == &#039;success&#039;) {
+      my.navigateBack({
+        delta: 3
+      })
+    }else{
+      my.navigateBack({
+        delta: 2
+      })
+    }
+    // 向appjs里存数据
+
+    //格式化时间
+    let order = this.data.order;
+    let departTime = order.departTime;
+    order.departTime = DataFormatter.dateFormat(departTime, &#039;yyyy-MM-dd hh:mm&#039;);
+    TaxiMessageService.shareInstance().sendMessage(&quot;my-travel_cardDetails&quot;, order);
+    // getApp().globalData.feedOrder = order;
+    getApp().globalData.isFeedbackDetails = true;
+  },
+  onClickRefresh() {
+    this.networkRequest();
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/my-travel/my-travel.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/my-travel/my-travel.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">58.34</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">475</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">60.24</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.71</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import OrderListRequest from &#039;../../common/network/requests/OrderListRequest.js&#039;;
+import NetworkHelper from &#039;../../common/network/NetworkHelper.js&#039;;
+import DataFormatter from &#039;../../common/DataFormatter.js&#039;;
+import deepPath from &#039;../../common/lib/deepPath.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import util from &#039;../../common/util/util.js&#039;;
+import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;
+import IndexScheme from &#039;../../common/schema/indexScheme.js&#039;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;
+
+Page({
+  data: {
+    ordersList: [], //请求到的数据容器
+    urlParameter: &quot;&quot;,// 地址参数
+    showErrorPage: false,// 错误页的显示与隐藏
+    errorType: &#039;3&#039;,// 错误类型 根据错误类型判断显示页面 --&gt;1 网络错误 2 服务错误 3 空数据 0 自定义-需传入src
+    text: &#039;暂无行程&#039;,// 错误提示文字         --&gt;暂无数据 网络无连接 请求超时点击刷新
+    refreshText: &#039;刷新重试&#039;,
+    style: &#039;gray&#039;, // 显示哪个错误图
+    showPrompt: false,// 没有更多了 的显示隐藏
+    isShowLoadMore: true,// 正在加载的loading
+    isPullUping: false,// 表示正在上拉 在拉不发送请求
+    pageNo: 1,
+    firstPage: false,
+    pageSize: 20,// 每页多少条
+    code: 1, // 错误码 14未登录的状态 7是没有数据
+    loading: true,
+    orederArr: [],
+    require: false,// 控制onShow的时候可以不可以发送请求
+    screenWidth: &#039;&#039;,//屏幕宽度
+    networkflag: false,
+    totalPages: null,
+    isFristShow: true,
+    noJoin: true,// 拼接数据
+    reachBottom: false,
+    networkAvailable: true,
+    pullOnLoading: false,//上拉加载标记
+    isLoginSuccess: false,
+    noData: false,//没有数据
+  },
+  // 登录成功回调方法，
+  loginSuccessFunc(res) {
+    // this.goToUserCenter();
+    this.setData({
+      isLoginSuccess: true
+    })
+    this.onRequestData(this.data.loading)
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  // 登录失败回调方法
+  loginFailFunc(res) {
+    TaxiLog(&#039;login failed +++++++++&#039;);
+    // TODO
+  },
+  // 上拉触底时触发
+  onReachBottom() {
+    // 上拉刷新加载  
+    // 判断是否有网络
+    this.setData({
+      networkAvailable: getApp().globalData.network.networkAvailable
+    })
+    if (this.data.networkAvailable) {
+      if (this.data.pageNo &lt; this.data.totalPages) {
+        // 开锁 可发请求
+        this.setData({
+          isPullUping: true,
+          isShowLoadMore: true,// 显示加载...
+          reachBottom: true,
+          pullOnLoading: true
+        })
+        // 加锁判断是否可以触发请求 登录情况下才可以发送请求
+        if (this.data.isShowLoadMore &amp;&amp; this.data.code != 14) {
+          // 加锁 此时不能发请求
+          this.setData({
+            isPullUping: false
+          })
+          this.setData({
+            pageNo: this.data.pageNo += 1// 请求下一页
+          })
+          this.onRequestData(this.data.loading)
+        } else {
+          this.setData({
+            isShowLoadMore: false,// 加载提示取消
+          })
+          my.showToast({
+            content: &#039;登录状态获取失败&#039;,
+            duration: 3000,
+            success: () =&gt; {
+              LoginBindHelper.login({
+                onSuccess: this.loginSuccessFunc, // 登录成功回调
+                onFail: this.loginFailFunc,       // 登录失败回调
+                ctx: this                         // this
+              });
+            },
+          });
+        }
+      } else {
+        // 显示没有更多
+        // TaxiLog(this.data.pageNo)
+        this.setData({
+          showPrompt: true,
+          isShowLoadMore: false
+        })
+      }
+    } else {
+      this.setData({
+        isShowLoadMore: false,
+        showPrompt: false,
+        showErrorPage: false
+      })
+      // 提示
+      my.showToast({
+        content: &#039;网络连接失败，请重试&#039;,
+        duration: 3000,
+        success: () =&gt; {
+          TaxiLog(&#039;触发了toast&#039;)
+        },
+      });
+    }
+  },
+  onLoad(query) {// 页面加载完成的生命周期函数
+
+    let getSystemInfo = getApp().getSystemInfo();
+    this.setData({
+      screenWidth: getSystemInfo.screenWidth
+    })
+    let currentPath = &quot;page/my-travel/my-travel&quot;;
+    let schemeQuery = IndexScheme.parseScheme(currentPath, getApp());
+    if (schemeQuery) {
+      query[&quot;source&quot;] = schemeQuery[&quot;source&quot;];
+    } 
+    // 调用发送请求的方法
+    // 拿到地址参数
+    if (query.source == &#039;feedback&#039; || query.source == &#039;feedbackdetails&#039;) {
+      this.setData({
+        urlParameter: query.source
+      })
+      // 设置页面title
+      if (this.data.screenWidth &lt;= 320) {
+        my.setNavigationBar({
+          title: &#039;选择行程&#039;
+        });
+      } else {
+        my.setNavigationBar({
+          title: &#039;选择需要投诉的行程&#039;
+        });
+      }
+    } else {
+      this.setData({
+        urlParameter: query.source
+      })
+      // 设置页面title
+      my.setNavigationBar({
+        title: &#039;我的行程&#039;
+      });
+    }
+  },
+  onReady() {
+    this.setData({
+      networkAvailable: getApp().globalData.network.networkAvailable
+    })
+    // 页面加载完成
+    if (this.data.networkAvailable) {
+      this.onRequestData()
+    } else {
+      my.hideLoading();// 去掉loading
+      this.setData({// 没网显示错误页
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        text: &#039;当前网络不佳，请&#039;,
+        refreshText: &#039;刷新重试&#039;
+      })
+    }
+  },
+  onShow() {
+    if (!this.data.isFristShow) {
+      if (this.data.showPrompt) {
+        this.setData({
+          isShowLoadMore: false,
+          showPrompt: true
+        })
+      }
+      if (this.data.totalPages == this.data.pageNo) {
+        this.setData({
+          isShowLoadMore: false,//隐藏loading
+          showPrompt: true,//显示没有更多
+        })
+      }
+      this.onRequestData(this.data.loading, this.data.noJoin)
+    }
+    this.setData({
+      isFristShow: false,
+      pullOnLoading: false
+    })
+    // }
+  },
+  // 要传递的参数
+  paramFn(pageNo, scope, pageSize, cpSource, containDriverPhone) {
+    let self = this
+    let paramObj = {
+      pageNo: pageNo || 1,// 当前页码	
+      scope: scope || 0,// 0 正常订单列表 2-已完成订单列表
+      pageSize: pageSize || self.data.pageSize,// 分页大小
+      cpSource: cpSource || &#039;&#039;,// 参见CP来源 为空则取所有
+      containDriverPhone: containDriverPhone || true,//司机电话,默认为true
+    }
+    return paramObj;
+  }
+  ,
+  // 请求页面数据 rejected失败的回调 fulfilled成功的回调
+  onRequestData(loading, noJoin) {
+    if (this.data.isLoginSuccess) {
+      this.setData({
+        isLoginSuccess: false
+      })
+      return
+    }
+    // 为true说明没有网
+    if (this.data.networkflag) {
+      getApp().showLoading()
+      setTimeout(() =&gt; {
+        my.hideLoading();// 去掉loading
+      }, 2000)
+      this.setData({// 没网显示错误页
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        text: &#039;当前网络不佳，请&#039;,
+        refreshText: &#039;刷新重试&#039;,
+        networkflag: false
+      })
+      return
+    }
+    // 有网
+    let self = this;
+    let param = {};
+    if (this.data.firstPage) {//onshow的时候请求第一屏数据
+      // 通过地址参数确定是哪个页面发送请求携带参数
+      if (this.data.urlParameter == &quot;travel&quot;) {// 我的行程
+       param = self.paramFn(1, 0);
+      } else {// 投诉反馈
+        param = self.paramFn(1, 2);
+      }
+    } else {//正常请求
+      // 通过地址参数确定是哪个页面发送请求携带参数
+      if (this.data.urlParameter == &quot;travel&quot;) {// 我的行程
+        param = self.paramFn(self.data.pageNo, 0);
+      } else {// 投诉反馈
+        param = self.paramFn(self.data.pageNo, 2);
+      }
+    }
+    if (!loading) {
+      getApp().showLoading()
+    }
+    DataHelper.getInstance().fetchOrderList(param,(res)=&gt;{
+      my.hideLoading();// 去掉loading
+      // 错误页的处理
+      // 请求错误返回的时候修改errorType的值]
+      if (res &amp;&amp; res.code === 1) {// 正常 
+        self.setData({
+          totalPages: Math.ceil(res.total / self.data.pageSize)
+        })
+        if (self.data.pageNo != 1) {
+          self.setData({
+            isShowLoadMore: true,// 正在加载的loading
+          })
+        }
+        self.setData({//隐藏错误页
+          showErrorPage: false
+        })
+        // TaxiLog(orederArr)
+        let showStatus = {// 定义状态对象
+          &#039;0&#039;: &#039;派单中&#039;,
+          &#039;1&#039;: &#039;待支付&#039;,
+          &#039;2&#039;: &#039;待支付&#039;,
+          &#039;3&#039;: &#039;已关闭&#039;,
+          &#039;4&#039;: &#039;已完成&#039;,
+          &#039;5&#039;: &#039;待出发&#039;,
+          &#039;6&#039;: &#039;待上车&#039;,
+          &#039;7&#039;: &#039;行程中&#039;
+        }
+        if (!res.orders) {
+          return
+        }
+        // 遍历数据对象赋值
+        for (let i = 0; i &lt; res.orders.length; i++) {
+          res.orders[i].departTime = self.formDate(res.orders[i].departTime)
+          res.orders[i].requestTime = self.formDate(res.orders[i].requestTime)
+          // 给请求回来的数据添加状态值对应的数据
+          res.orders[i].showText = showStatus[deepPath(res.orders, [[i], &#039;showStatus&#039;])]
+        }
+        if (self.data.totalPages == self.data.pageNo &amp;&amp; self.data.pullOnLoading == false) {//onshow的时候请求的是第一屏数据
+          self.setData({
+            isShowLoadMore: false,//隐藏loading
+            // showPrompt: true,//显示没有更多
+          })
+        }
+        // 拼接数据
+        if (!noJoin) {
+          if (self.data.reachBottom) {// 页码发生过改变
+            self.setData({
+              reachBottom: false,
+              isShowLoadMore: true
+            })
+            self.data.orederArr = self.data.orederArr.concat(res.orders)
+          } else if (self.data.firstPage) {//onshow
+            self.setData({
+              firstPage: false
+            })
+            self.$spliceData({ orederArr: [0, 20, ...res.orders] })
+          } else {
+            self.data.orederArr = res.orders
+          }
+        } else {// onshow的时候进
+          self.setData({// 请求第一屛数据
+            firstPage: true
+          })
+          self.onRequestData(this.data.loading)//请求第一屏数据
+        }
+        // this.data.orederArr = this.data.orederArr.concat(res.orders)
+        self.setData({
+          ordersList: self.data.orederArr,
+        }, () =&gt; {
+          if (res.orders.length &lt; this.data.pageSize &amp;&amp; self.data.pullOnLoading == false) {//没有下拉触底
+            self.setData({
+              isShowLoadMore: false,//隐藏loading
+              showPrompt: true,//显示没有更多
+            })
+          }
+        })
+
+
+      } else {// 错误
+        if (res &amp;&amp; res.code === 14) {// 未登录状态
+          my.showToast({
+            content: &#039;登录状态获取失败&#039;,
+            duration: 1000,
+            success: () =&gt; {
+              my.navigateBack({
+                delta:2
+              });
+            },
+          });
+        } else if (res &amp;&amp; res.code === 7) {// 没有数据 
+          self.setData({
+            errorType: &#039;3&#039;,
+            showErrorPage: true,
+            text: &#039;还没有数据哦&#039;,
+            isShowLoadMore: false,//隐藏loading
+            showPrompt: false,
+            noData: true
+          })
+        } else {
+          this.setData({
+            networkAvailable: getApp().globalData.network.networkAvailable
+          })
+          // 页面加载完成
+          if (this.data.networkAvailable) {// 如果有网
+            self.setData({// 服务错误 
+              errorType: &#039;2&#039;,
+              showErrorPage: true,
+              text: &#039;加载失败，请&#039;,
+              refreshText: &#039;刷新重试&#039;
+            })
+          } else {
+            this.setData({// 没网显示错误页
+              errorType: &#039;1&#039;,
+              showErrorPage: true,
+              text: &#039;当前网络不佳，请&#039;,
+              refreshText: &#039;刷新重试&#039;
+            })
+          }
+        }
+      }
+    });
+  },
+
+  onHide() {
+    // 页面隐藏
+    my.hideLoading();// 去掉loading
+  },
+  onUnload() {
+    // 页面被关闭
+    my.hideLoading();// 去掉loading
+  },
+
+  // 日期的处理
+  formDate(time) {
+    let presentYear = new Date().getFullYear();
+    // 订单年份
+    let ordersYear = new Date(time).getFullYear();
+    if (presentYear == ordersYear) {
+      // 时间格式化 
+      time = DataFormatter.dateFormat(time, &#039;MM-dd hh:mm&#039;)
+    } else {
+      // 时间格式化 
+      time = DataFormatter.dateFormat(time, &#039;yyyy-MM-dd hh:mm&#039;)
+    }
+    return time
+  },
+
+  // 错误页的点击事件
+  onClickRefresh() {
+    this.setData({
+      networkAvailable: getApp().globalData.network.networkAvailable
+    })
+    // 页面加载完成
+    if (this.data.networkAvailable) {
+      this.setData({
+        networkflag: false
+      })
+    } else {
+      this.setData({
+        networkflag: true
+      })
+    }
+    if (!this.data.noData) {
+      this.onRequestData()
+    }
+
+  },
+
+  // 列表页面跳转
+  onGoToUrl(status, item) {
+
+    let router = getApp().router;
+    //页面跳转时判断urlParameter决定跳转到哪
+    // TaxiLog(this.data.urlParameter)
+    if (this.data.urlParameter == &quot;feedback&quot; || this.data.urlParameter == &quot;feedbackdetails&quot;|| this.data.urlParameter == &quot;skip&quot;) {
+      // 格式化一下数据，把行程状态去掉
+      item.showStatus = &quot;&quot;
+      TaxiMessageService.shareInstance().sendMessage(&quot;my-travel_cardDetails&quot;, item);
+      // 跳转回用户反馈首页
+      // getApp().globalData.feedOrder = item;
+      //区分是客服中心首页还是详情页
+      if (this.data.urlParameter == &quot;feedback&quot; ) {
+        router.navigateBack({
+          delta: 1
+        });
+      } else if(this.data.urlParameter == &quot;skip&quot;){
+        router.navigateBack({
+          delta: 1
+        });
+      }else {
+        router.navigateBack({
+          delta: 2
+        });
+      }
+
+
+    } else {
+      let amapOrderId = item.amapOrderId;
+      if (status == 101 || status == 103 || status == 104 || status == 105) {
+        router.navigateTo({ // 行程中点击跳转的页面
+          url: &#039;/page/going/going?amapOrderId=&#039; + amapOrderId,
+          success: function () {
+            //成功的回调
+            // TaxiLog(&#039;行程中点击跳转的页面&#039;)
+          }
+        })
+      } else {
+        router.navigateTo({// 行程结束点击跳转的页面
+          url: &#039;/page/taxi-over-payment/taxi-over-payment?amapOrderId=&#039; + amapOrderId + &#039;&amp;from=myTravel&#039;,
+          success: function () {
+            //成功的回调
+            // TaxiLog(&#039;行程结束点击跳转的页面&#039;)
+          }
+        })
+      }
+    }
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

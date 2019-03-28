@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/airport-transportation/airport-transportation.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/airport-transportation/airport-transportation.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.72</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1438</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">126.76</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">17.39</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">
+import mapView from &#039;../../common/mapView/mapView.js&#039;;
+import ReverseGeoRequest from &#039;../../common/network/requests/ReverseGeoRequest.js&#039;;
+import deepPath from &#039;../../common/lib/deepPath.js&#039;;
+import CarNearbyRequest from &#039;../../common/network/requests/CarNearbyRequest.js&#039;;
+import RecommendSpotsRequest from &#039;../../common/network/requests/RecommendSpotsRequest.js&#039;;
+import FlightInformationQueryRequire from &#039;../../common/network/requests/FlightInformationQueryRequire.js&#039;;
+import GlobalConfigHelper from &#039;../../common/GlobalConfigHelper.js&#039;;
+import { getDistance } from &#039;../../common/api/api.js&#039;;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import PickupCarHelper from &#039;../../common/util/PickupCarHelper.js&#039;;
+import CarTypeRequest from &#039;../../common/network/requests/CarTypeRequest.js&#039;;
+const SENDSCALE = 17;
+const JOINSCALE = 13;
+
+Page({
+  data: {
+    scale: 13,
+    positionBottom: &#039;bottom:445rpx&#039;,//定位icon以及个人中心入口icon位置
+    startMarkers: [{ //接机marker
+      id: 1,
+      iconPath: &#039;/image/index/start.png&#039;,
+      width: 24,
+      height: 31,
+      anchorX: 0.5,
+      anchorY: 0.7,
+      fixedPoint: {
+        originX: 200,
+        originY: 400,
+      },
+      markerLevel: 2
+    }],
+    endMarkers: [{ //送机marker
+      id: 2,
+      iconPath: &#039;/image/index/start-point.png&#039;,
+      width: 24,
+      height: 31,
+      anchorX: 0.5,
+      anchorY: 0.7,
+      iconAppendStr:&#039;&#039;,
+      customCallout: {
+        type: 2,
+        descList: [{ desc: &#039;从这里出发&#039;, descColor: &#039;#000&#039; }],
+        isShow: 1,//控制气泡这个出现隐藏
+      },
+      fixedPoint: {
+        originX: 0,
+        originY: 0,
+      },
+      markerLevel: 2,
+    }],
+    clickMoveToLocation:false,//标记点击过定位下次进入送机不请求直接移动到当前位置
+    clickSend:true,// 标记点击过送机更新视图默认为true默认也要更新
+    clickSendQuery:false,//避免点击送机时地图移动导致多次请求
+    markers:[],
+    airportActiveShow:true,//卡片状态
+    recommendMarkers: [],//推荐上车点marker
+    carNearMarkers: [], //附近车辆marker
+    isGetAddressName: true,
+    isFirstShow:false,//避免第一次进入接机状态弹提示
+    startPointName: &#039;获取中...&#039;,
+    locationObjS:{
+      longitude:&#039;&#039;,
+      latitude:&#039;&#039;,
+    },
+    flightNumber: &#039;&#039;,                    // 航班号
+    airportTime:&#039;&#039;,//落地多久用车时间
+    selectedValue:&#039;&#039;,//送机时间日期
+    tagAirportTransportation: null,//标记一开始是接机还是送机界面
+    timeData:[],//用车时间数据
+    cityData:{},//接机城市数据
+    flightSegments:null,//首页传过来的接机数据
+    adsorbentsDistance: 100,
+    flightStartTime:&#039;&#039;,//送机
+    arrAirportLon:&#039;&#039;,//到达城市经度
+    arrAirportLat:&#039;&#039;,//到达城市纬度
+    pickupConfig:&#039;&#039;,//接机时间间隔粒度
+    pickupDateLimit:&#039;&#039;,//接机预约天数
+    dropoffConfig:&#039;&#039;,//送机时间间隔粒度
+    departTimeJ:&#039;&#039;,//航班日期
+    departTimeS:&#039;&#039;,//航班日期
+    storageTime:null,//保存一下接机航班日期
+    jionMarkers:&#039;&#039;,//接机的点
+    modelSelectionParametersPickUp:&#039;&#039;,//车型选择需要的参数接机
+    modelSelectionParametersDropOff:&#039;&#039;,//车型选择需要的参数送机
+    saveTheEnteredFlightNumber:&#039;&#039;,
+    editFlightNumber:false,//标记点击过要修改航班号
+    showToastTimeOut:true,//控制toast显示
+    isRegionChange: false, //防止ios首屏 end-begin-end
+    startPointLocation:&#039;&#039;,//逆地理拿到的数据
+    regionChangeType:&#039;1&#039;,//地图移动的时候要不要发请求
+    startInfo:&#039;&#039;,
+    clickSendStartPointChange:false,//标记点击过送机起点并且数据发生过改变
+    sendStartPoint:&#039;&#039;,//送机起点记录
+    sendMessageLocation:true,//起点选择时更新地图
+    timerDelta:true,//避免多次back
+    isFirstShowMap:false,//onshow的时候更新视图
+    recommendLoaction:&#039;&#039;,//推荐上车点保存的name
+    enablenative:false,
+    noLocationPermission:&#039;&#039;
+  },
+  onLoad(query) {
+    if(getApp().isIOS()){
+      this.setData({
+        enablenative:true
+      })
+    }else{
+      this.setData({
+        enablenative:false
+      })
+    }
+    // console.log(&#039;query----------&#039;,query)
+    // 注册消息监听
+    // 2.送机起点 送机终点
+    TaxiMessageService.shareInstance()
+        .registerMessageObserver(&quot;single-search_addressInfoDetails&quot;, this, this.processingMessage);
+    // 3.送机终点终点 
+    TaxiMessageService.shareInstance()
+        .registerMessageObserver(&quot;terminal-search_airportInfoDetails&quot;, this, this.processingMessage);
+    if(this.data.flightTapShow &amp;&amp; this.data.selectionControl==1){
+      TaxiMessageService.shareInstance().sendMessage(&quot;enter-flight-number&quot;,true);
+    }
+    
+    // 1.定义地图变量 并将指南针 比例尺 隐藏
+    let mapContext = my.createMapContext(&#039;map&#039;);
+    this.mapView = new mapView(mapContext);
+    this.mapView.resetMap();
+    if(query.type==&#039;join&#039;){
+      // 1月31日  18:20到达  北京首都机场T3航站楼
+      // query.flightDate
+      this.setData({
+        // departTimeJ:query.flightDate,
+        storageTime:query.flightDate,
+        scale:JOINSCALE
+      })
+      if(query.flightSegments!=&#039;undefined&#039;){
+        let flightSegments = JSON.parse(query.flightSegments)
+        flightSegments = flightSegments
+        let arrTime = flightSegments.arrTime
+        // 处理时间格式
+        arrTime = this.arrTimeFn(arrTime)
+        this.setData({
+          tagAirportTransportation:&#039;join&#039;,
+          airportActiveShow:true,
+          flightSegments:flightSegments,
+          arrAirportLat:flightSegments.arrAirportLat,
+          arrAirportLon:flightSegments.arrAirportLon,
+          flightNumber:getApp().globalData.flightNumber||&#039;&#039;,
+          flightStartTime:arrTime+&#039; 到达 &#039;+flightSegments.arrAirportName+flightSegments.arrTerminal,
+        })
+        this.modelSelectionParametersFn()
+      }
+    }else{
+      let time = JSON.parse(query.flightSegments)
+      this.setData({
+        tagAirportTransportation:&#039;send&#039;,
+        airportActiveShow:false,
+        selectedValue:time.value||&#039;&#039;,//todo  data
+        departTimeS:time.timestamp,
+        noLocationPermission:JSON.parse(query.noLocationPermission),
+        scale:SENDSCALE
+      })
+    }
+    // 判断当前的系统是安卓还是ios
+    this.isForIOS = getApp().isIOS();
+    // 接送机卡片的时间间隔粒度
+    this.timeIntervalGranularity()
+  },
+  onUnload() {
+    TaxiMessageService.shareInstance().sendMessage(&quot;airport-transportation-tab&quot;,this.data.airportActiveShow);
+    TaxiMessageService.shareInstance().unregisterMessageObserver(this);
+  },
+  onReady() {
+    // TaxiLog(&quot;mapIndex function time onReady is &quot; + new Date().getTime());
+    // 0.获取中心点扎标位置
+    // 1.定义地图变量 并将指南针 比例尺 隐藏
+    let mapContext = my.createMapContext(&#039;map&#039;);
+    this.mapView = new mapView(mapContext);
+    this.mapView.resetMap();
+    if(!this.data.airportActiveShow){
+      // if (!getApp().globalData.network.networkAvailable) { //网络状态不可用
+      //   //获取中.....
+      //   this.setData({
+      //     startPointName: &#039;获取中...&#039;
+      //   })
+      //   getApp().globalData.startEndObj.startPoint = {
+      //     &quot;lat&quot;: &#039;&#039;,
+      //     &quot;lon&quot;: &#039;&#039;,
+      //     &quot;name&quot;: &#039;&#039;
+      //   }
+      // }
+      this.mapMarkers(this.data.endMarkers)
+      let location = getApp().globalData.userLoc
+      if(location.longitude&amp;&amp;location.latitude){
+        this.getMessageByChangeregion(location.longitude, location.latitude,SENDSCALE, true);
+      }else{
+        this.defaultLocation()
+      }
+    }else{
+      this.setMarkersFn(this.data.arrAirportLat,this.data.arrAirportLon,JOINSCALE)
+    }
+  },
+  onShow() {
+    this.setData({
+      timerDelta:true
+    })
+    if(!this.data.airportActiveShow&amp;&amp;this.data.isFirstShowMap){
+      // if (!getApp().globalData.network.networkAvailable) { //网络状态不可用
+      //   //获取中.....
+      //   this.setData({
+      //     startPointName: &#039;获取中...&#039;
+      //   })
+      //   getApp().globalData.startEndObj.startPoint = {
+      //     &quot;lat&quot;: &#039;&#039;,
+      //     &quot;lon&quot;: &#039;&#039;,
+      //     &quot;name&quot;: &#039;&#039;
+      //   }
+      // }
+      this.setData({
+        clickSend:true,
+        clickSendQuery:true,
+      })
+      let lon = getApp().globalData.startEndObj.startPoint.lon
+      let lat = getApp().globalData.startEndObj.startPoint.lat
+      let name = getApp().globalData.startEndObj.startPoint.name
+      let scale = this.data.scale
+      if(lon&amp;&amp;lat){
+        this.setData({
+          latitude: lat,
+          longitude: lon,
+          scale: SENDSCALE
+        })
+        this.setDataForMarkers(lon, lat, scale);
+        //2.处理小车
+        this.handleCarNearBy(lon, lat, scale, name);
+        //3.处理推荐上车点
+        this.getRecommandSpots(lon, lat, scale);          
+      }
+    }
+    this.setData({
+      isFirstShowMap:true
+    })
+  },
+  onHide(){
+    if(this.data.flightTapShow &amp;&amp; this.data.selectionControl==1){
+      TaxiMessageService.shareInstance().sendMessage(&quot;enter-flight-number&quot;,false);
+    }
+    if(this.data.startPointName&amp;&amp;this.data.startPointName==&#039;获取中...&#039;){
+      getApp().globalData.startEndObj.startPoint = {
+        &quot;lat&quot;: &#039;&#039;,
+        &quot;lon&quot;: &#039;&#039;,
+        &quot;name&quot;: &#039;&#039;
+      }
+    }
+  },
+  getUrl() {
+    let pages = getCurrentPages() //获取加载的页面
+    let currentPage = pages[pages.length - 1] //获取当前页面的对象
+    let url = currentPage.route //当前页面url
+    return url;
+  },
+  defaultLocation(){
+    if(this.data.noLocationPermission){
+      let lon = this.data.noLocationPermission.longitude?this.data.noLocationPermission.longitude:&#039;&#039;
+      let lat = this.data.noLocationPermission.latitude?this.data.noLocationPermission.latitude:&#039;&#039;
+      this.getMessageByChangeregion(lon, lat, SENDSCALE, false);
+    }else{
+      this.mapView.getCenterLocation((res) =&gt; {
+        this.getMessageByChangeregion(res.longitude, res.latitude, SENDSCALE, false);
+      });
+    }
+  },
+  processingMessage(message){
+    if(message){
+      if(message.messageType==&#039;terminal-search_airportInfoDetails&#039;){//送机终点
+        this.modelSelectionParametersFn(&#039;&#039;,message.data)
+        this.setData({
+          isFirstShowMap:false
+        })
+      }else if(message.messageType==&#039;single-search_addressInfoDetails&#039;){
+        if(this.data.airportActiveShow){//接机终点
+          this.modelSelectionParametersFn(&#039;&#039;,message.data)
+
+        }else{//送机起点 
+          my.navigateBack({
+            delta: 1
+          })
+          let startInfo = message.data
+          let startLon = startInfo&amp;&amp;startInfo.x_entr||startInfo.x?parseFloat(startInfo.x_entr)||parseFloat(startInfo.x):&#039;&#039;
+          let startLat = startInfo&amp;&amp;startInfo.y_entr||startInfo.y?parseFloat(startInfo.y_entr)||parseFloat(startInfo.y):&#039;&#039;
+          this.setData({
+            startPointLocation:{
+              lon:startLon,
+              lat:startLat,
+              name:startInfo.name,
+              poiid:startInfo.poiid,
+              adcode:startInfo.adcode,
+            },
+            clickSendStartPointChange:true,
+            startInfo:message.data,
+            startPointName:startInfo?startInfo.name:&#039;获取中...&#039;,
+            isRegionChange:false,
+            sendMessageLocation:true,
+            recommendLoaction:&#039;&#039;
+          })
+          getApp().globalData.startEndObj.startPoint = {
+            &quot;lat&quot;: startLat,
+            &quot;lon&quot;: startLon,
+            &quot;name&quot;: startInfo.name,
+          }
+          this.setDataForMarkers(startLon, startLat,SENDSCALE, true);
+          this.modelSelectionParametersFn()
+        }
+      }
+    }
+  },
+  modelSelectionParametersFn(startInfo,endInfo,type){//接机
+    let flightSegments = this.data.flightSegments
+    if(this.data.airportActiveShow){//接机
+      this.processingTimestamp()
+      if(flightSegments){
+        let endLon = &#039;&#039;
+        let endLat = &#039;&#039;
+        if(endInfo){
+          endLon = endInfo.x_entr||endInfo.x?parseFloat(endInfo.x_entr)||parseFloat(endInfo.x):&#039;&#039;
+          endLat = endInfo.y_entr||endInfo.y?parseFloat(endInfo.y_entr)||parseFloat(endInfo.y):&#039;&#039;
+        }
+        let modelSelectionParametersPickUp = {
+            startInfo:{
+              startLon:flightSegments.arrAirportLon,
+              startLat:flightSegments.arrAirportLat,
+              startPoi:&#039;&#039;,
+              startName:flightSegments.arrAirportName+flightSegments.arrTerminal,
+              startSource:&#039;&#039;,
+              arrCityName:flightSegments.arrCityName,
+              depCityName:flightSegments.depCityName,
+              adcode:flightSegments.arrAdcode
+            },
+            terminal:flightSegments.arrTerminal,
+            departTime:this.data.departTimeJ||&#039;&#039;,
+            flightDate:flightSegments.depTime||&#039;&#039;,
+            flightNo:this.data.flightNumber||&#039;&#039;,
+            pickUpDelayTime:this.data.airportTime?this.data.airportTime.replace(/[^0-9]/ig,&quot;&quot;) * 60:&#039;&#039;,//秒
+            depAirCode:flightSegments.depAirCode,
+            arrAirCode:flightSegments.arrAirCode,
+            gdServiceId:&#039;3&#039;,
+            // 终点信息
+            endInfo:{
+              endLon:endLon,
+              endLat:endLat,
+              endName:endInfo?endInfo.name:&#039;&#039;,
+              endPoi:endInfo?endInfo.poiid:&#039;&#039;,
+              endSource:&#039;3&#039;,
+              arrAdcode:endInfo?endInfo.adcode:&#039;&#039;
+            }
+          }
+        this.setData({
+          modelSelectionParametersPickUp:modelSelectionParametersPickUp
+        })
+        if(endInfo){//终点有了要做的事
+          let startMessage = modelSelectionParametersPickUp.startInfo
+          let endMessage = modelSelectionParametersPickUp.endInfo
+          this.searchPrompt(startMessage.startLon,startMessage.startLat,endMessage.endLon,endMessage.endLat)
+        }
+      }
+    }else{//送机
+      let startInfoObj={}
+      let startPointLocation = this.data.startPointLocation
+      let recommendLoaction = this.data.recommendLoaction
+      startInfoObj={
+            startLon:recommendLoaction?recommendLoaction.lon:startPointLocation?startPointLocation.lon:&#039;&#039;,
+            startLat:recommendLoaction?recommendLoaction.lat:startPointLocation?startPointLocation.lat:&#039;&#039;,
+            startName:recommendLoaction?recommendLoaction.name:startPointLocation?startPointLocation.name:&#039;&#039;,
+            startPoi:startPointLocation&amp;&amp;startPointLocation.poiid,
+            startSource:&#039;&#039;,
+            adcode:startPointLocation&amp;&amp;startPointLocation.adcode,
+          }   
+      let modelSelectionParametersDropOff = {
+          startInfo:startInfoObj,
+          departTime:this.data.departTimeS,
+          gdServiceId:&#039;4&#039;,
+          type:&#039;1&#039;,
+          // 终点信息
+          endInfo:{
+            endLon:endInfo?endInfo.lon:&#039;&#039;,
+            endLat:endInfo?endInfo.lat:&#039;&#039;,
+            endName:endInfo?endInfo.name+endInfo.terminal:&#039;&#039;,
+            endPoi:&#039;&#039;,
+            endSource:&#039;3&#039;,
+            arrAdcode:endInfo?endInfo.adcode:&#039;&#039;,
+            arrAirAdcode:endInfo?endInfo.airCode:&#039;&#039;
+          }
+        }
+      this.setData({
+        modelSelectionParametersDropOff:modelSelectionParametersDropOff,
+        startPointName:recommendLoaction?recommendLoaction.name:startPointLocation?startPointLocation.name:&#039;获取中...&#039;,
+      })
+      getApp().globalData.startEndObj.startPoint = {//单搜起点保持一致
+        &quot;lat&quot;: recommendLoaction?recommendLoaction.lat:startPointLocation?startPointLocation.lat:&#039;&#039;,
+        &quot;lon&quot;: recommendLoaction?recommendLoaction.lon:startPointLocation?startPointLocation.lon:&#039;&#039;,
+        &quot;name&quot;: recommendLoaction?recommendLoaction.name:startPointLocation?startPointLocation.name:&#039;&#039;,
+      }
+      if(endInfo){//终点有了要做的事
+        let startMessage = modelSelectionParametersDropOff.startInfo
+        let endMessage = modelSelectionParametersDropOff.endInfo
+        this.searchPrompt(startMessage.startLon,startMessage.startLat,endMessage.endLon,endMessage.endLat)
+      }
+    }
+  }, 
+  searchPrompt(startlon,startlat,endlon,endlat){
+    if(getApp().globalData.network.networkAvailable){
+      // 用车时间不能早于当前时间
+      let nowTime = Date.parse(new Date())/1000;
+      let lowerLimit = this.data.dropoffConfig.lowerLimit?this.data.dropoffConfig.lowerLimit*60:&#039;&#039;
+      let aboutTime = lowerLimit?(lowerLimit + nowTime):&#039;&#039;
+      if(!this.data.airportActiveShow&amp;&amp;this.data.departTimeS&lt;nowTime){//送机
+        if(!this.data.timerDelta){//避免back多次
+          return
+        }
+        my.showToast({
+          content: &#039;预约时间错误，请确认时间是否正确&#039;,
+          duration: 1000,
+        });
+        this.setData({
+          timerDelta:false
+        })
+        this.timerDelta = true;
+        setTimeout(()=&gt;{
+          my.navigateBack({
+            delta: 1
+          });
+        },1000)
+        return
+      }
+
+      if (getDistance(startlon,startlat,endlon,endlat) &lt; 200) {
+        my.showToast({
+            content: &#039;目的地距您 200m ，建议步行&#039;,
+            duration: 1000,
+        });
+      } 
+
+      let params = {};
+      if(this.data.airportActiveShow) {
+        params = this.data.modelSelectionParametersPickUp;
+      } else {
+        params = this.data.modelSelectionParametersDropOff;
+      } 
+      TaxiLog(&#039;====&gt;&gt;&gt; requestAirportCarList is &#039; + JSON.stringify(params));
+      this.requestAirportCarList(params);
+    } else {//请检查网络后重试
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+      }
+  },
+  // 请求接送机 carlist 服务
+  requestAirportCarList(propsParam) {
+    getApp().showLoading();
+    // &quot;startLon=116.473195&amp;startLat=39.993253&amp;startName=首开广场(装修中)&amp;endLon=116.603039&amp;endLat=40.080525&amp;endName=北京首都国际机场&amp;gdServiceId=4&amp;departTime=1552029200&amp;depAirCode=PEK&quot;
+    PickupCarHelper.getInstance().parseAirportCarListParams(propsParam, (param)=&gt;{
+      let request = new CarTypeRequest();
+      request.setParam(param);
+      request.doRequest(res=&gt;{
+        this.carListCallBack(res);
+      })
+    });
+  },
+  // 接送机 carlist 服务请求返回
+  carListCallBack(res) {
+    my.hideLoading();     
+    TaxiLog(&#039;====&gt;&gt;&gt; requestAirportCarList callback is &#039; + JSON.stringify(res));
+    const code = res.code;
+    if (code == 1) {
+      if (res.data &amp;&amp; res.data.list &amp;&amp; res.data.list.length &gt; 0) {
+        PickupCarHelper.getInstance().saveAirportCarList(res.data);
+        this.forwardCarListPage();
+      } else {
+        this.showToast(&#039;none&#039;, &#039;附近暂无可用车辆&#039;);
+      }
+    } else {
+      const needExitEndPointSelectPage = PickupCarHelper.getInstance().handleRequestCarListErrorCode(code);
+      if (needExitEndPointSelectPage) {
+        setTimeout(()=&gt;{
+          my.navigateBack({
+            delta: 1
+          });
+        },1000)
+      }
+    }
+  },
+  forwardCarListPage() {
+    if(this.data.airportActiveShow) {
+      my.redirectTo({
+        url:&#039;/page/car-type/car-type-select/car-type-select?record=&#039;+JSON.stringify(this.data.modelSelectionParametersPickUp)
+      });
+    } else {
+      my.redirectTo({
+        url:&#039;/page/car-type/car-type-select/car-type-select?record=&#039;+JSON.stringify(this.data.modelSelectionParametersDropOff)
+      });
+    } 
+  },
+  showToast(type, message) {
+    my.showToast({
+        type: type,
+        content: message,
+    });
+  },
+  processingTimestamp(){
+    if(!this.data.airportTime){
+      this.timeIntervalGranularity();//时间间隔
+    }
+    // 转换时间戳  
+    if(this.data.airportActiveShow){//接机 
+      // TODO   departTime 预计出发时间十位Unix Timestamp 
+      if(this.data.flightSegments&amp;&amp;this.data.flightSegments.arrTime) {//更换落地用车
+        let arrTime = this.data.flightSegments.arrTime.replace(/-/g,&#039;/&#039;);
+        arrTime = new Date(arrTime).getTime();
+        let airportTime =&quot;&quot;
+        if(this.data.airportTime){
+          airportTime = this.data.airportTime.replace(/[\u4e00-\u9fa5]/g,&quot;&quot;)
+          // 转换成毫秒
+          airportTime = airportTime * 60 * 1000
+        }
+        arrTime = (arrTime+airportTime)/1000
+        arrTime = Number(arrTime)
+        this.setData({
+          departTimeJ:arrTime
+        })        
+      }
+    }
+  },
+  // 接送机卡片的时间间隔粒度
+  timeIntervalGranularity(){
+    // todo
+    GlobalConfigHelper.getInstance().getConfigForKey(&#039;transferAir&#039;, (data) =&gt; {
+        let configTime =&#039;&#039;
+        if (data) {
+          configTime = data
+        }else{//默认配置
+          configTime = {
+            pickupConfig: {
+              granularity: 10,
+              upperLimit: 60,
+              lowerLimit: 10,
+              default:20
+            },
+            pickupDateLimit: 7,
+            dropoffConfig: {
+              granularity: 5,
+              upperLimit: 7,
+              lowerLimit: 30
+            }
+          }
+        }
+        // 默认选中 需要判断默认选中在不能大于时间上限        
+        let defaultTime = configTime.pickupConfig.default;
+        if(defaultTime&lt;configTime.pickupConfig.upperLimit){
+          defaultTime = configTime.pickupConfig.default + &#039;分钟&#039;;
+        }else{
+          defaultTime = &#039;&#039;
+        }
+        this.setData({
+          dropoffConfig: configTime.dropoffConfig ? configTime.dropoffConfig : &#039;&#039;,
+          pickupDateLimit: configTime.pickupDateLimit ? configTime.pickupDateLimit : &#039;&#039;,
+          pickupConfig: configTime.pickupConfig ? configTime.pickupConfig : &#039;&#039;,
+          //todo  默认的落地后用车时间  
+          airportTime:defaultTime ,
+          flightTapShow:true,
+        })
+    })
+
+  },
+  getMessageByChangeregion(lon, lat, scale, modifyPosion = true) {
+    if(this.data.airportActiveShow&amp;&amp;this.data.flightNumber) return
+    //1.处理吸附
+    let isSuccess = this.handleAdsorb(lon, lat, scale);
+    // TaxiLog(&#039;是否有可以吸附的点==========&#039; + isSuccess);
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() =&gt; {
+      if (!isSuccess) {
+        this.getAddressNameByRgeo(lon, lat, scale, this.data.isGetAddressName, modifyPosion).then((name) =&gt; {
+          //2.处理小车
+          this.handleCarNearBy(lon, lat, scale, name);
+          //3.处理推荐上车点
+          this.getRecommandSpots(lon, lat, scale);
+        })
+      }
+    }, 200);
+
+
+  },
+  handleAdsorb(lon, lat, scale) {
+    if(this.data.airportActiveShow&amp;&amp;this.data.flightNumber) return
+    this.data.isGetAddressName = true;
+
+    let recommendMaArr = this.data.recommendMarkers;
+    if (recommendMaArr.length == 0) {
+      return false;
+    }
+    let isHas = false;
+    let minIdx = 0;
+    let min = getDistance(lat, lon, recommendMaArr[0].latitude, recommendMaArr[0].longitude);
+    for (let i = 0; i &lt; recommendMaArr.length; i++) {
+      let dis = getDistance(lat, lon, recommendMaArr[i].latitude, recommendMaArr[i].longitude);
+      // TaxiLog(&#039;startPointName=&#039; + recommendMaArr[i].iconAppendStr + &#039;RecommandDistance=&#039; + dis);
+      if (min &gt; dis) {
+        min = dis;
+        minIdx = i;
+      }
+    }
+    // console.log(&#039;minIdx:&#039; + minIdx + &#039; min:&#039; + min + &#039;max:&#039; + this.data.adsorbentsDistance + &#039;this.beginScale:&#039; + this.beginScale + &#039; scale--&#039; + scale);
+    if (min &gt; 0.5 &amp;&amp; min &lt; this.data.adsorbentsDistance) {
+      // console.log(&#039;minIdx:&#039; + minIdx + &#039; min:&#039; + min + &#039;max:&#039; + this.data.adsorbentsDistance);
+      this.data.adsorbentsDistance = 20;
+      getApp().globalData.startEndObj.startPoint = {
+        &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+        &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+        &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+      }
+      if (getApp().globalData.schemeStart) {
+        getApp().globalData.schemeStart = {
+          &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+          &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+          &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+        }
+      }
+      this.data.startPointName = recommendMaArr[minIdx].iconAppendStr;
+      this.setData({
+        &#039;schemeStartPoint.name&#039;: recommendMaArr[minIdx].iconAppendStr,
+        recommendLoaction:{
+            &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+            &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+            &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+          }
+      })
+      this.setDataPosition(lon, lat, scale, recommendMaArr[minIdx].longitude, recommendMaArr[minIdx].latitude, scale);
+      this.data.clickSend==true?this.data.isGetAddressName = true:this.data.isGetAddressName ==false;
+
+      return true;
+    } else if (min &lt;= 0.5 &amp;&amp; this.beginScale == scale) {
+      this.data.clickSend==true?this.data.isGetAddressName = true:this.data.isGetAddressName ==false;
+      this.setData({
+        recommendLoaction:{
+            &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+            &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+            &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+          }
+      })
+      return true;
+    } else if (min &lt;= 0.5 &amp;&amp; this.beginScale !== scale) {
+      this.data.clickSend==true?this.data.isGetAddressName = true:this.data.isGetAddressName ==false;
+      this.setData({
+        startPointName: recommendMaArr[minIdx].iconAppendStr,
+        &#039;schemeStartPoint.name&#039;: recommendMaArr[minIdx].iconAppendStr,
+        recommendLoaction:{
+            &quot;lat&quot;: recommendMaArr[minIdx].latitude,
+            &quot;lon&quot;: recommendMaArr[minIdx].longitude,
+            &quot;name&quot;: recommendMaArr[minIdx].iconAppendStr
+          }
+      })
+    }
+    return false;
+  },
+  handleCarNearBy(lon, lat, scale, name) {
+    if(this.data.airportActiveShow&amp;&amp;this.data.flightNumber) return
+    if (scale &lt;= 10) { //不显示小车
+      this.carNearMarkers = [];
+      // TaxiLog(&#039;不显示小车设置marker&#039;);
+      this.setDataForMarkers(lon, lat, scale, true);
+      return;
+    }
+    // 获取附近车辆
+    this.getCarListNearBy(lon, lat, scale, name);
+  },
+  //获取推荐上车点
+  getRecommandSpots(lon, lat, scale) {
+    if (scale &lt;= 12) { //不显示推荐上车点
+      this.data.recommendMarkers = [];
+      // TaxiLog(&#039;都不显示设置marker&#039;);
+      this.setDataForMarkers(lon, lat, scale);
+      return;
+    }
+    let params = {
+      &#039;startLon&#039;: lon,
+      &#039;startLat&#039;: lat
+    }
+    let tmpRecommendArr = [];
+    let getRecommandR = new RecommendSpotsRequest();
+    getRecommandR.setParam(params);
+    let s = +new Date();
+    getRecommandR.doRequest(res =&gt; {
+      if (res &amp;&amp; res.code !== 1) {
+        this.data.recommendMarkers = [];
+        this.setDataForMarkers(lon, lat, scale);
+        return;
+      }
+      let spots = res.data.spots ? res.data.spots : [];
+      spots = spots.reverse();
+      // TaxiLog(&#039;spots=&#039; + JSON.stringify(spots));
+      for (let i = 0; i &lt; spots.length; i++) {
+        for (let j = i + 1; j &lt; spots.length; j++) {
+          let dis = getDistance(spots[i].lat, spots[i].lon, spots[j].lat, spots[j].lon);
+          // TaxiLog(&#039;this.getRecommendMarkerDistance(scale)&#039; + this.mapView.getRecommendMarkerDistance(scale))
+          let markerDistance = this.mapView.getRecommendMarkerDistance(scale);
+          if (dis &lt; markerDistance) {
+            spots.splice(i, 1);
+            i--;
+            break;
+          }
+        }
+      }
+      // TaxiLog(&#039;endSpots=&#039; + JSON.stringify(spots));
+      spots.forEach((item, index) =&gt; {
+        tmpRecommendArr.push({
+          id: 100 + index,
+          iconPath: &quot;/image/index/recopoint.png&quot;,
+          latitude: item.lat,
+          longitude: item.lon,
+          width: 10,
+          height: 10,
+          anchorX: 0.5,
+          anchorY: 0,
+          iconAppendStr: item.name,
+          customCallout: {
+            type: 0,
+            time: &#039;1&#039;,
+            // descList: [{ desc: &#039;点击立即打车&#039;, descColor: &#039;#ffffff&#039; }],
+            isShow: 0
+          },
+        })
+      })
+      this.data.recommendMarkers = tmpRecommendArr;
+      // TaxiLog(&#039;推进上车点设置marker&#039;)
+      this.setDataForMarkers(lon, lat, scale);
+      this.handleAdsorb(lon, lat, scale);
+    })
+  },
+  setDataPosition(lon, lat, scale, destlon, destlat, destscale) {
+    let sname = this.data.startPointName;
+    let totalMarker = this.data.endMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+    this.setData({
+      startPointName: sname
+    })
+    let distance = getDistance(this.beginLat, this.beginLon, destlat, destlon);
+    if (distance &lt; 0.5) {
+      this.data.isAdsorb = true;
+    }
+    this.mapView.updateComponents(totalMarker, destlat, destlon, destscale);
+    this.mapView.unifiedUpdateMap()
+  },
+  mapMarkers(Markers){
+    let systemInfo = getApp().getSystemInfo();
+    if (systemInfo &amp;&amp; systemInfo.windowWidth &amp;&amp; systemInfo.windowHeight) {
+      Markers[0].fixedPoint = {
+        originX: systemInfo.windowWidth / 2,
+        originY: systemInfo.windowHeight / 2
+      }
+    }else {
+      my.createSelectorQuery().select(&#039;#map&#039;).boundingClientRect().exec((ret) =&gt; {
+        Markers[0].fixedPoint = {
+          originX: ret[0] &amp;&amp; ret[0].width / 2,
+          originY: ret[0] &amp;&amp; ret[0].height / 2
+        }
+      })
+    }
+  },
+  //修改markers 重新渲染视图
+  setDataForMarkers(lon, lat, scale, isSetCar) {
+    if(this.getUrl()!=&#039;page/airport-transportation/airport-transportation&#039;) return
+    if (this.mapView) {
+      this.mapMarkers(this.data.endMarkers)
+      this.mapView &amp;&amp; this.mapView.getCenterLocation((res) =&gt; {
+        let distance = getDistance(res.latitude, res.longitude, lat, lon);
+        if ((distance &gt; 1 || res.scale !== scale) &amp;&amp; !this.data.isFirstReturnCar) {
+          this.data.isFirstReturnCar = false;
+        }
+        if (scale &lt;= 10) { //不显示小车
+          this.carNearMarkers = [];
+        }
+        if (scale &lt;= 12) { //不显示推荐上车点
+          this.data.recommendMarkers = [];
+        }
+        let totalMarker = this.data.endMarkers.concat(this.data.recommendMarkers).concat(this.carNearMarkers);
+        if(this.data.clickSend||this.data.sendMessageLocation){
+          // 点击过送机按钮才刷新
+          this.mapView.updateComponents(totalMarker, lat,lon, scale);
+          this.setData({
+            clickSend:false,
+            sendMessageLocation:false
+          })
+        }
+        if(this.data.airportActiveShow&amp;&amp;this.data.flightNumber) return
+        this.mapView.updateComponentsMarkers(totalMarker);
+        this.mapView.unifiedUpdateMap();
+      });
+    }
+    // if(this.data.clickSend&amp;&amp;!this.data.sendMessageLocation){
+    //   this.setData({
+    //     isRegionChange:true
+    //   })
+    // }else{
+      setTimeout(()=&gt;{//避免从起点选择页面返回的时候刷新地图地图移动造成起点不正确
+        this.setData({
+          isRegionChange:true
+        })
+      },500)
+    // }
+  },
+  onClickEditFlightNumber(){//点击航班号修改
+    this.setData({
+      selectionControl:&#039;1&#039;,
+      editFlightNumber:true
+    })
+  },
+  onClickCascadeSelectJ(){//点击落地后多久用车
+    if(this.data.airportActiveShow){
+      this.setData({
+        selectionControl:&#039;5&#039;,
+      })    
+    }
+  },
+  onClickCascadeSelectS(){//点击出发时间
+    if(!this.data.airportActiveShow){
+      this.setData({
+        selectionControl:&#039;4&#039;,
+      })    
+    }
+  },
+  onConfirmSelect(data){//点击级联选择控件确定
+   let updateData= {
+      selectionControl:0
+   }
+  // console.log(&#039;data传回的-----&#039;,data)
+    if(this.data.selectionControl==5){//落地多次时间用车
+      Object.assign(updateData, {
+        airportTime:data||20,//TODO
+        selectionControl:0
+      })
+      this.setData(updateData)
+      this.modelSelectionParametersFn()
+    }else if(this.data.selectionControl==4){//请选择送机时间.
+      if(this.data.tagAirportTransportation==&#039;join&#039;){
+        let location = getApp().globalData.userLoc
+        if(getApp().globalData.network.networkAvailable){
+          if(location.longitude&amp;&amp;location.latitude){
+            this.getMessageByChangeregion(location.longitude, location.latitude,SENDSCALE, true);
+          }else{
+            this.defaultLocation()
+          }
+        }else{
+          this.setDataForMarkers(location.longitude, location.latitude,SENDSCALE)
+          this.setData({
+            startPointName:&#039;获取中...&#039;,
+            scale:SENDSCALE
+          })
+        }
+      }
+      if(!this.data.editFlightNumber){//一进入接送机页面直接点击修改航班号不改变标记值
+        this.setData({
+          tagAirportTransportation:&#039;reduction&#039;,
+          noLocationPermission:&#039;&#039;
+        })
+      }
+      Object.assign(updateData, {
+        selectedValue:data.value||&#039;&#039;,//todo  data
+        selectionControl:0,
+        departTimeS:data.timestamp||&#039;&#039;,
+        clickSend:true,
+      })
+      this.setData(updateData)
+      this.modelSelectionParametersFn()
+    }else if(this.data.selectionControl==2){//起飞城市当地日期选择 点击后变4  如果多条就调控件一个直接跳转
+      Object.assign(updateData, {
+        // departTimeJ:data||&#039;&#039;,
+        storageTime:data||&#039;&#039;,
+        selectionControl:&#039;0&#039;,
+      })
+      this.setData(updateData)
+      let flightDate = data || &#039;&#039;// 日期参数
+      let flightNo = getApp().globalData.flightNumber//航班号参数
+      if(getApp().globalData.network.networkAvailable){
+        //航班信息查询请求
+        this.flightInformationRequire(flightDate,flightNo,data);
+      }else{//请检查网络后重试
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+        if(!this.data.flightNumber){
+          this.setData({
+            airportActiveShow:false
+          })
+        }
+      }
+    }else if(this.data.selectionControl==3){//确认接机城市 跳转
+      // TODO选择航班后，进入接送机首页，并停留接机tab，同时前端透出对应航班信息
+      if(getApp().globalData.network.networkAvailable){
+        if(!this.data.editFlightNumber){//一进入接送机页面直接点击修改航班号不改变标记值
+          this.setData({
+            tagAirportTransportation:&#039;reduction&#039;,
+            noLocationPermission:&#039;&#039;
+          })
+        }
+        this.setData({
+          selectionControl:&#039;0&#039;,
+          editFlightNumber:false,
+        })
+        let flightSegments = data
+        let arrTime = this.arrTimeFn(flightSegments.arrTime)
+        this.setData({
+          flightSegments:flightSegments,
+          arrAirportLat:flightSegments.arrAirportLat,
+          arrAirportLon:flightSegments.arrAirportLon,
+          flightNumber:getApp().globalData.flightNumber||&#039;&#039;,
+          flightStartTime:arrTime+&#039; 到达 &#039;+flightSegments.arrAirportName+flightSegments.arrTerminal,
+        })
+        this.modelSelectionParametersFn();
+        // 点击确认接机城市的时候
+        this.setMarkersFn(flightSegments.arrAirportLon, flightSegments.arrAirportLat,JOINSCALE)
+      }else{//请检查网络后重试
+        my.showToast({
+          content: &#039;请检查网络后重试&#039;
+        });
+        if(!this.data.flightNumber){
+          this.setData({
+            airportActiveShow:false
+          })
+        }
+      }
+    }
+  },
+  flightInformationRequire(flightDate,flightNo,data){//航班信息查询请求
+    // TODO 存在都不支持-- 个别不支持--提示： 用车城市不支持 --回到航班号信息输入态 
+    // 航班号没有: 未找到指定日期的航班，请重新输入          --回到航班号信息输入态
+      let flightInformationQueryR = new FlightInformationQueryRequire();
+    flightInformationQueryR.setParam({
+      flightDate: flightDate,//&#039;2019-03-11&#039;,
+      flightNo: flightNo,//&#039;SC4678&#039;,
+    });
+      my.showLoading()
+    flightInformationQueryR.doRequest(res =&gt; {
+      my.hideLoading()
+      if(res&amp;&amp;res.code==1){
+        let storageTime = this.data.storageTime
+        if(res.data.flightSegments.length==1){
+          let flightSegments = res.data.flightSegments[0];
+          let arrTime = flightSegments.arrTime
+          arrTime = this.arrTimeFn(arrTime)
+          if(!this.data.editFlightNumber){//一进入接送机页面直接点击修改航班号不改变标记值
+            this.setData({
+              tagAirportTransportation:&#039;reduction&#039;,
+              noLocationPermission:&#039;&#039;
+            })
+          }
+          this.setData({
+            arrAirportLat:flightSegments.arrAirportLat,
+            arrAirportLon:flightSegments.arrAirportLon,
+            flightNumber:getApp().globalData.flightNumber||&#039;&#039;,
+            flightSegments:res.data.flightSegments[0],
+            selectionControl:&#039;0&#039;,
+            editFlightNumber:false,
+            flightStartTime:arrTime+&#039; 到达 &#039;+flightSegments.arrAirportName+flightSegments.arrTerminal,
+          })
+          // 处理时间
+          this.modelSelectionParametersFn()
+          // 查询到的航班列表只有一个
+          this.setMarkersFn(flightSegments.arrAirportLon, flightSegments.arrAirportLat,JOINSCALE)
+        }else{
+          this.setData({
+            flightSegments:res.data.flightSegments,
+            selectionControl:&#039;3&#039;,
+            cityData:res.data,
+          })      
+        }
+      }else if(res.code==702){
+        my.showToast({
+          content: res.data&amp;&amp;res.data.subMessage?res.data.subMessage:&#039;&#039;
+        });
+        setTimeout(()=&gt;{
+          // if(this.data.editFlightNumber){
+          //   this.setData({
+          //     selectionControl:&#039;1&#039;
+          //   })
+          //   return
+          // }
+          if(res.data&amp;&amp;res.data.subCode==4){
+            // 4航班已降落 
+            TaxiMessageService.shareInstance().sendMessage(&quot;flight-number-ground&quot;,true);
+          }else if(res.data&amp;&amp;res.data.subCode==1){
+            // 1供应商返回错误：回到航班号信息输入态，保留已输入航班号
+            this.setData({
+              selectionControl: &#039;1&#039;,
+              saveTheEnteredFlightNumber:getApp().globalData.flightNumber
+            })
+          }else{
+            // 0航班号不存在
+            // 3航班落地城市为海外
+            // 2航班状态异常
+            // (5, &quot;请输入准确航班号&quot;);
+            this.setData({
+              selectionControl: &#039;1&#039;,
+              flightNumber:&#039;&#039;,
+              saveTheEnteredFlightNumber:&quot;&quot;
+            })
+            getApp().globalData.flightNumber = &#039;&#039;
+          }
+        },500)
+      }else{
+        my.showToast({
+          content:&#039;请检查网络后重试&#039;
+        });
+        if(!this.data.flightNumber){
+          this.setData({
+            airportActiveShow:false,
+              flightNumber:&#039;&#039;,
+          })
+        }
+      }
+    })
+  },
+  arrTimeFn(arrTime){
+    let reg = /(\d{4})\-(\d{2})\-(\d{2})/;
+    let timeH = arrTime.slice(10,-3)
+    arrTime = arrTime.substring(0, 10)
+    if(this.GetDateStr(0)==arrTime){//今天
+      arrTime = &#039;今天&#039;
+    }else if(this.GetDateStr(1)==arrTime){//明天
+      arrTime = &#039;明天&#039;
+    }else{
+      arrTime = arrTime.replace(reg, &quot;$1年$2月$3日&quot;);
+      arrTime = arrTime.slice(5)
+      if(arrTime[0]==&#039;0&#039;){
+        arrTime = arrTime.slice(1)
+      }
+    }
+    return arrTime + timeH
+  },
+  GetDateStr(AddDayCount) {
+    let dd = new Date();
+    dd.setDate(dd.getDate()+AddDayCount);//获取AddDayCount天后的日期
+    let y = dd.getFullYear();
+    let m = (dd.getMonth()+1).toString().padStart(2, &#039;0&#039;);;//获取当前月份的日期
+    let d = dd.getDate().toString().padStart(2, &#039;0&#039;);;
+    return y+&quot;-&quot;+m+&quot;-&quot;+d;
+  },
+  onCancelSelect(){//点击取消
+    if(this.data.selectionControl==4&amp;&amp;this.data.tagAirportTransportation==&#039;join&#039;){//请选择送机时间
+      this.setData({
+        airportActiveShow:true
+      }) 
+    }else if(this.data.selectionControl==3||this.data.selectionControl==2){//确认接机城市 //起飞城市当地日期
+      if(!this.data.flightNumber){
+        this.setData({
+          airportActiveShow:false
+        })
+      }
+    }
+    this.setData({
+      selectionControl:&#039;0&#039;,
+      editFlightNumber:false
+    })
+    getApp().globalData.flightNumber = &#039;&#039;
+  },
+  onClickEnterFlightNumberHeid(){//输入航班号的取消
+    if(!this.data.flightNumber || this.data.saveTheEnteredFlightNumber){
+      getApp().globalData.flightNumber = null
+      this.setData({
+        selectionControl:&#039;0&#039;,
+        airportActiveShow:false,
+        saveTheEnteredFlightNumber:&#039;&#039;
+      })
+    }else{
+      this.setData({
+        selectionControl:&#039;0&#039;
+      })
+    }
+  },
+  onClickCascadeSelect(){//输入航班号的确定
+    this.setData({
+      selectionControl:&#039;2&#039;,
+      saveTheEnteredFlightNumber:&#039;&#039;,
+      flightNumberMessage:getApp().globalData.flightNumber
+    })
+  },
+  setMarkersFn(lon, lat,scale){
+    if(this.getUrl()!=&#039;page/airport-transportation/airport-transportation&#039;) return
+    if(this.data.airportActiveShow){
+      this.createSelectorQueryMap(this.data.startMarkers, this.data.arrAirportLat,this.data.arrAirportLon,scale);
+    }
+  },
+  createSelectorQueryMap(markers,lon,lat,scale){
+      this.mapMarkers(this.data.startMarkers)
+      if(this.data.airportActiveShow){
+          // markers[0].iconAppendStr = &#039;航站楼的名字TODO&#039;;
+          let jionMarkers = [{ //接机marker定位点
+            id: 4,
+            iconPath: &quot;/image/index/recopoint.png&quot;,
+            latitude: this.data.arrAirportLat,
+            longitude: this.data.arrAirportLon,
+            width: 10,
+            height: 10,
+            anchorX: 0.5,
+            anchorY: 0,
+            markerLevel: 1,
+            iconAppendStr: this.data.flightSegments?this.data.flightSegments.arrAirportName + this.data.flightSegments.arrTerminal:&#039;&#039;
+          }]
+          // 点的markers 
+          let totalMarker = jionMarkers.concat(markers);           
+          this.mapView &amp;&amp; this.mapView.updateComponents(totalMarker, this.data.arrAirportLat,this.data.arrAirportLon, scale);
+          // this.mapView.updateComponentsMarkers(totalMarker);
+          setTimeout(()=&gt;{
+            this.mapView &amp;&amp; this.mapView.unifiedUpdateMap();
+          },500)
+          this.setData({
+            jionMarkers:jionMarkers
+          })
+        }
+        this.setData({
+          isRegionChange:true
+        })
+  },
+  onClickairportActiveShow(){//点击接机
+    if(this.data.airportActiveShow==true) return
+    // TODO前边没有那一堆接机流程的时候弹输入航班号那一系列 
+    this.setData({
+      showToastTimeOut:false
+    })
+    setTimeout(()=&gt;{
+      this.setData({
+        showToastTimeOut:true
+      })
+    },500)
+    if(this.data.tagAirportTransportation==&#039;send&#039;||!this.data.flightNumber){
+      this.setData({
+        airportActiveShow:true,
+        selectionControl:&#039;1&#039;,
+      })
+    }else{
+      this.setData({
+        airportActiveShow:true,
+        airportTime:this.data.airportTime,//todo  data ,
+        noLocationPermission:&#039;&#039;
+      })
+      this.setMarkersFn(this.data.arrAirportLat,this.data.arrAirportLon,JOINSCALE)  
+    }
+  },
+  onClickairportActiveHeid(){//点击送机
+    if(this.data.airportActiveShow==false) return
+    // TODO前边没有送机那一系列的时候弹送机那一堆
+    this.setData({
+      isRegionChange:false,
+    })
+    if(this.data.tagAirportTransportation==&#039;join&#039;){
+      this.setData({
+        airportActiveShow:false,
+        selectionControl:&#039;4&#039;,
+      })
+    }else{
+      let location = getApp().globalData.userLoc
+      if(location.longitude&amp;&amp;location.latitude||!this.data.sendMessageLocation){
+        this.setData({
+          airportActiveShow:false,
+          clickSend:true,
+          clickSendQuery:true,
+        })
+        let lon = getApp().globalData.startEndObj.startPoint.lon
+        let lat = getApp().globalData.startEndObj.startPoint.lat
+        let name = getApp().globalData.startEndObj.startPoint.name
+        let scale = this.data.scale
+        this.setDataForMarkers(lon, lat, scale)          
+        //2.处理小车
+        this.handleCarNearBy(lon, lat, scale, name);
+        //3.处理推荐上车点
+        this.getRecommandSpots(lon, lat, scale);        
+      }else{
+        this.setData({
+          airportActiveShow:false,
+          clickSend:true,
+          clickSendQuery:true,
+        })
+        this.defaultLocation()
+      }
+    }
+  },
+  
+  //附近车辆信息获取
+  getCarListNearBy(lon, lat, scale, name) {
+    // console.log(&quot;lon:&quot; + lon + &quot; lat: &quot; + lat + &quot; name: &quot; + name);
+    let params = {
+      &#039;startLon&#039;: lon,
+      &#039;startLat&#039;: lat,
+      &#039;startName&#039;: name
+    };
+
+    let getCarList = new CarNearbyRequest();
+    getCarList.setParam(params);
+    let s = +new Date();
+    this.setDataForMarkers(lon, lat, scale, true);
+    getCarList.doRequest(res =&gt; {
+      this.data.isFirstReturnCar = true;
+      if (res &amp;&amp; res.code !== 1) {
+        this.carNearMarkers = [];
+        this.setDataForMarkers(lon, lat, scale, true);
+        return;
+      }
+      this.carListNearBy = res.data;
+
+      this.toShowNearByCars(lon, lat, scale);
+    })
+  },
+  toShowNearByCars(longitude, latitude, scale) {
+    // 随机单车数量设置
+    let tmpMarkerArr = [];
+    let carList = this.carListNearBy;
+    [&#039;privateCar&#039;, &#039;expressCar&#039;, &#039;taxi&#039;].forEach((item, index) =&gt; {
+      carList[item] &amp;&amp; carList[item].location.forEach((car, idx) =&gt; {
+        let makerModel = {
+          id: 200 + idx + index * 10,
+          iconPath: `/image/index/${item}.png`,
+          latitude: car.lat,
+          longitude: car.lon,
+          width: 20,
+          height: 40,
+          rotate: parseInt(car.angle),
+          markerLevel: 1,
+          customCallout: {
+            type: 0,
+            descList: [],
+            isShow: 0
+          },
+        }
+        tmpMarkerArr.push(makerModel);
+      })
+    })
+    this.carNearMarkers = tmpMarkerArr;
+    // console.log(&#039; this.data.carNearMarkers&#039; + JSON.stringify(this.carNearMarkers))
+    this.setDataForMarkers(longitude, latitude, scale, true);
+  },
+  regionchange(e) {
+    if (!this.data.isRegionChange) {
+      if(!this.data.airportActiveShow){
+        this.setData({
+          clickSendQuery:false
+        })
+      }
+      return;
+    }
+    if (e.type == &#039;begin&#039;) {
+      this.beginScale = e.scale;
+      this.beginLat = e.latitude;
+      this.beginLon = e.longitude;
+    }
+    if (e.type === &#039;end&#039;) {
+      this.endScale = e.scale;
+      this.latitude = e.latitude;
+      this.longitude = e.longitude;
+      if (!this.beginLat || !this.beginLon || !this.beginScale) { // 规避ios的首屏 end-begin-end的情况
+        return;
+      }
+      // if(!this.data.airportActiveShow){
+      if (this.beginLat == this.latitude &amp;&amp; this.beginLon == this.longitude &amp;&amp; this.beginScale == this.endScale) {
+        if(this.data.airportActiveShow){//避免扎标不在指定位置
+          if(getDistance(this.data.arrAirportLon,this.data.arrAirportLat,this.beginLon,this.beginLat) &gt; 5){
+            this.setMarkersFn(this.data.arrAirportLat,this.data.arrAirportLon,e.scale)  
+          }
+        }
+        // console.log(&#039;三者相等 重复请求 直接return!!!!?距离&#039;,getDistance(this.data.arrAirportLon,this.data.arrAirportLat,this.beginLon,this.beginLat));
+        return;
+      }        
+      // }
+      
+      if(this.data.airportActiveShow){//接机
+        //移动距离太短不弹提示 
+        // 当前航站楼TODO
+        let start ={
+          lat:this.data.arrAirportLat,
+          lon:this.data.arrAirportLon,
+        }
+        let end = {
+          lat:e.latitude,
+          lon:e.longitude,
+          &#039;startMarkers[0].latitude&#039;:this.data.arrAirportLat,
+          &#039;startMarkers[0].latitude&#039;:this.data.arrAirportLon
+        }
+        this.sendPoint(e.scale)
+      }else{
+        if(!this.data.clickSendQuery || !this.isForIOS){
+          this.setData({
+            locationObjS:{
+              latitude:e.latitude,
+              longitude:e.longitude,
+            },
+            clickMoveToLocation:false,
+            clickSendStartPointChange:false
+          })
+          // console.log(&quot;开始发送请地图移动求=&quot; + JSON.stringify(e));
+          this.getMessageByChangeregion(e.longitude, e.latitude, e.scale, true);
+        }else{
+          this.setData({
+            clickSendQuery:false
+          })
+        }
+      }
+    }
+  },
+  sendPoint(scale){
+    let self = this
+    if(this.data.showToastTimeOut&amp;&amp;this.data.isFirstShow){                    
+      self.setData({
+        showToastTimeOut:false,
+      })
+      my.showToast({
+        content:&#039;起点位置以该航班落地航站楼为准&#039;,
+        complete:()=&gt;{
+          setTimeout(()=&gt;{
+            self.setData({
+              showToastTimeOut:true
+            })
+          },800)
+        }
+      });
+    }
+    this.setMarkersFn(this.data.arrAirportLat,this.data.arrAirportLon,scale)  
+    this.setData({
+      isFirstShow:true,
+    })
+  },
+
+  moveToLocation() {
+    let that = this;
+    if(!this.data.airportActiveShow){
+      this.setData({
+        clickMoveToLocation:true,
+        clickSendStartPointChange:false
+      })
+    }
+      setTimeout(() =&gt; {
+        //获取当前位置 先拿到经纬度 然后逆地理拿到地点名称
+        if (getApp().globalData.cityAdcode &amp;&amp; getApp().globalData.cityAdcode !== &#039;&#039;) {
+          //说明globalData中有cityAdcode和经纬度
+          getApp().globalData.commomConfig.allowLocation = true;//用户允许授权
+          if(!that.data.airportActiveShow){
+            that.setData({
+              noLocationPermission:&#039;&#039;
+            })
+            that.mapView.moveToLocation();
+            let location = getApp().globalData.userLoc
+            if(location.longitude&amp;&amp;location.latitude){
+              that.getMessageByChangeregion(location.longitude, location.latitude,SENDSCALE, true)
+            }else{
+              that.defaultLocation()
+            }
+          }else{
+            that.setMarkersFn(that.data.arrAirportLat,that.data.arrAirportLon,JOINSCALE)
+          }
+        } else {
+          my.getLocation({
+            success(res) {
+              getApp().globalData.commomConfig.allowLocation = true;//用户允许授权
+              if(!that.data.airportActiveShow){
+                  that.setData({
+                    noLocationPermission:&#039;&#039;
+                  })
+                  that.isRenderFirst = false;
+                  that.mapView.moveToLocation();
+              }else{
+                that.setMarkersFn(that.data.arrAirportLat,that.data.arrAirportLon,JOINSCALE)
+              }
+            },
+            fail(res) {
+              if (res &amp;&amp; res.error == 11) {
+                try {
+                  my.showAuthGuide({
+                    authType: &quot;LBS&quot;
+                  })
+                } catch (e) {
+                }
+              }
+            }
+          })
+        }
+
+      }, 200)
+
+  },  
+  //逆地理信息获取
+  getAddressNameByRgeo(lon, lat, scale, isGetAddressName) {
+    return new Promise((resolve, reject) =&gt; {
+      // 逆地理获取地址名字
+      let params = {
+        &#039;lon&#039;: lon, 
+        &#039;lat&#039;: lat
+      };
+      let reverseGeoRe = new ReverseGeoRequest();
+      reverseGeoRe.setParam(params);
+      reverseGeoRe.doRequest(res =&gt; {
+        if (res &amp;&amp; res.code !== 1) {
+          if (isGetAddressName) {
+            this.setData({
+              startPointName: &#039;获取中...&#039;,
+              recommendLoaction:&#039;&#039;
+            })
+            this.data.startPointName = &#039;获取中...&#039;;
+            getApp().globalData.startEndObj.startPoint = null;
+          }
+          resolve(&#039;&#039;);
+          return;
+        }
+        let resName = deepPath(res.data, [&#039;location&#039;, &#039;name&#039;]);
+        let poiid = deepPath(res.data, [&#039;location&#039;, &#039;poiid&#039;]);
+        if (isGetAddressName) {
+          if(this.data.startInfo&amp;&amp;this.data.clickSendStartPointChange){
+            this.setData({
+              startPointName: this.data.startInfo.name,
+              recommendLoaction:&#039;&#039;
+            })
+          }else{
+            this.setData({
+              startPointName: resName,
+              startPointLocation:res.data.location,
+              recommendLoaction:&#039;&#039;
+            })            
+            this.modelSelectionParametersFn(res.data.location)
+          }
+          this.data.startPointName = resName;
+          // 车型选择需要的参数
+          this.processingTimestamp()
+          this.setDataForMarkers(lon, lat, scale, true);
+          getApp().globalData.schemeStart = res.data.location
+          getApp().globalData.startEndObj.startPoint = res.data.location;
+        }
+        resolve(resName);
+      })
+    })
+  },
+})</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

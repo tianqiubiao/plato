@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/taxi-over-payment/taxi-over-payment.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/taxi-over-payment/taxi-over-payment.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.88</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1276</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">73.34</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">12.90</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import NetworkHelper from &#039;../../common/network/NetworkHelper.js&#039;;
+import paymentUtility from &#039;../../common/payment/paymentUtility.js&#039;;
+import DataHelper, { TaxiOrderDetailSource } from &#039;../../service/datacenter/DataHelper.js&#039;;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import util from &#039;../../common/util/util&#039;;
+import IndexScheme from &#039;../../common/schema/indexScheme.js&#039;
+import AddHomeStatus from &#039;/common/util/changeAddHomeStatus.js&#039;
+import mapView from &#039;../../common/mapView/mapView.js&#039;
+// ---------- 支付相关 ---------------------------
+// payStatus 枚举类型
+const TAXI_PAYSTATUS_CODE = {
+  TOPAY: 1,   // 待支付
+  PENDING_REFUND:2,//待退款
+  REFUND_SUCCESS:3,//退款成功
+  PAYCONFIRMED: 4,   // 支付确认中    
+  REFUND_CONFIRMATION:5,//退款确认中
+  TAXITOCONFIRMED: 6,   // 出租车司机支付待确认 
+  RECEIVINGPARTY:7,//预支付退款成功（收款方确认）
+  SUCCESS: 8,   // 支付成功
+  FAILED: 9,   // 支付失败
+  REFUND_FAILED:10,//退款失败
+  TAXICONFIRMED: 11   // 出租车司机确认收款
+}
+
+// payStatus 接口 error code
+const TAXI_PAYSTATUS_ERROR_CODE = {
+  UNKNOWN: 0,    // 位置错误
+  SUCCESS: 1,    // 成功
+  FAILED: 2,    // 失败
+  PARAMS_ERROR: 3,    // 参数错误
+  BILL_NOT_FOUND: 7,    // 未找到订单信息
+  NOT_LOGIN: 14,   // 未登录
+  NOT_BINDED_PHONE: 27,   // 手机未绑定
+  NOT_ALIPAY: 157,  // 用户未开通免密支付
+  PAYMENT_FAILED: 164,  // 支付失败
+  WAIT_PAYMENT: 167   // 用户代扣款
+}
+
+// payMethod 支付方式
+const TAXI_PAYMETHOD = {
+  FREE_ALIPAY: 1,   // 免密
+  LOCAL_ALIPAY: 4,   // 收银台
+}
+
+// payType 支付类别
+const TAXI_PAYTYPE = {
+  NOT_DETERMINED: 0,  // 未决定
+  ONLINE: 5,  // 线上支付
+  OFFLINE: 6,  // 线下支付
+}
+
+// ---------------------------------------------
+
+
+// ---------- 订单相关 --------------------------
+// 订单详情
+const ORDER_STATUS = {
+  INITIAL: 0,    // 订单初始状态
+  PENDING_START: 101,  // 正在派单
+  NODRIVER_AVAILABLE: 102,  // 无司机应答
+  ACCEPT: 103,  // 司机接单
+  ARRIVED: 104,  // 司机到达
+  CHARGING: 105,  // 开始计费
+  FINISHED: 106,  // 行程结束
+  DRIVER_CANCELLED: 107,  // 司机取消无改派
+  REASSIGN: 108,  // 司机取消有改派
+  PASSENGER_CANCELLED: 109,  // 乘客取消
+  SERVICE_CANCELLED: 110,  // CP 取消订单
+  CANCELLED_TO_PAY: 111,  // 取消待支付
+  PAY_SUCCESS: 112,  // 支付成功
+}
+
+// 订单状态
+const SHOW_STATUS = {
+  PENDING: 0,  //  派单中
+  END_TO_PAY: 1,  //  完成待支付
+  CANCEL_TO_PAY: 2,  //  取消待支付
+  BILL_CLOSED: 3,  //  订单关闭
+  BILL_FINISHED: 4,  //  订单完成
+}
+/*
+*                          网约车状态
+*101:去支付
+*102:免密支付中
+*104:支付失败
+*105:支付成功引导绑定免密
+*106:支付成功
+*                         出租车状态
+*200:等待司机确认行程费用
+*201:支付按钮
+*202:等待司机收款
+*203:司机确认收款
+*204:线上支付失败
+*205:线下支付支付中
+*206:线上支付成功
+*208:支付成功
+*                        取消费
+*301:行程被取消
+*302:取消费用展示 
+*303:支付取消费按钮
+*/
+// TODO 卡片复用
+
+// 轮询超时时间
+const payStatusRequestOvertime = 12000;
+// 默认支付失败卡片文案
+const defaultPayFailedText = &quot;支付失败，请重试&quot;;
+// 轮询默认间隔
+const defaultRollRequestTimeInterval = 500;
+// billAndPay 接口下发的轮询间隔
+let defaultBillAndPayReuqestTimeInterval = 500;
+
+export {
+  TAXI_PAYSTATUS_CODE,
+  TAXI_PAYSTATUS_ERROR_CODE,
+  TAXI_PAYMETHOD,
+  TAXI_PAYTYPE,
+  ORDER_STATUS,
+  SHOW_STATUS,
+}
+
+Page({
+  data: {
+    amapOrderId: &quot;&quot;, //高德订单号id
+    view: &#039;&#039;,     //页面显示的状态
+    switch: false, //控制免密的show或hide
+    font: &quot;80&quot;,  // 金钱部分初始的字号
+    timeHour: &quot;&quot;, // 表示小时数
+    timeMinute: &quot;&quot;, //表示分钟数
+    timeType: &quot;&quot;, //时间的单位 小时/分钟
+    source: &#039;&#039;, //页面跳转来源
+    minData: {}, //接口数据接收  // deepPath 
+    // screenWidth: &#039;&#039;, //获取手机屏幕的尺寸
+    scale: 15,
+    longitude: 116.397477, //中心点经度
+    latitude: 39.908692,   //中心点纬度
+    show: false,
+    evaluate: false,
+    remarkConf: {},
+    rePurchase: false,//完单复购
+    addToHomeOption: {
+      top: -95,
+      left: -4,
+      show: false
+    },
+    refundStatus:&#039;&#039;
+    
+  },
+  onLoad(query) {
+    if (!util.isValidAlipay()) {
+      my.redirectTo({
+        url: &#039;../errorpage/errorpage&#039;
+      });
+      return;
+    }
+    if (getApp().globalData.userLoc.longitude &amp;&amp; getApp().globalData.userLoc.latitude) {
+      let longtitude = getApp().globalData.userLoc.longitude;
+      let latitude = getApp().globalData.userLoc.latitude;
+      this.setData({
+        scale: 15,
+        longitude: longtitude,
+        latitude: latitude
+      });
+    }
+    this.show = false;
+    this.isPollingPayInfo = true;
+    this.isFirstRender = true;
+    this.errorNum = true;
+    this.DataHelper = DataHelper.getInstance();
+    let currentPath = &quot;page/taxi-over-payment/taxi-over-payment&quot;;
+    let schemeQuery = IndexScheme.parseScheme(currentPath, getApp());
+    //TaxiLog(JSON.stringify(schemeQuery));
+    if (schemeQuery) {
+      this.data.amapOrderId = schemeQuery[&quot;amapOrderId&quot;];
+      this.data.source = schemeQuery[&quot;from&quot;] || &#039;&#039;;
+    } else {
+      this.data.amapOrderId = query[&quot;amapOrderId&quot;];
+      this.data.source = query[&quot;from&quot;] || &#039;&#039;;
+    }
+    // 兼容 没有 amapOrderId 的情况
+    if (!this.data.amapOrderId) {
+      getApp().reLaunchToHomePage();
+      return;
+    }
+    this.startMessageListening()//启动消息监听
+    this.getTaxiBill(true);
+    this.timeConversion();
+    this.initPoint = false;
+  },
+  onShow() {
+    this.show = true;
+    if(!this.isFirstRender){
+      setTimeout(() =&gt; {
+        this.initStartEndPoint();
+      }, 400)
+    }
+  },
+  onReady() {
+    let mapCtx = my.createMapContext(&#039;myMap&#039;);
+    this.mapView = new mapView(mapCtx);
+    //禁止地图手势3d
+    this.mapView.resetMap();
+    this.isFirstRender = false;
+    setTimeout(()=&gt;{
+      this.initStartEndPoint();
+    },500);
+  },
+  onChangeSafePos() {
+    this.setData({
+      &#039;addToHomeOption.show&#039;: false
+    })
+  },
+  onUnload() {
+    // page unload 方法将轮询调用的当前 page 的方法置位 null，避免因为引用问题，导致轮询无法停止
+    // 停止消息监听事件************
+    TaxiMessageService.shareInstance().unregisterMessageObserver(this);
+    this.DataHelper.stopPollingPayInfo(this.data.amapOrderId);
+    this.DataHelper.stopPollingBill(this.data.amapOrderId);
+  },
+  // 获取订单支付详情
+  getTaxiBill(showLoading) {
+    let amapOrderId = this.data.amapOrderId;
+    if (showLoading) {
+      my.showLoading({});
+    }
+
+    let that = this;
+    // 首次获取账单信息*******
+    that.DataHelper.fetchBill(amapOrderId, (res) =&gt; {
+      // console.log(&#039;账单接口bill数据=====&#039;,res)
+      if (showLoading) {
+        my.hideLoading();
+      }
+      if (res) {
+        let resultCode = res.code || -1;
+
+        // 接口是轮询的，只处理首次进入页面，showLoading true 的未登录调用场景，轮询的时候不反复处理
+        if (resultCode == &#039;14&#039; &amp;&amp; showLoading) {
+          // 未登录
+
+          LoginBindHelper.login({
+            onSuccess: that.loginSuccessFunc, // 登录成功回调
+            onFail: that.loginFailFunc,       // 登录失败回调
+            ctx: that                         // this
+          });
+          return;
+        } else if (resultCode == &#039;1&#039;) {
+          this.changeMinData(res);
+          this.handleBill();
+          if(this.data.minData.taxi){
+            this.pollingBillAndPay(this.data.amapOrderId);//启动billAndPay账单轮询
+          }
+          if (that.startPoint &amp;&amp; that.endPoint) {
+
+          } else {
+            setTimeout(() =&gt; {
+              this.initStartEndPoint();
+            }, 300)
+
+          }
+          // this.fontSize(); //改变字体大小
+          that.timeConversion(); //时间的转换
+          // 更新本地全局缓存数据
+          // that.updateLocalData();
+        } else {
+          // TODO 
+          // billAndPay 接口调用失败
+          this.setData({ view: &#039;404&#039; });
+           my.reportAnalytics(&quot;pay_no_card&quot;, {
+             code:resultCode,
+             error: res.message ? res.message : &#039;&#039;
+          });
+        }
+
+      } else {
+        // TODO 
+        // billAndPay 接口调用失败
+        this.setData({ view: &#039;404&#039; });
+      }
+
+      AddHomeStatus.canShowAddHome({
+        page: &quot;paySuccessedPage&quot;,
+        success: () =&gt; {
+          this.setData({
+            &#039;addToHomeOption.show&#039;: true
+          })
+        },
+        fail: () =&gt; {
+          this.setData({
+            &#039;addToHomeOption.show&#039;: false
+          })
+        }
+      })
+
+
+    });
+  },
+
+  changeMinData(res) {
+    let that = this;
+    let resultData = res.orderDetail ? res.orderDetail.bill : {};
+    let totalFee = resultData.totalFee ? resultData.totalFee / 100 : 0;
+    let amount = resultData.amount ? resultData.amount / 100 : 0;
+    let prePayAmount = resultData.prePayAmount ? resultData.prePayAmount / 100 : 0;
+    let fee = amount ? amount : 0;
+    let mileage = resultData.mileage ? (resultData.mileage / 1000).toFixed(1) : 0;
+    let cancelFee = resultData.cancelFee ? resultData.cancelFee / 100 : 0;
+    let couponAmount = resultData.couponAmount ? resultData.couponAmount / 100 : 0;
+    let updatedMinData = resultData;
+    let taxi = res.orderDetail.taxi || &#039;&#039;;
+    let cpSource = res.orderDetail.cpInfo.cpSource || &#039;&#039;;
+    let rideTypeName = res.orderDetail.cpInfo.rideTypeName || &#039;&#039;;
+    let startingPoint = res.orderDetail.startPoi;
+    let endPoint = res.orderDetail.endPoi;
+    let gdServiceId = res.orderDetail.amapServiceID || 0;
+    let numberOfSeats = res.orderDetail.cpInfo.numberOfSeats || &#039;&#039;;
+    if (resultData &amp;&amp; resultData.payStatus &amp;&amp; resultData.payStatus == TAXI_PAYSTATUS_CODE.FAILED) {
+      updatedMinData.errDetail = res.message || defaultPayFailedText;
+    } else {
+      updatedMinData.errDetail = defaultPayFailedText;
+    }
+    that.setData({
+      minData: updatedMinData,
+      &#039;minData.totalFee&#039;: totalFee, //总金钱的转换
+      &#039;minData.mileage&#039;: mileage,//公里的转换
+      &#039;minData.cancelFee&#039;: cancelFee, //取消费的金钱转换
+      &#039;minData.couponAmount&#039;: couponAmount, //高德优惠券
+      &#039;minData.taxi&#039;: taxi,
+      &#039;minData.cpSource&#039;: cpSource,
+      &#039;minData.startingPoint&#039;: startingPoint,
+      &#039;minData.endPoint&#039;: endPoint,
+      &#039;minData.rideTypeName&#039;: rideTypeName,
+      &#039;minData.amount&#039;: amount,
+      &#039;minData.fee&#039;: fee,
+      &#039;minData.prePayAmount&#039;: prePayAmount,
+      &#039;minData.gdServiceId&#039;:gdServiceId,
+      &#039;minData.numberOfSeats&#039;:numberOfSeats
+    });
+  },
+  handleBill() {
+    let showStatus = this.data.minData.showStatus;
+    let payStatus = this.data.minData.payStatus;
+    switch (parseInt(showStatus)) {
+      case SHOW_STATUS.END_TO_PAY:
+      case SHOW_STATUS.CANCEL_TO_PAY:
+        this.paymentMethod();
+        break;
+      case SHOW_STATUS.BILL_CLOSED:
+        this.rderClosure(payStatus)
+        break;
+      case SHOW_STATUS.BILL_FINISHED:
+        this.paymentSuccess(payStatus);
+        break;
+      default: &#039;&#039;
+        break;
+    }
+  },
+
+
+  // showStatus == 1 2
+  paymentMethod() {
+    let payMethod = this.data.minData.payMethod;
+    let payStatus = this.data.minData.payStatus;
+    if (payMethod == TAXI_PAYMETHOD.FREE_ALIPAY) {//免密
+      this.allPayStatus(payStatus, true, true)
+    } else if (payMethod == TAXI_PAYMETHOD.LOCAL_ALIPAY) {//sdk
+      this.allPayStatus(payStatus, false, true)
+    } else {
+      //TODO
+    }
+
+  },
+
+  allPayStatus(payStatus, payMethod, direction) {//支付状态status
+    let isTaxi = this.data.minData.taxi;
+    let showStatus = this.data.minData.showStatus;
+    switch (parseInt(payStatus)) {
+      case TAXI_PAYSTATUS_CODE.TOPAY:
+      case TAXI_PAYSTATUS_CODE.PAYCONFIRMED:
+        if (direction) {
+          this.goToPay(isTaxi, payMethod, payStatus)
+        } else {
+          this.paymentConfirmation(isTaxi, payStatus);
+        }
+        break;
+      case TAXI_PAYSTATUS_CODE.SUCCESS:
+      case TAXI_PAYSTATUS_CODE.PENDING_REFUND:
+      case TAXI_PAYSTATUS_CODE.REFUND_SUCCESS:
+          this.getTaxiBill(false);
+        break;
+      case TAXI_PAYSTATUS_CODE.FAILED:
+        // payStatus == 9 失败
+        this.failStatus(isTaxi);
+        break;
+      case TAXI_PAYSTATUS_CODE.TAXITOCONFIRMED:
+      case TAXI_PAYSTATUS_CODE.TAXICONFIRMED:
+        // 出租车payStatus为 6和11 司机确认收款和 司机收款成功 有可能会有
+        this.abnormalSituation(payStatus);
+        break;
+      default: &#039;&#039;
+        break;
+    }
+
+  },
+  // payStatus为11和6 的情况  异常。。。
+  abnormalSituation(payStatus) {
+    if (payStatus == TAXI_PAYSTATUS_CODE.TAXITOCONFIRMED) {
+      this.setData({ view: &#039;202&#039; })
+    } else if (payStatus == TAXI_PAYSTATUS_CODE.TAXICONFIRMED) {
+      this.setData({ view: &#039;203&#039; })
+    } else {
+      //TODO
+    }
+  },
+
+  paymentConfirmation(isTaxi, payStatus) { //支付结果确认中
+    switch (parseInt(payStatus)) {
+      case TAXI_PAYSTATUS_CODE.TOPAY:
+      case TAXI_PAYSTATUS_CODE.PAYCONFIRMED:
+        // 待确认状态，轮询 12s 超时
+        if (this.pollingTimes == this.maxPollingTimes) {
+          this.failStatus(isTaxi);
+          // this.isPayStatusRequestOvertime = false;
+        } else {
+          // 没有超时设置或者没有超过 12s 超时，继续轮询
+          this.setData({ view: &quot;102&quot; })
+          // pay免密接口没有成功  启动payStatus接口拿数据
+          if (!this.isPollingBill)
+            this.rollToRequestPayStatus();
+        }
+        break;
+      default: &#039;&#039;
+        break;
+    }
+  },
+
+  goToPay(isTaxi, payMethod, payStatus) {//判断支付 payStatus == 1
+    let source = this.data.source;
+    let payType = this.data.minData.payType;
+    let isShouQiNetworkCar = this.data.minData.cpSource == &#039;car_sqyc_api&#039;;
+    if (this.data.minData &amp;&amp; this.data.minData.cancelFee &amp;&amp; this.data.minData.cancelFee &gt; 0) {
+      //取消费 不轮询了 。。。。停
+      this.DataHelper.stopPollingBill(this.data.amapOrderId);
+      // 取消费
+      this.cancellationFeeLogic(payStatus);
+    } else {
+      //如果不是取消走到这了
+      if (payType == TAXI_PAYTYPE.NOT_DETERMINED) {
+        this.noOrder(payType);
+      } else if (payType == TAXI_PAYTYPE.OFFLINE) {
+        this.setData({ view: &#039;205&#039; });
+        //滴滴线下待支付状态不轮询
+        this.DataHelper.stopPollingBill(this.data.amapOrderId);
+        // 滴滴出租车会有一个106的中间态
+      } else {
+        if (payMethod) {
+          // 免密
+          if (isTaxi) {
+            // 出租车
+            this.secretFreeLogic(payStatus, isShouQiNetworkCar, source);
+
+          } else {
+            // 网约车
+            this.DataHelper.stopPollingBill(this.data.amapOrderId);
+            this.networkLogic(source, isShouQiNetworkCar);
+          }
+        } else {
+          // 出租车网约车收银台
+          this.cashierProcessing(payStatus, isShouQiNetworkCar, isTaxi);
+        }
+      }
+    }
+  },
+
+  // 出租车免密待支付
+  secretFreeLogic(payStatus, isShouQiNetworkCar, source) {
+    if (isShouQiNetworkCar) {
+      this.networkLogic(source, isShouQiNetworkCar)
+    } else {
+      if (payStatus == TAXI_PAYSTATUS_CODE.TOPAY || payStatus == TAXI_PAYSTATUS_CODE.PAYCONFIRMED) {
+        if (this.isPollingPayInfo &amp;&amp; this.data.view != &#039;102&#039; ) {
+          this.setData({ view: &#039;201&#039; })
+        }
+      }
+    } 
+  },
+
+  // 取消费待支付
+  cancellationFeeLogic(payStatus) {
+    if (payStatus == TAXI_PAYSTATUS_CODE.TOPAY || payStatus == TAXI_PAYSTATUS_CODE.PAYCONFIRMED) {
+      if(this.isPollingPayInfo &amp;&amp; this.data.view != &#039;102&#039;){
+        this.setData({ view: &quot;303&quot; })
+      }
+    }
+  },
+
+  //出租车网约车收银台待支付显示
+  cashierProcessing(payStatus, isShouQiNetworkCar, isTaxi) {
+     if (!isTaxi) {
+          // 网约车停止轮询 ******
+          this.DataHelper.stopPollingBill(this.data.amapOrderId);
+        } else {
+          //TODO
+        }
+    if (payStatus == TAXI_PAYSTATUS_CODE.TOPAY || payStatus == TAXI_PAYSTATUS_CODE.PAYCONFIRMED) {
+      if(this.isPollingPayInfo &amp;&amp; this.data.view != &#039;102&#039;){
+        this.setData({ view: isTaxi ? (isShouQiNetworkCar ? &#039;101&#039; : &#039;201&#039;) : &#039;101&#039; }); //有支付按钮的状态
+      }
+    } else {
+      //TODO
+    }
+  },
+  // 轮询billandpay
+  pollingBillAndPay(amapOrderId) {
+    this.DataHelper.pollingBill(amapOrderId);
+  },
+  // 网约车待支付逻辑分出
+  networkLogic(source, isShouQiNetworkCar) {
+    if (!isShouQiNetworkCar) {
+      //暂停轮询******* 
+      this.DataHelper.stopPollingBill(this.data.amapOrderId);
+    }
+    this.sourceSum = this.sourceSum ? ++this.sourceSum : 1;
+    if ( (source == &quot;myTravel&quot; || source == &quot;mapIndex&quot; || source == &#039;cpIndex&#039; || source == &#039;scheme&#039;) &amp;&amp; this.sourceSum == 1) {
+      this.setData({ view: &#039;101&#039; }); //有支付按钮的状态
+    } else if(this.isPollingPayInfo &amp;&amp; this.sourceSum == 1){
+        this.setData({view:&#039;102&#039;});
+        this.rollToRequestPayStatus();
+    }
+  },
+  noOrder(payType) { //无订单
+    if (payType == &#039;0&#039;) {
+      this.setData({ view: &#039;200&#039; });
+    } else {
+      //TODO
+    }
+  },
+
+  failStatus(isTaxi) { //失败的回调
+    // 失败了停止轮询payStatus
+    this.DataHelper.stopPollingPayInfo(this.data.amapOrderId);
+    if (isTaxi) {
+      let isShouQiNetworkCar = this.data.minData.cpSource == &#039;car_sqyc_api&#039;;
+      this.setData({ view: isShouQiNetworkCar ? &#039;104&#039; : &#039;204&#039; });
+      this.pollingBillAndPay(this.data.amapOrderId);//轮轮轮
+    } else {
+      this.setData({ view: &#039;104&#039; })
+    }
+  },
+
+  rderClosure(payStatus) { //订单关闭
+    this.queryRefund(payStatus);
+    this.DataHelper.stopPollingBill(this.data.amapOrderId);
+    if (this.data.minData &amp;&amp; this.data.minData.cancelFee &amp;&amp; this.data.minData.cancelFee &gt; 0) {
+      this.setData({ view: &#039;302&#039; })
+    } else {
+      this.setData({ view: &#039;301&#039; })
+    }
+  },
+
+  // showStatus == 4 完成
+  paymentSuccess(payStatus) {
+    this.queryRefund(payStatus);
+    let isShouQiNetworkCar = this.data.minData.cpSource == &#039;car_sqyc_api&#039;;
+    let isTaxi = this.data.minData.taxi;
+    let payType = this.data.minData.payType;
+    this.clearOrderLocalStorage();
+    this.controlSecretPayment();
+    this.DataHelper.stopPollingPayInfo(this.data.amapOrderId);
+    this.DataHelper.stopPollingBill(this.data.amapOrderId);
+    if (this.data.minData &amp;&amp; this.data.minData.cancelFee &amp;&amp; this.data.minData.cancelFee &gt; 0) {
+      this.setData({ view: &quot;302&quot; });
+      this.jumpCancelFeedback(TAXI_PAYSTATUS_CODE.SUCCESS); //跳转取消费反馈逻辑
+    } else {
+      this.DriverEvaluation(() =&gt; {
+        // 司机评价回调完成后再setData支付卡片 避免司机评价文案闪
+        if (payType == TAXI_PAYTYPE.ONLINE) {
+          if (isTaxi) {
+            this.setData({ view: isShouQiNetworkCar ? &#039;106&#039; : &#039;206&#039; });
+          } else {
+            this.setData({ view: &#039;106&#039; });
+          }
+        } else if (payType == TAXI_PAYTYPE.OFFLINE) {
+          if (isTaxi) {
+            // 正常出租车的线下 和 首汽网约走这里
+            this.setData({ view: &quot;208&quot; });
+          } else {
+            //网约车直接线下 follow me 待定 TODO
+          }
+        }
+
+      });
+    }
+    this.rePurchaseShow(TAXI_PAYSTATUS_CODE.SUCCESS);//完单复购
+    my.reportAnalytics(&#039;pay_success_online&#039;, { //埋点线上支付成功
+      // TODO
+    });
+  },
+
+
+
+  // 完成待支付的去支付按钮
+  payment() {
+    if (this.data.minData.payMethod == TAXI_PAYMETHOD.FREE_ALIPAY) {
+      // 免密支付
+      this.payOneStep();
+
+    } else if (this.data.minData.payMethod == TAXI_PAYMETHOD.LOCAL_ALIPAY) {
+
+      // 收银台支付
+      this.payLocalAlipay();
+
+    } else {
+
+    }
+  },
+
+  // 轮询请求 payStatus 接口
+  rollToRequestPayStatus() {
+    this.DataHelper.stopPollingBill(this.data.amapOrderId);
+    this.DataHelper.pollingPayInfo(this.data.amapOrderId, 24, 500)
+  },
+
+  // 处理 payStatus 接口 和 payOneStep 免密调用接口返回的数据
+  handlePayStatusResult(resultData) {
+    let isTaxi = this.data.minData.taxi;
+    if (resultData) {
+      // 刷新数据
+      let resCode = resultData.code;
+      let payStatus = resultData.payStatus || -1;
+      let payMethod = resultData.payMethod || -1;
+      let errDetail = resultData.message || defaultPayFailedText;
+      if (resCode ==  TAXI_PAYSTATUS_ERROR_CODE.NOT_LOGIN) {
+          errDetail = &quot;请登录后重试&quot;;
+      }
+      let updatedMinData = this.data.minData;
+      updatedMinData.payStatus = payStatus &gt;= 0 ? payStatus : updatedMinData.payStatus;
+      // SDK 支付不以 SDK 回调结果为准，都会轮询 payStatus，但是存在支付没有到达服务就失败的情况，不更新 payMethod
+      // 只有调用免密支付失败，需要更新 payMethod，考虑用 SDK 支付
+      if (payStatus == TAXI_PAYSTATUS_CODE.FAILED) {
+        updatedMinData.payMethod = payMethod &gt;= 0 ? payMethod : updatedMinData.payMethod;
+      }
+      // 支付失败错误信息
+      updatedMinData.errDetail = errDetail;
+
+      this.setData({
+        minData: updatedMinData
+      });
+
+      if (payStatus &gt; 0 &amp;&amp; resCode == 1) {
+        if (payStatus != TAXI_PAYSTATUS_CODE.PAYCONFIRMED) {
+          // 不是支付确认中，即支付有结果
+          // 清空本地缓存的 SDK 支付过订单(如果有)
+          this.clearOrderLocalStorage();
+        }
+        // 处理出租车网约车逻辑
+        this.allPayStatus(payStatus, false, false)
+      } else {
+        this.handlePayStatusError(isTaxi, resCode);
+      }
+    } else {
+      this.handlePayStatusError(isTaxi, null);
+    }
+  },
+
+  handlePayStatusError(isTaxi, resCode) {
+    //如果是直接没网络 或者没有请求到服务
+    if (this.pollingTimes == this.maxPollingTimes) {
+      let isNetworkAvailable = getApp().globalData.network.networkAvailable;
+      if(isNetworkAvailable){
+        this.DataHelper.stopPollingPayInfo(this.data.amapOrderId);
+        if(isTaxi){
+          this.pollingBillAndPay(this.data.amapOrderId);//轮轮轮
+        }else{
+          this.getTaxiBill(false);
+        }
+        this.errorNum = true;
+        this.isPollingPayInfo = false;
+        this.setData({view: isTaxi ? &#039;204&#039;: &#039;104&#039;});
+      }else{
+        this.setData({view:&#039;404&#039;});
+      }
+      //点击刷新按钮 如果有数据 会拿账单数据更新  
+    } else {
+      //如果没有轮询超时继续102
+      this.setData({ view: &#039;102&#039; })
+      // 如果没有轮询 会起轮询
+      if(!this.DataHelper.isPollingPayInfo(this.data.amapOrderId)&amp;&amp; this.errorNum){
+        this.errorNum = false;
+        this.rollToRequestPayStatus();
+      }
+    }
+  },
+
+  //取消待支付的按钮
+  cancel() {
+    if (this.data.minData.payMethod == TAXI_PAYMETHOD.FREE_ALIPAY) {  //取消待支付+免密
+
+      //调取免密支付的接口
+      this.payOneStep();
+
+    } else if (this.data.minData.payMethod == TAXI_PAYMETHOD.LOCAL_ALIPAY) { //取消待支付+不免密
+
+      //调取收银台支付
+      this.payLocalAlipay();
+
+    } else {
+      // TODO
+    }
+  },
+
+  // 总支付 pay，支付按钮绑定时间
+  pay() {
+    if (this.data.minData.showStatus == SHOW_STATUS.END_TO_PAY) { //完成待支付
+
+      this.payment();
+
+    } else if (this.data.minData.showStatus == SHOW_STATUS.CANCEL_TO_PAY) { //取消待支付
+
+      this.cancel();
+
+    } else {
+
+    }
+
+    my.reportAnalytics(&#039;pay_online_btn&#039;, {
+      amapOrderId: this.data.amapOrderId
+    });
+  },
+
+  // 免密支付
+  payOneStep() {
+    let isTaxi = this.data.minData.taxi;
+    let isNetworkAvailable = getApp().globalData.network.networkAvailable;
+    if(isNetworkAvailable){
+     // 有网络
+      // 出租车的话，暂停轮询 billAndPay 接口
+      // 免密开始停止billAndPay轮询
+      this.DataHelper.stopPollingBill(this.data.amapOrderId);
+      // 支付中卡片
+      this.setData({ view: &quot;102&quot; });
+      //调取免密支付的接口
+      this.DataHelper.payBill(this.data.amapOrderId, (res) =&gt; {
+        // console.log(&#039;免密支付----------------&#039;,res)
+        this.isPollingBill = false;
+        // if res.orderDetail 无  置为{}
+        let resCode = res.code || 0;
+        let orderDetail = res.orderDetail ? res.orderDetail : {};
+        let resData = (orderDetail &amp;&amp; orderDetail.bill) ? orderDetail.bill : {};
+        resData.message = res.message || &#039;&#039;;
+        resData.code = resCode;
+        this.handlePayStatusResult(resData);
+      }); 
+    }else{
+      this.configureNoNetworkError(isTaxi);
+    }
+  },
+
+  
+  configureNoNetworkError(isTaxi) {
+    let isShouQiNetworkCar = this.data.minData.cpSource == &#039;car_sqyc_api&#039;;
+    // 无网络
+    let updateMinData = this.data.minData;
+    updateMinData.errDetail = &quot;网络不佳，未能完成支付，请重试&quot;;
+    if (isTaxi) {
+      this.setData({
+        view: isShouQiNetworkCar ? &quot;104&quot; : &quot;204&quot;,
+        minData: updateMinData
+      }); // 出租车支付失败
+    } else {
+      this.setData({
+        view: &quot;104&quot;,
+        minData: updateMinData
+      }); // 网约车支付失败
+    }
+    this.isPollingPayInfo = false;
+  },
+
+  // 支付宝收银台支付
+  payLocalAlipay() {
+    paymentUtility.callLocalAlipay(this.data.minData.payString, (res) =&gt; {
+      this.handleAlipayResult(res);
+    });
+  },
+
+  onBind() {
+    //绑定免密
+    paymentUtility.bindOneStepAlipay((res) =&gt; {
+      let resultStatus = res.resultStatus;
+      if (resultStatus == 7000) {
+        // 绑定成功
+        this.setData({
+          switch: false, //控制免密的网约车组件显示隐藏
+        })
+        my.alert({
+          // title:&quot;友情提示&quot;,
+          content: &quot;你已开启支付宝小额免密&quot;,
+          buttonText: &quot;知道了&quot;
+        })
+      } else {
+        // 绑定失败
+        // TODO
+      }
+    });
+  },
+
+  // 处理支付宝收银台 SDK 支付返回结果
+  handleAlipayResult(res) {
+    let isTaxi = this.data.minData.taxi;
+    let isShouQiNetworkCar = this.data.minData.cpSource == &#039;car_sqyc_api&#039;;
+    let resultCode = res.resultCode;
+    if (resultCode == &quot;6001&quot; || resultCode == &quot;99&quot;) {
+      // 6001: 用户取消支付
+      // 99: 用户点击忘记密码导致快捷界面退出(only iOS)
+      // 如果是出租车支付，继续轮询 bill and pay，可能会转线下，网约车不应该触发轮询
+      if (isTaxi) {
+        // this.pollingBillAndPay(this.data.amapOrderId);//轮轮轮
+      }
+    } else if (resultCode == &quot;4000&quot; || resultCode == &quot;6002&quot;) {
+      // 4000: 支付失败
+      // 6002: 网络连接出错
+      if (resultCode == &quot;4000&quot;) {
+        paymentUtility.addPayFailedOrder(this.data.amapOrderId);
+      }
+      let updateMinData = this.data.minData;
+      updateMinData.errDetail = res.memo || defaultPayFailedText;
+      this.isPollingPayInfo = false;
+      if (isTaxi) {
+        this.setData({
+          view: isShouQiNetworkCar ? &quot;104&quot; : &quot;204&quot;,
+          minData: updateMinData
+        }); // 出租车支付失败
+        // 出租车支付失败继续轮询
+        // this.pollingBillAndPay(this.data.amapOrderId);//轮轮轮
+      } else {
+        this.setData({
+          view: &quot;104&quot;,
+          minData: updateMinData
+        }); // 网约车支付失败
+      }
+    } else {
+      if (resultCode == &quot;9000&quot; ||
+        resultCode == &quot;8000&quot;) {
+        // 9000 订单支付成功
+        // 8000 正在处理中
+        // 真实发生过收银台支付，并且可能成功的，本地缓存订单状态，
+        // 下次进入支付完成页面，根据是否有缓存来处理 showStatus == SHOW_STATUS.END_TO_PAY, payStatus == TAXI_PAYSTATUS_CODE.PAYCONFIRMED 的状态，决定是展示支付宝支付中 loading 卡片，还是去支付卡片
+        paymentUtility.addPayingOrder(this.data.amapOrderId, this.data.minData.payString);
+      } else if (resultCode == &quot;6004&quot;) {
+        // 6004 支付结果未知（有可能已经支付成功），请查询商户订单列表中订单的支付状态
+      } else {
+
+      }
+
+      this.setData({ view: &quot;102&quot; });  // 支付中
+      //收银台 轮询payStatus 拿状态
+      this.rollToRequestPayStatus();
+    }
+  },
+
+  // 清除缓存的订单号
+  clearOrderLocalStorage() {
+    paymentUtility.removePayingOrder(this.data.amapOrderId);
+    paymentUtility.removePayFailedOrder(this.data.amapOrderId);
+  },
+
+  // onTapToGoToInvoicePage 点击跳转开发票页面
+  onTapToGoToInvoicePage() {
+    my.navigateTo({
+      url: &quot;/page/invoice/invoice-select-type/invoice-select-type&quot;
+    });
+  },
+
+  // onTapToGoToFeedbackPage 点击跳转用户反馈页面
+  onTapToGoToFeedbackPage() {
+    // TODO
+    my.navigateTo({
+      url: &quot;/page/user-feedback/index/index?amapOrderId=&quot; + this.data.amapOrderId
+    });
+  },
+
+  //地图起终点
+  initStartEndPoint() {
+    let markers = new Array();
+    // let includePoints = new Array();
+    let startLocation = {};
+    let endLocation = {};
+    if (this.data.amapOrderId) {
+      startLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId).startPoi : null  //orderid订单id
+      endLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId).endPoi : null;  //orderid订单id
+    }
+
+    if (!startLocation) {
+      if (this.data.minData &amp;&amp; this.data.minData.startingPoint &amp;&amp; this.data.minData.startingPoint.lat &amp;&amp; this.data.minData.startingPoint.lon) {
+        startLocation = {};
+        startLocation.lon = this.data.minData.startingPoint.lon;
+        startLocation.lat = this.data.minData.startingPoint.lat;
+        startLocation.name = this.data.minData.startingPoint.name;
+      }
+    }
+    if (!endLocation) {
+      if (this.data.minData.endPoint &amp;&amp; this.data.minData.endPoint.lat &amp;&amp; this.data.minData.endPoint.lon) {
+        endLocation = {};
+        endLocation.lon = this.data.minData.endPoint.lon;
+        endLocation.lat = this.data.minData.endPoint.lat;
+        endLocation.name = this.data.minData.endPoint.name;
+      }
+
+    }
+
+    if (startLocation &amp;&amp; startLocation.lon &amp;&amp; startLocation.lat) {
+      if (this.initPoint &amp;&amp; this.startPoint &amp;&amp; ((this.startPoint.longitude == startLocation.startLon) &amp;&amp; (this.startPoint.latitude == startLocation.startLat))) {
+
+      }
+      else {
+        this.startPoint = {  //行程起始点坐标
+          iconPath: &#039;/image/index/start-point.png&#039;,
+          longitude: startLocation.lon,
+          latitude: startLocation.lat,
+          anchorX: 0.5,
+          anchorY: 0.7,
+          width: 26,
+          height: 34,
+          id: 112,
+          markerLevel: 2
+        };
+        this.startPointStr = {
+          iconPath: &#039;/image/index/blank.png&#039;,
+          longitude: startLocation.lon,
+          latitude: startLocation.lat,
+          width: 10,
+          height: 10,
+          anchorX: 0.5,
+          anchorY: 0.1,
+          id: 113,
+          markerLevel: 3,
+          iconAppendStr: startLocation.name,
+          iconAppendStrColor: &#039;#212121&#039;
+        };
+        markers.push(this.startPoint);
+        markers.push(this.startPointStr);
+      }
+
+
+    }
+    if (endLocation &amp;&amp; endLocation.lon &amp;&amp; endLocation.lat) {
+      if (this.initPoint &amp;&amp; this.endPoint &amp;&amp; ((this.endPoint.longitude == endLocation.lon) &amp;&amp; (this.endPoint.latitude == endLocation.lat))) {
+
+      } else {
+        this.endPoint = {   //行程终点坐标点
+          iconPath: &#039;/image/index/end-point.png&#039;,
+          longitude: endLocation.lon,
+          latitude: endLocation.lat,
+          anchorX: 0.5,
+          anchorY: 0.7,
+          width: 26,
+          height: 34,
+          id: 111,
+          markerLevel: 2
+        };
+        this.endPointStr = {
+          iconPath: &#039;/image/index/blank.png&#039;,
+          longitude: endLocation.lon,
+          latitude: endLocation.lat,
+          width: 10,
+          height: 10,
+          anchorX: 0.5,
+          anchorY: 0.1,
+          id: 114,
+          iconAppendStr: endLocation.name,
+          iconAppendStrColor: &#039;#212121&#039;,
+          markerLevel: 3
+        };
+        markers.push(this.endPoint);
+        markers.push(this.endPointStr);
+      }
+    }
+    if (markers &amp;&amp; markers.length &gt; 0) {
+      if (!this.initPoint &amp;&amp; this.show) {
+
+        if (this.mapView) {
+          this.mapView.updateComponents(markers, this.centerLatitude, this.centerLongtitude, this.centerScale); //设置地图起终点
+          this.mapView.fullView()
+          this.mapView.unifiedUpdateMap();
+          this.initPoint = true;
+        }
+      }
+    }
+  },
+  timeConversion() {
+    let duration = this.data.minData.duration  //时间的转换
+    if (duration &lt; 60) {
+      this.setData({
+        timeMinute: duration,
+        timeType: &quot;分钟&quot;
+      })
+    }
+    else if (duration &gt; 60 || duration == 60) {
+      let hour = parseFloat(duration / 60).toFixed(1);
+      this.setData({
+        timeHour: hour,
+        timeType: &quot;小时&quot;
+      })
+    }
+  },
+
+  controlSecretPayment() { //控制出租车支付的引导免密的hide或show
+    let password = this.data.minData.isCap;
+    let source = this.data.source
+    if (source == &#039;myTravel&#039;) {
+      this.setData({ switch: false })
+    } else {
+      this.setData({
+        switch: !password
+      })
+    }
+  },
+
+  regionchange(e) {
+    if (e.type == &quot;end&quot;) {
+      this.centerScale = e.scale;
+      this.centerLatitude = e.latitude;
+      this.centerLongtitude = e.longitude;
+    }
+  },
+
+  //分享信息设置
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+
+  onMoveToSafeHelper() {
+      getApp().router.navigateTo({
+        url: &#039;/page/safe-helper/safe-helper&#039;
+      })
+  },
+
+  // 登录成功回调
+  loginSuccessFunc() {
+    this.getTaxiBill(true);
+  },
+
+  // 登录失败回调
+  loginFailFunc() {
+    // TODO
+  },
+  // 接口获取不到数据刷新逻辑
+  refreshGetTaxiBill() {
+    this.setData({ view: &quot;405&quot; });
+    this.isPollingPayInfo = true;
+    this.sourceSum = 0;
+    this.getTaxiBill(false);
+  },
+  onCostDetails() { //跳转到费用详情
+    let detail = this.data.minData.detail || &#039;&#039;;
+    // let coupon = this.data.minData.coupon || &#039;&#039;;
+    let timeHour = this.data.timeHour || &#039;&#039;;
+    let timeMinute = this.data.timeMinute || &#039;&#039;;
+    let timeType = this.data.timeType || &#039;&#039;;
+    let mileage = this.data.minData.mileage || &#039;&#039;;
+    let totalFee = this.data.minData.totalFee || 0;
+    let transmission = JSON.stringify({ detail, timeHour, timeMinute, timeType, mileage, totalFee });
+    my.navigateTo({
+      url: &quot;/page/cost-question/cost-question?amapOrderId=&quot; + this.data.amapOrderId + &#039;&amp;transmission=&#039; + transmission
+    })
+  },
+  jumpCancelFeedback(payStatus) { //取消费成功跳转取消原因反馈
+    let cancelStatus = this.data.minData.status || &#039;&#039;;
+    let isSubmitCancelReason = this.data.minData.isSubmitCancelReason || 0;
+    let source = this.data.source;
+    // console.log(&#039;source =================&#039;,source)
+    if (source == &#039;myTravel&#039; || source == &#039;scheme&#039;) {
+      //TODO 产品确认是我的行程的话就不弹出
+    } else {
+      this.num = this.num ? ++this.num : 1;
+      if ((payStatus == TAXI_PAYSTATUS_CODE.SUCCESS) &amp;&amp; isSubmitCancelReason &amp;&amp; this.num == 1) {
+        setTimeout(() =&gt; {
+          my.navigateTo({
+            url: &quot;/page/cancel-page/cancel-page?amapOrderId=&quot; + this.data.amapOrderId + &#039;&amp;showReason=1&#039;
+          })
+        }, 1000)
+      } else {
+        // TODO
+      }
+    }
+  },
+
+  // 司机评价相关函数区域
+  // 控制司机评价的入口方法
+  DriverEvaluation(resFun) {
+    paymentUtility.getDriverEvaluation(this.data.amapOrderId, (res) =&gt; {
+      if (res.code == 1) {
+        if (res.data) {
+          // 在行程未完成或订单被取消状态不setData
+          this.setData({ remarkConf: res.data });
+          TaxiLog(this.data.remarkConf);
+        } else {
+          //res.data不存在
+          this.faultTolerant();
+        }
+      } else {
+        //服务错误
+        this.faultTolerant();
+      }
+      resFun();
+    })
+  },
+
+  // 司机评价服务错误容错数据
+  faultTolerant() {
+    this.setData({
+      remarkConf: {
+        popupText: &quot;评价服务&quot;,
+        text: &quot;您的的评价会让司机做得更好&quot;,
+        scoreText: {      //# 星级文案，服务端可配置
+          1: &quot;糟糕的打车体验&quot;,
+          2: &quot;不满意，比较差&quot;,
+          3: &quot;服务尚可，仍需改善&quot;,
+          4: &quot;比较满意，仍需改善&quot;,
+          5: &quot;非常棒，五星好评&quot;
+        }
+      }
+    });
+  },
+
+  // 司机评价
+  evaluateResult(textarea) { //评价结果回调
+    let can = getApp().globalData.network.networkAvailable; //判断有无网
+    if (can) {
+      // 有网
+      this.setData({ isloading: true, show: false });
+      let score = this.data.starNum || 0; //星星数量
+      let remark = textarea ? (&quot;“&quot; + textarea + &quot;”&quot;) : &#039;&#039;; //文本域内容，评价内容
+      let amapOrderId = this.data.amapOrderId; //订单号
+      // 开始调用提交评价接口
+      paymentUtility.postEvaluationSubmit(amapOrderId, remark, score, (res) =&gt; {
+        // TaxiLog(&#039;司机评价的回调==========&#039;, res)
+        let resCode = res.code || &#039;&#039;;
+        let resData = res.data || &#039;&#039;;
+        // TaxiLog(&quot;司机评价code----&quot;, resCode);
+        if (resCode == 1) {
+          // 成功
+          my.showToast({
+            type: &#039;none&#039;,
+            content: &#039;匿名评价成功&#039;,
+            duration: 2000
+          })
+          this.setData({ evaluate: false, isloading: false, remarkConf: { remarkCode: 4, popupText: &quot;评价服务&quot;, hasRemarked: true, remark: remark, score: score } });
+        } else if (resCode == 2) {
+          // 异常
+          if (resData &amp;&amp; resData.remarkCode == 3) {
+            // 评价超过有效期
+            my.showToast({
+              type: &#039;none&#039;,
+              content: &#039;评价已超过有效期，提交失败&#039;,
+            })
+            this.setData({ evaluate: false, isloading: false, remarkConf: { remarkCode: 3, popupText: &quot;已无法评价&quot; } });
+          } else {
+            // code 2中的其他异常情况处理
+            my.showToast({
+              type: &#039;none&#039;,
+              content: &#039;提交失败&#039;,
+            })
+          }
+          this.setData({ isloading: false, show: true, })
+        } else {
+          // 其他异常情况处理
+          my.showToast({
+            type: &#039;none&#039;,
+            content: &#039;提交失败&#039;,
+          })
+          this.setData({ isloading: false, show: true, })
+        }
+      })
+    } else {
+      // 无网
+      my.showToast({
+        type: &#039;fail&#039;,
+        content: &#039;网络异常，请重试&#039;,
+      })
+    }
+  },
+  //获取提交时星星的数量
+  onGetStarNum(number) {
+    this.setData({ starNum: number });
+  },
+  // 控制评价的显示
+  onShowEvaluate() {
+    this.setData({ evaluate: true })
+  },
+  // 调取司机评价评价框及按钮
+  cardUpspring() {
+    this.setData({ show: true })
+  },
+  //关闭评价
+  evaluateClosed() {
+    this.setData({
+      evaluate: false,
+      show: false,
+    })
+  },
+  rePurchaseShow(payStatus) { //控制完单复购显示隐藏
+    let source = this.data.source;
+    if (payStatus == TAXI_PAYSTATUS_CODE.SUCCESS) {
+      if (source == &#039;myTravel&#039;) {
+        this.setData({ rePurchase: false })
+      } else {
+        setTimeout(() =&gt; {
+          this.setData({ rePurchase: true })
+        }, 500)
+      }
+    } else {
+      //TODO
+    }
+  },
+  startMessageListening() { //启动消息监听
+    TaxiMessageService.shareInstance().registerMessageObserver(&#039;TaxiOrderDetailMessage&#039;, this, this.pollDetection)
+  },
+  // 分辨的方法
+  pollDetection(message) {
+    let amapOrderId = message.data.orderDetail ? message.data.orderDetail.amapOrderID : 0;
+    let source = message.data.source || 0;
+    let resCode = message.data.code || 0;
+     let orderDetail = message.data.orderDetail ? message.data.orderDetail : {};
+    let resData = ( orderDetail &amp;&amp; orderDetail.bill) ? orderDetail.bill : {};
+    resData.message = message.data.message || &#039;&#039;;
+    resData.code = resCode;
+    this.pollingTimes = message.data.pollingTimes || &#039;&#039;;
+    this.maxPollingTimes = message.data.maxPollingTimes || &#039;&#039;;
+    // console.log(&#039; message 启动 消息 数据 &#039;, message)
+    // console.log(&#039;消息 source ==== &#039;, source)
+    // console.log(&#039;bill--------------------&#039;,resData)
+    // console.log(&#039;pollingTimes ==============&#039;,this.pollingTimes);
+    // console.log(&#039;maxPollingTimes ==============&#039;,this.maxPollingTimes);
+    // console.log(&#039;resCode -----------------&#039;,resCode)
+    if (amapOrderId) {
+      if (amapOrderId == this.data.amapOrderId) {
+        // 账单接口billAndPay接口轮询消息回调
+        this.messageUnified(source, message, resData)
+      } else {
+        // 如果 amapOrderId 不是当前 *****
+      }
+    } else {
+      this.messageUnified(source, message, resData)
+    }
+
+  },
+
+  messageUnified(source, message, resData) {
+    if (source == TaxiOrderDetailSource.BillPolling) {
+      // console.log(&#039;bill 账单轮询 === &#039;)
+      // bill节点更新minData本地数据
+      this.changeMinData(message.data);
+      // console.log(&#039;minData ==== ===== ===== ====&#039;, this.data.minData);
+      this.handleBill()
+    } else if (source == TaxiOrderDetailSource.PayInfoPolling) {
+      // console.log(&#039; payStatus  支付 轮询  ==== &#039;,billAndPay)
+      // 支付状态轮询payStatus接口轮询消息回调
+      this.handlePayStatusResult(resData);
+    } else {
+      //TODO
+    }
+  },
+  queryRefund(payStatus) {
+    if (payStatus == TAXI_PAYSTATUS_CODE.PENDING_REFUND || payStatus == TAXI_PAYSTATUS_CODE.REFUND_SUCCESS) {
+      let fee = this.data.minData.totalFee;
+      let refundStatus = `您额外支付的${this.data.minData.amount}元已退款，预计1—7个工作日原路返回`
+      this.setData({ &#039;minData.refundStatus&#039;: refundStatus, &#039;minData.fee&#039;: fee })
+    }
+  },
+});
+
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

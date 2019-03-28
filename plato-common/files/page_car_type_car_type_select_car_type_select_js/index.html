@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/car-type/car-type-select/car-type-select.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/car-type/car-type-select/car-type-select.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.62</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">544</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">46.19</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">5.20</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import NetworkHelper from &#039;../../../common/network/NetworkHelper.js&#039;;
+import DataFormatter from &#039;../../../common/DataFormatter.js&#039;;
+import deepPath from &#039;../../../common/lib/deepPath.js&#039;;
+import LoginBindHelper from &#039;../../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../../common/TaxiLog.js&#039;;
+import util from &#039;../../../common/util/util.js&#039;;
+import DataHelper from &#039;../../../service/datacenter/DataHelper.js&#039;;
+import CarTypeRequest from &#039;../../../common/network/requests/CarTypeRequest.js&#039;;
+import OrderUtil from &#039;../../../common/util/OrderUtil.js&#039;;
+import PickupCarHelper from &#039;../../../common/util/PickupCarHelper.js&#039;;
+
+Page({
+  data: {
+    errorType: &#039;1&#039;,// 错误类型 根据错误类型判断显示页面 --&gt; 0 没有数据 1 网络错误 2 服务错误
+    errorMessage: &#039;&#039;,// 错误提示文字         --&gt;暂无数据 网络无连接 请求超时点击刷新 
+    style: &#039;gray&#039;, // 显示哪个错误图
+    showErrorPage: false,// 错误页显示隐藏
+    refreshText: &#039;&#039;,
+    showDataView: false,
+
+    submitText : &quot;马上预定&quot;, // 提交按钮文案
+    refuseOrder : true, // 未选择 CP 下单按钮不可用
+    showPrePayment : false, // 师傅弹窗是否显示
+    orderData : {
+      startName : &quot;&quot;,
+      endName : &quot;&quot;,
+      flightNo : &quot;&quot;,
+      flightDestination : &quot;&quot;,
+      flightTime : &quot;&quot;,
+    },
+    carListData : {},
+    carTypes : [],
+    callbackMultiCpTag : false, // 点击预约下单 的标识参数 获取当前选中的CP信息
+    formId : &quot;&quot;,
+    gdServiceId : &quot;&quot;,
+    prePaymentData : {}, // 预支付所需参数
+    submitOrderParams : {}, // 订单提交的请求参数
+    submitStartParam : {},  // 下单的起点信息
+    submitEndParam : {},  // 下单的终点信息
+    submitMultCpParam : {}, // 下单选择的运力信息
+    propsParam : {} ,//  
+    selectedCapacities : &quot;&quot;, // 上次选择的运力信息：运力格式： car_sqyc_api,private-car,34|car_sqyc_api,private-car,54
+    openSecret: false,             //控制开启免密（下单异常时） 
+    isSingleCp: true, // 是否选择单CP
+    isVisibleCps : false, // 控制运力展示
+    swipeTabContext : null, // swipe 上下文
+    isLoadRefreshStrategy : false // 当前是否处于刷新策略获取
+  },
+  onLoad(props) {
+    TaxiLog(&#039;onLoad data is &#039; + props.record);
+
+    this.propsParam = JSON.parse(props.record);
+
+    // 订单起终点信息
+    this.data.orderData.startName = this.propsParam.startInfo.startName;
+    this.data.orderData.endName = this.propsParam.endInfo.endName;
+    this.data.orderData.flightTime = this.propsParam.departTime;
+
+    this.data.gdServiceId = this.propsParam.gdServiceId;
+    if (this.propsParam.gdServiceId == &quot;3&quot;) {
+      this.data.orderData.flightNo = this.propsParam.flightNo;
+      this.data.orderData.flightDestination = this.propsParam.startInfo.depCityName + &quot;-&quot; + this.propsParam.startInfo.arrCityName;
+    } 
+    
+  },
+  onShow() {
+    // 从后台回来重新开启刷新策略
+    this.startRefreshStrategy();
+  },
+  onReady() {
+    const carList = PickupCarHelper.getInstance().getAirportCarList();
+    if (carList &amp;&amp; carList.list) {
+      my.showLoading();
+      this.handleDataAndShow(carList, 1000);
+    } else {
+      this.loadCarlistData();
+    }
+    
+  },
+  onHide() {
+    // 页面隐藏
+    this.clearRefreshTimer();
+  },
+  onUnload() {
+    // 页面被关闭
+    this.clearRefreshTimer();
+    PickupCarHelper.getInstance().clear();
+  },
+  // 错误页的点击事件
+  onClickRefresh() {
+    this.loadCarlistData();
+  },
+  loadCarlistData() {
+    const networkAvailable = getApp().globalData.network.networkAvailable;
+    if (!networkAvailable) {
+      my.showToast({
+        content: &quot;当前网络不佳，请刷新重试&quot;
+      });
+      my.hideLoading({page:this});
+      if (!this.data.carTypes || this.data.carTypes.length == 0) {
+        this.errorPage();
+      }
+      return
+    }
+
+    this.setData({
+      showErrorPage : false
+    })
+    getApp().showLoading();
+    // &quot;startLon=116.473195&amp;startLat=39.993253&amp;startName=首开广场(装修中)&amp;endLon=116.603039&amp;endLat=40.080525&amp;endName=北京首都国际机场&amp;gdServiceId=4&amp;departTime=1552029200&amp;depAirCode=PEK&quot;
+    PickupCarHelper.getInstance().parseAirportCarListParams(this.propsParam, (param) =&gt; {
+      this.requestCarList(param);
+    });
+  },
+  requestCarList(param) {
+    if (this.swipeTabContext) {
+      const multiData = this.swipeTabContext.getCurrentSelectedMultiCpData();
+      TaxiLog(&#039;============&gt; get multiData is is &#039; + JSON.stringify(multiData));
+      let selectedCapacities = this.getSelectedCapacities(multiData);
+      if (selectedCapacities &amp;&amp; selectedCapacities.length &gt; 0) {
+        param.selectedCapacities = selectedCapacities;
+      }
+    }
+    
+    TaxiLog(&quot;request carlist params is &quot; + JSON.stringify(param));
+    let request = new CarTypeRequest();
+    request.setParam(param);
+    request.doRequest(res=&gt;{
+      if (res.code == 1) {
+        if (res.data &amp;&amp; res.data.list &amp;&amp; res.data.list.length &gt; 0) {
+          this.handleDataAndShow(res.data);
+        } else {
+          // 无数据 展示无数据异常
+          this.handleCarListError(&quot;0&quot;, true, &quot;附近暂无可用车辆，请&quot;)
+          this.showToast(&#039;none&#039;, &#039;附近暂无可用车辆&#039;);
+        }
+      } else {
+        this.handleCarListError(&quot;2&quot;, true, &quot;运力信息获取失败，请&quot;)
+        PickupCarHelper.getInstance().handleRequestCarListErrorCode(res.code);
+      }
+      TaxiLog(&#039;response car list is  &#039; + JSON.stringify(res));
+    })
+  },
+  handleDataAndShow(data, delayShowTimes = 1200) {
+    this.setData({
+      showDataView : true,
+    })
+    
+    this.setData({
+      showErrorPage : false,
+      carListData : data,
+      carTypes : data.list,
+      isLoadRefreshStrategy : this.data.isLoadRefreshStrategy
+    })
+
+    this.data.isLoadRefreshStrategy = false;
+    setTimeout(()=&gt; {
+      my.hideLoading({page:this});     
+      this.setData({
+        isVisibleCps : true
+      })
+    }, delayShowTimes);
+
+    //启动2min刷新策略
+    this.startRefreshStrategy();
+  },
+  // 如果当前已有展示的运力，则不展示ErrorPage
+  handleCarListError(type, showErrorPage, message) {
+     my.hideLoading({page:this});
+     if (!this.data.carTypes || this.data.carTypes.length == 0) {
+       this.errorPage(type, showErrorPage, message);
+     }
+  },
+  errorPage(errorType, showErrorPage, errorMessage, refreshText){
+    this.setData({// 没网显示错误页
+      errorType: errorType || &#039;1&#039;,//错误页类型
+      showErrorPage: showErrorPage || true,//错误页显示
+      errorMessage: errorMessage || &#039;当前网络不佳，请&#039;,//默认网络状态文字
+      refreshText: refreshText ||&#039;刷新重试&#039;,
+    })
+  },
+  // 选择车辆类型的 文案回调
+  onSelectCpCallBack(selectCarTypeCount, text) {
+    this.setData({
+      submitText : text,
+      refuseOrder : selectCarTypeCount &gt; 0 ? false : true,
+    }) 
+
+    // 选中状态发生变更后，清除Timer 重新加载刷新策略
+    this.startRefreshStrategy();
+  },
+  // 当前选中多运力数据的回调
+  onSelectedMultiCpDataCallBack(multiCpData) {
+    this.setData({
+      callbackMultiCpTag : false
+    })
+
+    this.data.submitStartParam = {
+      startLon : this.propsParam.startInfo.startLon,
+      startLat : this.propsParam.startInfo.startLat,
+      startName : this.propsParam.startInfo.startName,
+      startPoi : this.propsParam.startInfo.startPoi,
+    }
+
+    this.data.submitEndParam = {
+      endLon : this.propsParam.endInfo.endLon,
+      endLat : this.propsParam.endInfo.endLat,
+      endName : this.propsParam.endInfo.endName,
+      endPoi : this.propsParam.endInfo.endPoi
+    }
+
+    this.data.submitMultCpParam = multiCpData
+
+    let params = {
+      multiCpData : JSON.stringify(multiCpData),
+      startInfo : JSON.stringify(this.data.submitStartParam),
+      endInfo : JSON.stringify(this.data.submitEndParam),
+      terminal : this.propsParam.terminal, // 航站楼
+      departTime :this.propsParam.departTime * 1000, // 下单需要13位的毫秒
+
+      // 接机
+      // flightNo   航班号，接机业务必填
+      // arrAirCode     到达机场三字码，接机必填
+
+      gdServiceId : this.propsParam.gdServiceId,
+      formId :  this.data.formId,
+      adcode: getApp().globalData.adcode || &#039;&#039;,
+      utm_source: &quot;alipay_mini&quot;,
+      utm_content: JSON.stringify(getApp().globalData.schemaChannel || &#039;&#039;)
+    }
+
+    // 送机
+    if (this.propsParam.gdServiceId == &quot;4&quot;) {
+      params.depAirCode = this.propsParam.endInfo.arrAirCode;
+    // 接机
+    } else if (this.propsParam.gdServiceId == &quot;3&quot;) {
+      params.depAirCode = this.propsParam.depAirCode;
+      params.arrAirCode = this.propsParam.arrAirCode;
+      params.flightNo = this.propsParam.flightNo;
+      params.flightDate = this.getTimes(this.propsParam.flightDate) * 1000; // // 下单需要13位的毫秒
+      params.pickUpDelayTime = this.propsParam.pickUpDelayTime* 1000;
+    }
+    
+    this.data.submitOrderParams = params;
+    this.data.selectedCapacities = this.getSelectedCapacities(multiCpData)
+
+    this.doSubmitOrder(params);
+
+  },
+  // 获取当前CP选中的串
+  getSelectedCapacities(multiCpData) {
+    let temp = &quot;&quot;;
+    for (const cpInfo of multiCpData) {
+      // car_sqyc_api,private-car,34|car_sqyc_api,private-car,54
+      temp = temp + cpInfo.cpSource + &quot;,&quot; + cpInfo.productType + &quot;,&quot; + cpInfo.rideType + &quot;|&quot;;
+    }
+    if (temp.length &gt; 1) {
+      temp = temp.substr(0, temp.length - 1);
+    }
+    return temp;
+  },
+  doSubmitOrder(params) {
+
+    const networkAvailable = getApp().globalData.network.networkAvailable;
+    if (!networkAvailable) {
+      this.showToast(&#039;exception&#039;, &#039;当前网络不佳，请刷新重试&#039;);
+      return
+    }
+
+    getApp().showLoading();
+
+    TaxiLog(&quot;doSubmitOrder request params is &quot; + JSON.stringify(params));
+    const multiCpDatas = OrderUtil.cpDataForMatter(this.data.submitMultCpParam).isCheckCp;
+    DataHelper.getInstance().airportSubmitOrder(params, this.data.submitStartParam, this.data.submitEndParam, multiCpDatas, null, null, (res)=&gt;{
+      my.hideLoading({page:this});
+      TaxiLog(&#039;airportSubmitOrder result is  &#039; + JSON.stringify(res));
+
+      // code 175 预支付
+      if (res.code == 175) {
+        this.setData({
+          prePaymentData : res,
+          isSingleCp : this.data.submitMultCpParam &amp;&amp; (this.data.submitMultCpParam.length == 1),
+          showPrePayment : true
+        })
+        this.clearRefreshTimer();
+      } else if (res.code == 1) {
+        this.showToast(&#039;none&#039;, &#039;下单成功&#039;)
+        this.forwardGoingPage(res.orderDetail.amapOrderID);
+      } else {
+        this.handleSubmitOrderErrorCode(res);
+      }
+
+      // 存本地选中的CP信息
+      PickupCarHelper.getInstance().storeSelectCpInfo(this.data.selectedCapacities);
+    })
+  },
+  onCallTaxi(event) {
+    
+    this.setData({
+      formId : encodeURIComponent(event.detail.formId),
+      callbackMultiCpTag : true
+    })
+
+  },
+  // 点击服务说明的处理
+  onClickServiceDesc(data) {
+    const params = {
+      cpSource : data.carMultiCpData.cpSource,
+      productType : data.carMultiCpData.productType,
+      rideType : data.carMultiCpData.rideType,
+      gdServiceId : this.data.gdServiceId,
+      iconUrl :data.brandIconUrl,
+      brandName : data.brandName,
+      gdRideTypeNamePanel : data.gdRideTypeNamePanel,
+      capacity : data.capacity
+
+    }
+    this.navigateToUrl(&#039;/page/car-type/car-service/car-service?params=&#039; + JSON.stringify(params));
+  },
+  // 刷新页面
+  onClickRefresh() {
+    this.loadCarlistData();
+  },
+  // 支付弹窗关闭
+  onPrePaymentClosed() {
+    this.setData({
+      showPrePayment : false
+    })
+  },
+  // 支付成功回调
+  onSuccessCallback(preOrderId) {
+    this.data.submitOrderParams.preOrderId = preOrderId;
+    this.onPrePaymentClosed();
+    this.doSubmitOrder(this.data.submitOrderParams);
+  },
+  // 跳转
+  navigateToUrl(jumpUrl,callback){
+    my.navigateTo({
+      url: jumpUrl,
+      success: callback||function () {
+        //成功的回调
+      }
+    })
+  },
+  handleSubmitOrderErrorCode (res) {
+    const code = res.code;
+    TaxiLog(&#039;handleSubmitOrderErrorCode &#039; + JSON.stringify(res));
+    if (code == 0) {
+      //没有网络状态
+      this.showToast(&#039;exception&#039;, &#039;当前网络不佳，请刷新重试&#039;);
+    } else if (code == 14 || code == 27) {
+      //用户未登录，进行登录操作。
+      TaxiLog(&quot;用户未登录状态&quot;);
+      if (code == 27) {
+        LoginBindHelper.clearLocalStorage();
+      }
+      LoginBindHelper.login({
+        onSuccess: this.loginSuccessFunc, // 登录成功回调
+        onFail: this.loginFailFunc,       // 登录失败回调
+        ctx: this                         // this
+      });
+    } else if (code == 28) {
+      //CP系统异常 (会将CP的异常消息放至‘message’属性里)
+      my.alert({
+        title: &#039;下单失败&#039;,
+        content: res.message || &#039;&#039;,
+        buttonText: &#039;知道了&#039;,
+      });
+    } else if (code == 154) {
+      let unFinishIds = OrderUtil.getUnfinisedOrderIdS();
+      my.confirm({
+        title: &#039;您已在行程中&#039;,
+        content: unFinishIds.length &gt; 1 ? &#039;您有多个行程，请前往查看&#039; : &#039;您有一个正在进行的行程，请前往查看&#039; ,
+        confirmButtonText: &#039;去查看&#039;,
+        cancelButtonText: &#039;知道了&#039;,
+        success: (result) =&gt; {
+          if (result.confirm) {
+            // DataHelper.getInstance().fetchDoingOrderList();
+            let unFinishId = null;
+            if(unFinishIds &amp;&amp; unFinishIds.length == 1){
+              unFinishId = unFinishIds[0];
+              if (unFinishId) {
+                this.forwardGoingPage(unFinishId);
+              }
+            } else {
+              my.navigateTo({
+                url: &#039;/page/my-travel/my-travel?source=travel&#039;
+              })
+            }
+          }
+        },
+      });
+    } else if (code == 155) {
+      let unPayOrderDatas = OrderUtil.getUnPayOrderIds();
+      let unPayOrderId = null;
+      let title,confirmButtonText;
+      if(unPayOrderDatas &amp;&amp; unPayOrderDatas.length &gt; 0){
+        unPayOrderId = unPayOrderDatas[0];
+      }
+      // TaxiLog(&quot;amaporedid is &quot; + JSON.stringify(amapOrderids));
+      if (unPayOrderId) {
+        if (!getApp().globalData.isConfirmPay) {
+          getApp().globalData.isConfirmPay = true;
+          if(unPayOrderDatas.length == 1){
+            title = &#039;未支付订单&#039;;
+            confirmButtonText = &#039;去支付&#039;
+          }else if(unPayOrderDatas.length &gt; 1){
+            title = &#039;进行中订单&#039;;
+            confirmButtonText = &#039;去查看&#039;
+          }
+          my.confirm({
+            title: title,
+            content: res.message || &#039;您尚有未支付订单，请完成支付&#039;,
+            // content: &#039;您尚有未支付订单，请完成支付&#039;,
+            confirmButtonText: confirmButtonText,
+            cancelButtonText: &#039;知道了&#039;,
+            success: (result) =&gt; {
+              if (result.confirm) {
+                // let currentUrl = this.getUrl();
+                if(unPayOrderDatas.length == 1){
+                  my.redirectTo({
+                    url: &#039;/page/taxi-over-payment/taxi-over-payment?amapOrderId=&#039; + unPayOrderId + &#039;&amp;from=cpIndex&#039;,
+                  })
+                } else {
+                  my.navigateTo({
+                    url: &#039;/page/my-travel/my-travel?source=travel&#039;
+                  })
+                }
+              }
+            },
+            complete: () =&gt; {
+              getApp().globalData.isConfirmPay = false;
+            }
+          });
+        }
+      }
+    } else if (code == 157) {
+      // todo 
+      //用户未开通免密支付
+      this.setData({
+        openSecret: true
+      })
+    } else if (code == 160) {
+      //控制取消次数过多的异常
+      my.alert({
+        title: &#039;发单失败&#039;,
+        content: res.message || &#039;取消次数过多&#039;,
+        buttonText: &#039;关闭&#039;,
+      });
+    } else if (code == 280) {
+      //支付宝风控拦截
+      my.alert({
+        title: &#039;下单失败&#039;,
+        content: res.message || &#039;&#039;,
+        buttonText: &#039;知道了&#039;,
+      });
+    } else if (code == 1540) {
+      //amap有订单的时候，不能进行下订单的操作
+      my.alert({
+        title: &#039;发单失败&#039;,
+        content: res.message || &#039;请检查在高德地图内是否有未完成订单&#039;,
+        // content: &#039;请检查在高德地图内是否有未完成订单&#039;,
+        buttonText: &#039;知道了&#039;,
+      });
+    } else if (code == 201) {
+      // 预约时间有误
+      this.showToast(&#039;none&#039;, &#039;预约时间有误&#039;)
+
+    } else {
+      //其他错误情况。
+      this.showToast(&#039;none&#039;, &#039;下单失败 请重试&#039;)
+    }
+  },
+  // 跳转到行程页
+  forwardGoingPage(amapOrderId) {
+    my.navigateBack({
+      delta : 1
+    });
+    setTimeout(()=&gt;{
+      my.redirectTo({
+        url: &#039;/page/going/going?amapOrderId=&#039; + amapOrderId, 
+        success: (res) =&gt; {
+          
+        },
+      });
+    },600)
+  },
+  // 登录成功回调方法 // 不继续发单 by yushi
+  loginSuccessFunc(res) {
+    this.showToast(&#039;none&#039;, &#039;已完成登录&#039;);
+  },
+
+  // 登录失败回调方法 
+  loginFailFunc() {
+    this.showToast(&#039;none&#039;, &#039;登录失败 请重试&#039;);
+  },
+  //下单开启免密，控制免密页面的显示和隐藏
+  onOpenSecret(secretFlag) {
+      this.setData({ openSecret: secretFlag });
+      TaxiLog(&quot;执行是否显示函数，参数为----&quot;, secretFlag);
+      //免密弹窗展示埋点 
+      if (secretFlag) {
+          my.reportAnalytics(&#039;freepay_popup_show&#039;, {});
+      }
+  },
+  //免密开启成功回调 // 不继续发单 by yushi
+  onSuccess() {
+    this.showToast(&#039;none&#039;, &#039;已完成授权&#039;);
+  },
+  getTimes(flightDate) {
+    let date = flightDate.replace(/-/g,&#039;/&#039;); 
+    const timestamp = new Date(date).getTime();
+    return timestamp / 1000;
+  },
+  // 开启刷新策略
+  startRefreshStrategy() {
+    this.clearRefreshTimer();
+    this.loadRefreshStrategy();
+  },
+  //开启定时器，开始每隔2min的刷新策略
+  loadRefreshStrategy() {
+    this.timer = setTimeout(() =&gt; {
+      this.data.isLoadRefreshStrategy = true;
+      this.loadCarlistData();
+    }, 120000); 
+  },
+  //清除刷新策略的timer
+  clearRefreshTimer() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+  },
+  showToast(type, message) {
+    my.showToast({
+      type: type || &#039;none&#039;,
+      content: message || &#039;&#039;,
+    });
+  },
+  setSwipeTabContext(swipeContext) {
+    this.swipeTabContext = swipeContext;
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

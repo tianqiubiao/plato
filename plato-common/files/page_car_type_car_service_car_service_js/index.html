@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/car-type/car-service/car-service.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/car-type/car-service/car-service.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">55.32</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">132</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">23.41</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.01</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import NetworkHelper from &#039;../../../common/network/NetworkHelper.js&#039;;
+import DataFormatter from &#039;../../../common/DataFormatter.js&#039;;
+import deepPath from &#039;../../../common/lib/deepPath.js&#039;;
+import LoginBindHelper from &#039;../../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../../common/TaxiLog.js&#039;;
+import util from &#039;../../../common/util/util.js&#039;;
+import DataHelper from &#039;../../../service/datacenter/DataHelper.js&#039;;
+import CarServiceRequest from &#039;../../../common/network/requests/CarServiceRequest.js&#039;;
+
+Page({
+  data: {
+    errorType: &#039;1&#039;,// 错误类型 根据错误类型判断显示页面 --&gt; 0 没有数据 1 网络错误 2 服务错误
+    errorMessage: &#039;&#039;,// 错误提示文字         --&gt;暂无数据 网络无连接 请求超时点击刷新 
+    style: &#039;gray&#039;, // 显示哪个错误图
+    showErrorPage: false,// 错误页显示隐藏
+    refreshText: &#039;&#039;,
+
+    showPop : false, // 显示服务说明弹窗的标识
+    serviceItemWidth : 90,
+    serviceGridHeight : 278,
+    cpIcon : &quot;&quot;,
+    cpName : &quot;&quot;,
+    cpType : &quot;&quot;,
+    cpServiceDesc : [],
+    cpServices: {},
+    propParams : {}, // 传递所需参数
+    showDataView : false,
+    serviceType : &quot;接机服务&quot;,
+
+  },
+  onLoad(props) {
+    if (props.params) {
+      this.data.propParams = JSON.parse(props.params);
+      let tempType = &quot;接机服务&quot;;
+      if (this.data.propParams.gdServiceId == &quot;4&quot;) {
+        tempType = &quot;送机服务&quot;;
+      }
+
+      this.setData({
+        serviceType : tempType,
+        cpIcon : this.data.propParams.iconUrl,
+        cpName : this.data.propParams.brandName + &quot;-&quot; + this.data.propParams.gdRideTypeNamePanel,
+        cpType : this.data.propParams.capacity
+      });
+      
+      this.onRequestData();
+    } else {
+      this.errorPage(&quot;2&quot;, true, &quot;服务开小差了&quot;, &quot;稍后重试&quot;);
+    } 
+
+  },
+  onRequestData() {
+
+    const networkAvailable = getApp().globalData.network.networkAvailable;
+    if (!networkAvailable) {
+      my.hideLoading();
+      this.errorPage();
+      return
+    }
+
+    getApp().showLoading();
+    const param = {
+      cpSource : this.data.propParams.cpSource,
+      productType : this.data.propParams.productType,
+      rideType : this.data.propParams.rideType,
+      gdServiceId : this.data.propParams.gdServiceId
+    }
+
+    this.setData({
+      showErrorPage : false
+    })
+    
+    TaxiLog(&#039;car service request params is &#039; + JSON.stringify(param)); 
+    let request = new CarServiceRequest();
+    request.setParam(param);
+    request.doRequest(res=&gt;{
+      my.hideLoading();    
+      TaxiLog(&#039;response result is  &#039; + JSON.stringify(res));
+      if (res.code == 1) {
+        if (res.data.services) {
+          let gridHeight = this.data.serviceGridHeight;
+          if (res.data.services.length &gt; 4) {
+            gridHeight = 382; // 262
+          }
+          this.setData({
+            showDataView : true,
+            serviceGridHeight : gridHeight,
+          })
+
+          this.setData({
+            cpServices : res.data
+          })
+        } else {
+          this.errorPage(&quot;2&quot;, true, &quot;服务开小差了&quot;, &quot;稍后重试&quot;);
+        }
+      } else {
+        my.showToast({
+          content:&#039;服务异常，请稍后重试&#039;
+        });  
+        this.errorPage(&quot;2&quot;, true, &quot;服务开小差了&quot;, &quot;稍后重试&quot;);
+      }
+      
+    })
+  },
+  errorPage(errorType, showErrorPage, errorMessage, refreshText){
+    this.setData({// 没网显示错误页
+      errorType: errorType || &#039;1&#039;,//错误页类型
+      showErrorPage: showErrorPage || true,//错误页显示
+      errorMessage: errorMessage || &#039;当前网络不佳，请&#039;,//默认网络状态文字
+      refreshText: refreshText || &#039;刷新重试&#039;
+    })
+  },
+  // 刷新页面
+  onClickRefresh() {
+    this.onRequestData();
+  },
+  onServiceItemClick(e) {
+    let item = e.target.dataset.item;
+    const desc = item.desc;
+    
+    this.setData({
+      showPop:true,
+      cpServiceDesc: desc
+    });
+  },
+  onPopupClose() {
+    this.setData({
+      showPop: false
+    }); 
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

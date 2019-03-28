@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/invoice/invoice-info/invoice-info.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/invoice/invoice-info/invoice-info.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">66.84</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">122</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">20.55</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.80</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import InvoiceDetailRequest from &#039;/common/network/requests/InvoiceDetailRequest.js&#039;
+Page({
+  data: {
+    invoiceData: {},   //发票数据
+    cpTip: &#039;&#039;,  //发票提供方
+    tripInfo: &#039;&#039;,     //行程列表   
+    tip: &#039;&#039;,    //提示文案
+    expressCopy: &#039;&#039;, //是否可以拷贝快递单号
+    showExpress: false, //是否展示快递查看详情跳转
+    htmlStatus: false,//html页面样式是否渲染
+    adaptive: false//适配
+  },
+  checkNetworkState() { //判断当前网络状态
+    if (getApp().globalData.network.networkAvailable) {
+      this.getRequest();
+    } else {
+      this.showNetworkError();
+    }
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  getRequest() {  //请求服务器信息获取信息
+    let invoiceId = this.data.invoiceId;
+    let param = {
+      invoiceId
+    };
+    let request = new InvoiceDetailRequest();
+    my.showLoading({
+      content: &#039;加载中...&#039;
+    });
+    request.setParam(param);
+    request.doRequest((res) =&gt; {
+      my.hideLoading();
+      if (res.code === 1) {
+        this.getInvoiceData(res)
+      } else {
+        let errorType = &#039;2&#039;;
+        let errorMessage = res.message;
+        let refreshText = &#039;刷新重试&#039;;
+        if (res.code === 14) {
+          my.showToast({
+            type: &#039;none&#039;,
+            content: &#039;您还没有登录，请登录&#039;,
+            duration: 2000,
+            success: () =&gt; {
+            },
+          });
+          errorType = &#039;0&#039;;
+          errorMessage = &#039;您还没有登录，请登录&#039;;
+          refreshText = &#039;&#039;;
+        }
+        this.setData({
+          errorStatus: true,
+          htmlStatus: false,
+          errorType,
+          refreshText,
+          errorMessage
+        })
+      }
+    });
+  },
+  getInvoiceData(res) { // 请求服务器 获取发票数据
+    let invoiceData = res.data.invoice;
+    let expressUrl = res.data.url;
+    let tripList = res.data.orders;
+    let tripNum = tripList.length;
+    let cpTip = res.data.cpTip;
+    let tip = res.data.tip;
+    let titleBar = &#039;&#039;;
+    let expressCopy = res.data.query;
+
+    let taxno = invoiceData.taxno + &#039;&#039;;   //税号每4为后加空格
+    invoiceData.taxno = taxno.replace(/\s/g, &#039;&#039;).replace(/(\w{4})(?=\w)/g, &quot;$1 &quot;);
+    invoiceData.amount=(invoiceData.amount/100).toFixed(2)+&#039;元&#039;;// 发票金额分转元
+
+    this.setData({
+      invoiceData,
+      cpTip,
+      tip,
+      tripInfo: {
+        expressUrl,
+        tripList
+      },
+      expressCopy,
+      htmlStatus: true,
+      errorStatus: false,
+      tripList
+    });
+
+  },
+  showNetworkError() { // 网络状态报错显示
+    my.showToast({
+      type: &#039;none&#039;,
+      content: &#039;请检查您的网络&#039;,
+      duration: 2000,
+      success: () =&gt; {
+      },
+    });
+    this.setData({
+      errorStatus: true,
+      errorType: &#039;1&#039;,
+      errorMessage: &quot;请检查您的网络&quot;,
+      refreshText: &#039;刷新重试&#039;
+    });
+  },
+  onLoad(query) {
+    this.setData({
+      adaptive: getApp().globalData.isAdaptive,// 适配机型
+      invoiceId: query.invoiceId
+    })
+    this.checkNetworkState();
+  },
+  onShow() {
+    my.setNavigationBar({
+      title: &#039;开票详情&#039;,
+    })
+  }
+})
+
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

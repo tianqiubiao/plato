@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/wxParse-alipay/wxDiscode.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/wxParse-alipay/wxDiscode.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">52.71</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">206</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">17.06</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">3.56</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">// HTML 支持的数学符号
+function strNumDiscode(str){
+    str = str.replace(/&amp;forall;/g, &#039;∀&#039;);
+    str = str.replace(/&amp;part;/g, &#039;∂&#039;);
+    str = str.replace(/&amp;exists;/g, &#039;∃&#039;);
+    str = str.replace(/&amp;empty;/g, &#039;∅&#039;);
+    str = str.replace(/&amp;nabla;/g, &#039;∇&#039;);
+    str = str.replace(/&amp;isin;/g, &#039;∈&#039;);
+    str = str.replace(/&amp;notin;/g, &#039;∉&#039;);
+    str = str.replace(/&amp;ni;/g, &#039;∋&#039;);
+    str = str.replace(/&amp;prod;/g, &#039;∏&#039;);
+    str = str.replace(/&amp;sum;/g, &#039;∑&#039;);
+    str = str.replace(/&amp;minus;/g, &#039;−&#039;);
+    str = str.replace(/&amp;lowast;/g, &#039;∗&#039;);
+    str = str.replace(/&amp;radic;/g, &#039;√&#039;);
+    str = str.replace(/&amp;prop;/g, &#039;∝&#039;);
+    str = str.replace(/&amp;infin;/g, &#039;∞&#039;);
+    str = str.replace(/&amp;ang;/g, &#039;∠&#039;);
+    str = str.replace(/&amp;and;/g, &#039;∧&#039;);
+    str = str.replace(/&amp;or;/g, &#039;∨&#039;);
+    str = str.replace(/&amp;cap;/g, &#039;∩&#039;);
+    str = str.replace(/&amp;cap;/g, &#039;∪&#039;);
+    str = str.replace(/&amp;int;/g, &#039;∫&#039;);
+    str = str.replace(/&amp;there4;/g, &#039;∴&#039;);
+    str = str.replace(/&amp;sim;/g, &#039;∼&#039;);
+    str = str.replace(/&amp;cong;/g, &#039;≅&#039;);
+    str = str.replace(/&amp;asymp;/g, &#039;≈&#039;);
+    str = str.replace(/&amp;ne;/g, &#039;≠&#039;);
+    str = str.replace(/&amp;le;/g, &#039;≤&#039;);
+    str = str.replace(/&amp;ge;/g, &#039;≥&#039;);
+    str = str.replace(/&amp;sub;/g, &#039;⊂&#039;);
+    str = str.replace(/&amp;sup;/g, &#039;⊃&#039;);
+    str = str.replace(/&amp;nsub;/g, &#039;⊄&#039;);
+    str = str.replace(/&amp;sube;/g, &#039;⊆&#039;);
+    str = str.replace(/&amp;supe;/g, &#039;⊇&#039;);
+    str = str.replace(/&amp;oplus;/g, &#039;⊕&#039;);
+    str = str.replace(/&amp;otimes;/g, &#039;⊗&#039;);
+    str = str.replace(/&amp;perp;/g, &#039;⊥&#039;);
+    str = str.replace(/&amp;sdot;/g, &#039;⋅&#039;);
+    return str;
+}
+
+//HTML 支持的希腊字母
+function strGreeceDiscode(str){
+    str = str.replace(/&amp;Alpha;/g, &#039;Α&#039;);
+    str = str.replace(/&amp;Beta;/g, &#039;Β&#039;);
+    str = str.replace(/&amp;Gamma;/g, &#039;Γ&#039;);
+    str = str.replace(/&amp;Delta;/g, &#039;Δ&#039;);
+    str = str.replace(/&amp;Epsilon;/g, &#039;Ε&#039;);
+    str = str.replace(/&amp;Zeta;/g, &#039;Ζ&#039;);
+    str = str.replace(/&amp;Eta;/g, &#039;Η&#039;);
+    str = str.replace(/&amp;Theta;/g, &#039;Θ&#039;);
+    str = str.replace(/&amp;Iota;/g, &#039;Ι&#039;);
+    str = str.replace(/&amp;Kappa;/g, &#039;Κ&#039;);
+    str = str.replace(/&amp;Lambda;/g, &#039;Λ&#039;);
+    str = str.replace(/&amp;Mu;/g, &#039;Μ&#039;);
+    str = str.replace(/&amp;Nu;/g, &#039;Ν&#039;);
+    str = str.replace(/&amp;Xi;/g, &#039;Ν&#039;);
+    str = str.replace(/&amp;Omicron;/g, &#039;Ο&#039;);
+    str = str.replace(/&amp;Pi;/g, &#039;Π&#039;);
+    str = str.replace(/&amp;Rho;/g, &#039;Ρ&#039;);
+    str = str.replace(/&amp;Sigma;/g, &#039;Σ&#039;);
+    str = str.replace(/&amp;Tau;/g, &#039;Τ&#039;);
+    str = str.replace(/&amp;Upsilon;/g, &#039;Υ&#039;);
+    str = str.replace(/&amp;Phi;/g, &#039;Φ&#039;);
+    str = str.replace(/&amp;Chi;/g, &#039;Χ&#039;);
+    str = str.replace(/&amp;Psi;/g, &#039;Ψ&#039;);
+    str = str.replace(/&amp;Omega;/g, &#039;Ω&#039;);
+
+    str = str.replace(/&amp;alpha;/g, &#039;α&#039;);
+    str = str.replace(/&amp;beta;/g, &#039;β&#039;);
+    str = str.replace(/&amp;gamma;/g, &#039;γ&#039;);
+    str = str.replace(/&amp;delta;/g, &#039;δ&#039;);
+    str = str.replace(/&amp;epsilon;/g, &#039;ε&#039;);
+    str = str.replace(/&amp;zeta;/g, &#039;ζ&#039;);
+    str = str.replace(/&amp;eta;/g, &#039;η&#039;);
+    str = str.replace(/&amp;theta;/g, &#039;θ&#039;);
+    str = str.replace(/&amp;iota;/g, &#039;ι&#039;);
+    str = str.replace(/&amp;kappa;/g, &#039;κ&#039;);
+    str = str.replace(/&amp;lambda;/g, &#039;λ&#039;);
+    str = str.replace(/&amp;mu;/g, &#039;μ&#039;);
+    str = str.replace(/&amp;nu;/g, &#039;ν&#039;);
+    str = str.replace(/&amp;xi;/g, &#039;ξ&#039;);
+    str = str.replace(/&amp;omicron;/g, &#039;ο&#039;);
+    str = str.replace(/&amp;pi;/g, &#039;π&#039;);
+    str = str.replace(/&amp;rho;/g, &#039;ρ&#039;);
+    str = str.replace(/&amp;sigmaf;/g, &#039;ς&#039;);
+    str = str.replace(/&amp;sigma;/g, &#039;σ&#039;);
+    str = str.replace(/&amp;tau;/g, &#039;τ&#039;);
+    str = str.replace(/&amp;upsilon;/g, &#039;υ&#039;);
+    str = str.replace(/&amp;phi;/g, &#039;φ&#039;);
+    str = str.replace(/&amp;chi;/g, &#039;χ&#039;);
+    str = str.replace(/&amp;psi;/g, &#039;ψ&#039;);
+    str = str.replace(/&amp;omega;/g, &#039;ω&#039;);
+    str = str.replace(/&amp;thetasym;/g, &#039;ϑ&#039;);
+    str = str.replace(/&amp;upsih;/g, &#039;ϒ&#039;);
+    str = str.replace(/&amp;piv;/g, &#039;ϖ&#039;);
+    str = str.replace(/&amp;middot;/g, &#039;·&#039;);
+    return str;
+}
+
+// 
+
+function strcharacterDiscode(str){
+    // 加入常用解析
+    str = str.replace(/&amp;nbsp;/g, &#039; &#039;);
+    str = str.replace(/&amp;quot;/g, &quot;&#039;&quot;);
+    str = str.replace(/&amp;amp;/g, &#039;&amp;&#039;);
+    // str = str.replace(/&amp;lt;/g, &#039;‹&#039;);
+    // str = str.replace(/&amp;gt;/g, &#039;›&#039;);
+
+    str = str.replace(/&amp;lt;/g, &#039;&lt;&#039;);
+    str = str.replace(/&amp;gt;/g, &#039;&gt;&#039;);
+
+    return str;
+}
+
+// HTML 支持的其他实体
+function strOtherDiscode(str){
+    str = str.replace(/&amp;OElig;/g, &#039;Œ&#039;);
+    str = str.replace(/&amp;oelig;/g, &#039;œ&#039;);
+    str = str.replace(/&amp;Scaron;/g, &#039;Š&#039;);
+    str = str.replace(/&amp;scaron;/g, &#039;š&#039;);
+    str = str.replace(/&amp;Yuml;/g, &#039;Ÿ&#039;);
+    str = str.replace(/&amp;fnof;/g, &#039;ƒ&#039;);
+    str = str.replace(/&amp;circ;/g, &#039;ˆ&#039;);
+    str = str.replace(/&amp;tilde;/g, &#039;˜&#039;);
+    str = str.replace(/&amp;ensp;/g, &#039;&#039;);
+    str = str.replace(/&amp;emsp;/g, &#039;&#039;);
+    str = str.replace(/&amp;thinsp;/g, &#039;&#039;);
+    str = str.replace(/&amp;zwnj;/g, &#039;&#039;);
+    str = str.replace(/&amp;zwj;/g, &#039;&#039;);
+    str = str.replace(/&amp;lrm;/g, &#039;&#039;);
+    str = str.replace(/&amp;rlm;/g, &#039;&#039;);
+    str = str.replace(/&amp;ndash;/g, &#039;–&#039;);
+    str = str.replace(/&amp;mdash;/g, &#039;—&#039;);
+    str = str.replace(/&amp;lsquo;/g, &#039;‘&#039;);
+    str = str.replace(/&amp;rsquo;/g, &#039;’&#039;);
+    str = str.replace(/&amp;sbquo;/g, &#039;‚&#039;);
+    str = str.replace(/&amp;ldquo;/g, &#039;“&#039;);
+    str = str.replace(/&amp;rdquo;/g, &#039;”&#039;);
+    str = str.replace(/&amp;bdquo;/g, &#039;„&#039;);
+    str = str.replace(/&amp;dagger;/g, &#039;†&#039;);
+    str = str.replace(/&amp;Dagger;/g, &#039;‡&#039;);
+    str = str.replace(/&amp;bull;/g, &#039;•&#039;);
+    str = str.replace(/&amp;hellip;/g, &#039;…&#039;);
+    str = str.replace(/&amp;permil;/g, &#039;‰&#039;);
+    str = str.replace(/&amp;prime;/g, &#039;′&#039;);
+    str = str.replace(/&amp;Prime;/g, &#039;″&#039;);
+    str = str.replace(/&amp;lsaquo;/g, &#039;‹&#039;);
+    str = str.replace(/&amp;rsaquo;/g, &#039;›&#039;);
+    str = str.replace(/&amp;oline;/g, &#039;‾&#039;);
+    str = str.replace(/&amp;euro;/g, &#039;€&#039;);
+    str = str.replace(/&amp;trade;/g, &#039;™&#039;);
+
+    str = str.replace(/&amp;larr;/g, &#039;←&#039;);
+    str = str.replace(/&amp;uarr;/g, &#039;↑&#039;);
+    str = str.replace(/&amp;rarr;/g, &#039;→&#039;);
+    str = str.replace(/&amp;darr;/g, &#039;↓&#039;);
+    str = str.replace(/&amp;harr;/g, &#039;↔&#039;);
+    str = str.replace(/&amp;crarr;/g, &#039;↵&#039;);
+    str = str.replace(/&amp;lceil;/g, &#039;⌈&#039;);
+    str = str.replace(/&amp;rceil;/g, &#039;⌉&#039;);
+
+    str = str.replace(/&amp;lfloor;/g, &#039;⌊&#039;);
+    str = str.replace(/&amp;rfloor;/g, &#039;⌋&#039;);
+    str = str.replace(/&amp;loz;/g, &#039;◊&#039;);
+    str = str.replace(/&amp;spades;/g, &#039;♠&#039;);
+    str = str.replace(/&amp;clubs;/g, &#039;♣&#039;);
+    str = str.replace(/&amp;hearts;/g, &#039;♥&#039;);
+
+    str = str.replace(/&amp;diams;/g, &#039;♦&#039;);
+    str = str.replace(/&amp;#39;/g, &#039;\&#039;&#039;);
+    return str;
+}
+
+function strMoreDiscode(str){
+    str = str.replace(/\r\n/g,&quot;&quot;);  
+    str = str.replace(/\n/g,&quot;&quot;);
+
+    str = str.replace(/code/g,&quot;wxxxcode-style&quot;);
+    return str;
+}
+
+function strDiscode(str){
+    str = strNumDiscode(str);
+    str = strGreeceDiscode(str);
+    str = strcharacterDiscode(str);
+    str = strOtherDiscode(str);
+    str = strMoreDiscode(str);
+    return str;
+}
+function urlToHttpUrl(url,rep){
+    
+    var patt1 = new RegExp(&quot;^//&quot;);
+    var result = patt1.test(url);
+    if(result){
+        url = rep+&quot;:&quot;+url;
+    }
+    return  url;
+}
+
+export default {
+    strDiscode:strDiscode,
+    urlToHttpUrl:urlToHttpUrl
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

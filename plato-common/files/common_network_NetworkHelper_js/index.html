@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/network/NetworkHelper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/network/NetworkHelper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.37</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">281</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">47.83</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.11</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import CommomParamHelper from &#039;./CommomParamHelper.js&#039;;
+import  XXTEA   from &#039;../lib/xxtea.js&#039;;
+import  md5     from &#039;../lib/md5.js&#039;;
+import  SecurityConfig  from &#039;./SecurityConfig.js&#039;;
+import  TaxiLog from &#039;../TaxiLog.js&#039;;
+import  LoginBindHelper from &#039;../login/LoginBindHelper.js&#039;;
+import  DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import  NetworkErrorHelper from &#039;./NetworkErrorHelper.js&#039;;
+
+class NetworkHelper{
+  
+    /**外部调用接口 */
+    static sendRequest(request,callback){
+      let relativeUrl = request.getRelativeUrl()||&quot;&quot;;
+      let param = request.getParam &amp;&amp; request.getParam() || {};
+      let method = request.method &amp;&amp; request.method() ||&#039;POST&#039;;
+      let dataType = &#039;json&#039;;
+      let sign = request.getSign &amp;&amp; request.getSign();
+      let timeout = request.getTimeOut() || 30000;
+    const  number = 16;
+    let randNumerStr = this.randomString(number);
+    //TaxiLog(&#039;randNumerStr =&#039;+ randNumerStr);
+    let url = &#039;&#039;;
+    let data = &#039;&#039;;
+
+   //loading
+   if(request.getShowLoading()){
+      let loadingContent = request.getLoadingContent();
+      getApp().showLoading(loadingContent);
+   }
+
+    let pp =  Promise.all([this.jointUrl(relativeUrl,randNumerStr),this.jointData(request,param,randNumerStr,sign)]);
+     pp.then(vals=&gt;{
+          url = vals[0];
+          // TaxiLog(url)
+          data = vals[1]; 
+          
+           //取消操作
+          if(request.isCancel()){
+            //  TaxiLog(request.getRequestName() + &#039;is    cancel  before&#039;);
+             if(request.getShowLoading()){
+                getApp().hideLoading();
+             }
+             return ;
+          }
+
+          //发起请求
+          this.sendHttpRequest(request,url,method,dataType,data,timeout).then(res=&gt;{
+           //取消操作
+           if(request.isCancel()){
+              //  TaxiLog(request.getRequestName() + &#039;is   cancel  later&#039;);
+             if(request.getShowLoading()){
+                getApp().hideLoading();
+             }
+               return ;
+           }
+ 
+           //处理header
+          if (request.isHandHeader()) {
+              // 处理请求返回的 header
+              if (res[&#039;headers&#039;] &amp;&amp; typeof (request.handleHeader) == &#039;function&#039;) {
+                request.handleHeader(res[&#039;headers&#039;]);
+              }
+          }
+          
+          //请求结果
+          // TaxiLog(request.getRequestName()+&#039;:&#039;+JSON.stringify(res));
+          let data = res.data;
+
+          let error = NetworkErrorHelper.handleAliPayNetWorkError(res);//{code:XXX, message:XXXXX}
+          // TaxiLog(&#039;error :&#039;+JSON.stringify(error));
+
+          //错误toast
+          if(request.getShowNetWorKErrorTost() &amp;&amp; error.code == 0){ //添加错误提示文案
+           
+           if(request.getShowLoading()){
+                getApp().hideLoading();
+            }
+             my.showToast({
+                    content: request.getShowNetWorKErrorTost(),
+            });
+          }
+          // 原始的请求头，里面拿 Cookie 的 sessionId 判断
+          let originHeader = undefined;
+          if (request.needSaveHeader()) {
+            originHeader = request.fetchBeforeHeader &amp;&amp; request.fetchBeforeHeader();
+          }
+          // 处理 code 14，清除本地缓存，踢登录态
+          NetworkHelper.clearLocalStorageWithNotLoginCode(data, originHeader);
+          callback(data,error);
+         }); 
+    });      
+  }
+
+  /**REA加密*/
+ static  onEncrypt (content) {
+  return new Promise((resolve,reject)=&gt;{
+    let publickey = SecurityConfig.getPublickKey();
+     my.rsa({
+       action: &#039;encrypt&#039;,
+       text: content,
+        //设置公钥
+        key: publickey, 
+       success: (result) =&gt; {
+        //TaxiLog(&#039;encrypt = &#039;+ result.text);
+       resolve(result.text);
+     },
+     fail:(e)=&gt; {
+      let  content = e.errorMessage || e.error;
+      reject(content);
+      },
+    });
+  });
+ }
+
+
+  /**拼接业务参数 */
+  static  fentchParams(params){
+    let output=&#039;&#039;;
+    for (let  key in params) {
+        if(output != &#039;&#039;){
+           output+=&#039;&amp;&#039;;
+        }
+        output+= (key+&#039;=&#039;+params[key]);
+      }
+      return output;
+  }
+
+/***拼接url(RSA) */
+static jointUrl(relativeUrl,randNumerStr){
+  return new Promise((resolve,reject)=&gt;{
+      this.onEncrypt(randNumerStr).then(encryptString=&gt;{
+        let url = relativeUrl+&#039;?xck=&#039;+ encodeURIComponent(encryptString)+&#039;&amp;ent=3&#039;;
+        resolve(url);
+      });
+  });
+}
+
+/**拼接data (XXTEA) */
+static jointData(request,param,randNumerStr,sign){
+ return new Promise((resolve,reject)=&gt;{
+      this.getCommparams().then((commparam)=&gt;{
+       let totoalParams = Object.assign(commparam, param);
+       let signStr = null;
+       if(Array.isArray(sign)){
+          signStr =  this.joinSignStr(sign,totoalParams);
+          signStr = signStr.toUpperCase();
+       }
+       if(signStr &amp;&amp; signStr.length){
+         totoalParams[&#039;sign&#039;] = signStr;
+       }
+
+       //处理需要encode参数
+      if (request &amp;&amp; request.needEncodeParams &amp;&amp; request.needEncodeParams()) {
+          let needEncodeParams = request.needEncodeParams();
+          if (needEncodeParams.length) {
+              needEncodeParams.map(key =&gt; {
+              if (totoalParams[key]) {
+                totoalParams[key] = encodeURIComponent(totoalParams[key]);
+              }
+            });
+         }
+      } 
+
+       let output = this.fentchParams(totoalParams);//生成业务参数
+      // TaxiLog(&#039;totoalParams 2222 &#039;+ JSON.stringify(output));
+       let XXTEAString = XXTEA.encryptToString(output,randNumerStr);
+       let data =XXTEAString;
+        resolve(data);
+    })
+  });
+}
+ 
+ static joinSignStr(sign,param){
+      //添加sign签名
+      //TaxiLog(sign);
+      if(Array.isArray(sign) &amp;&amp; param){
+        let signStr=&#039;&#039;;
+        let signKey = SecurityConfig.getSignkey();
+        sign.map(item=&gt;{
+            signStr+=(param[item]||&quot;&quot;);
+         });
+         signStr += (&#039;@&#039; + signKey);
+         let md5Str = md5(signStr);
+      return md5Str;
+    }
+ }
+ 
+  /** 获取公共参数 */
+  static getCommparams(){
+     return new Promise((resolve,reject)=&gt;{
+              CommomParamHelper.getCommparams(commparam=&gt;{
+               resolve(commparam);
+               })
+            }
+      ); 
+  }
+
+  /**发送网络请求 */
+  static sendHttpRequest(request,relativeUrl,method,dataType,param,timeout){
+      
+     return new Promise((resolve,reject)=&gt;{
+      let key = SecurityConfig.getHeaderkey();
+       let sessionId = LoginBindHelper.getUserSessionId();
+       //41be7873eae26177877353f76faaf8ea&amp;s=rsx
+      
+      relativeUrl = relativeUrl + &quot;&amp;key=&quot; + key + &quot;&amp;s=rsx&quot;;
+
+      //  TaxiLog(&quot;request url is  &quot; + relativeUrl);
+      //  TaxiLog(&quot;!!!!!!!!! session id &quot; + sessionId);
+
+      //  sessionId=&#039;sessionid=bg21r98p4rbabpy4nr5abx9ixv5r8m0y&#039;;
+
+       let headers = {
+           //key : key,
+           &#039;Content-Type&#039; : &#039;application/x-www-form-urlencoded&#039;,
+           &quot;Cookie&quot; : sessionId 
+       };
+      
+      // 保存 header 
+      if(request.needSaveHeader()){
+         request.saveBeforeHeader(headers);
+      }
+       
+  
+      my.httpRequest({
+               url: relativeUrl,
+               headers: headers,
+               method: method,
+               data:{
+                 &#039;in&#039;:param,
+               },
+               dataType: dataType,
+               timeout:timeout,
+           success:function(res){
+            resolve(res);
+          },
+          fail:function(res){
+               resolve(res);
+          },         
+        });
+      });
+  }
+
+  /**生成随机字符串*/
+  static randomString(len) {
+　　len = len || 32;
+   /****默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1****/
+　　var $chars = SecurityConfig.getRandomKey();
+　　var maxPos = $chars.length;
+　　var pwd = &#039;&#039;;
+　　for (let i = 0; i &lt; len; i++) {
+　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+　　}
+　　return pwd;
+   }
+
+   /**处理 code 14 踢登录状态 */
+   static clearLocalStorageWithNotLoginCode(res, originHeader) {
+    if (res) {
+      let resultCode = res.code || &quot;-1&quot;;
+      if (resultCode == &quot;14&quot;) {
+
+        // 添加判断，请求的 sessionId 和 本地 sessionId 是否相同，如果相同，才清楚缓存，
+        // 不同说明，本地的 sessionId 是登录后更新的，不再清除
+        if (originHeader) {
+          let originSessionId = originHeader[&#039;Cookie&#039;];
+          let localSessionId = LoginBindHelper.getUserSessionId();
+          if (originHeader != localSessionId) {
+            return;
+          }
+        }
+
+        // 清除本地 userId、alipayUserId、mobile、accessToken 和 sessionId
+        LoginBindHelper.clearLocalStorage();
+      }
+     }
+   }
+}
+
+export default NetworkHelper;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

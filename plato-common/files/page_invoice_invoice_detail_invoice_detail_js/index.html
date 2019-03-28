@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/invoice/invoice-detail/invoice-detail.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/invoice/invoice-detail/invoice-detail.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">42.58</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">502</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">106.08</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.58</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import InvoiceOrderListRequest from &#039;/common/network/requests/InvoiceOrderListRequest.js&#039;;
+
+Page({
+  data: {
+    isShowData: false,//空白页
+    totalPrice: &#039;0.00&#039;,//开票金额 保留两位小数
+    protoPrice: 0,//原始开票金额
+    changeCardAry: [],
+    selectSlideType: false,//全选
+    eventType: &#039;off&#039;,  //是否是点击态
+    &quot;cpinfo&quot;: [],//cp列表
+    tips: {},//船只下一页的tip
+    tip:&#039;&#039;,
+    &quot;data&quot;: [],
+    toMonth: &quot;&quot;,//存储月份，按月分组
+    isAddData: false, //是否增加数据
+    pageNo: 1,          //页码
+    cpSource: &quot;&quot;,       //请求数据cp
+    total: 0,   //当前cp所有数据长度
+    minAmount: 0,//      最低开票金额
+    internetError: { // 网络 请求错误 
+      isShow: false,
+      text: &quot;&quot;,
+      type: &quot;&quot;,
+      showType: &#039;&#039;,
+      style: &quot;gray&quot;
+    },
+    isLoading: false,
+    nextSize: &#039;28rpx&#039;,//底部字体大小
+    btnId: &#039;invoiceDetialEleBtn&#039;,
+    isCpClick:true,
+    eleInvoice:2  ,
+    adaptiveStyle:{
+      button:&#039;&#039;,
+      content:&#039;&#039;
+    },
+    noInterentText:&quot;网络连接失败，请重试&quot; 
+  },
+  onLoad(option) {
+    let invoiceType,
+        app = getApp() 
+    if(option){
+       invoiceType = parseInt(option.invoiceType,10)
+    }else{
+       invoiceType=this.data.invoiceType
+    }
+    let title = &quot;开具电子发票&quot;, btnId = &#039;invoiceDetialEleBtn&#039;
+    if (invoiceType === 1) {
+      title = &quot;开具纸质发票&quot;;
+      btnId = &#039;invoiceDetialBtn&#039;
+    }
+    
+    my.setNavigationBar({
+      title
+    });
+     this.setData({
+      invoiceType,
+      changeCardAry: [],
+      totalPrice: &#039;0.00&#039;,
+      protoPrice: 0,
+      btnId
+    })
+    if (!app.globalData.network.networkAvailable) {
+      this.setData({
+        &#039;internetError.showType&#039;: &#039;&#039;,
+        &quot;internetError.isShow&quot;: true,
+        &quot;internetError.text&quot;: this.data.noInterentText,
+        &quot;internetError.type&quot;: &quot;1&quot;,
+        isLoading: false
+      })
+      my.showToast({
+        type: &#039;none&#039;,
+        content: this.data.noInterentText,
+        duration: 3000,
+      });
+      return
+    }
+    my.showLoading({
+      content: &#039;加载中...&#039;
+    });
+   if(app.globalData.isAdaptive){
+        this.setData({
+          &#039;adaptiveStyle.button&#039;:&#039; padding-bottom: 40rpx;&#039;,
+          &#039;adaptiveStyle.content&#039;: &#039;margin-bottom: 170rpx;&#039;
+        })
+    }
+    this.getRequestData(true)
+
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onShow() {
+     let title = &quot;开具电子发票&quot;;
+    if (this.data.invoiceType === 1) {
+      title = &quot;开具纸质发票&quot;;
+    }
+    
+    my.setNavigationBar({
+      title
+    });
+    const isSubmit = my.getStorageSync({ key: &quot;invoiceSubmitChange&quot; }).data;
+    if (isSubmit) {
+      my.showLoading({
+        content: &#039;加载中...&#039;
+      });
+      this.setData({
+        isShowData: false,//空白页
+        totalPrice: &#039;0.00&#039;,//开票金额 保留两位小数
+        protoPrice: 0,//原始开票金额
+        changeCardAry: [],
+        selectSlideType: false,
+        eventType: &#039;off&#039;,
+        &quot;cpinfo&quot;: [],
+        tips: {},
+        tip:&#039;&#039;,
+        &quot;data&quot;: [],
+        toMonth: &quot;&quot;,
+        isAddData: false, //是否增加数据
+        pageNo: 1,          //页码
+        cpSource: &quot;&quot;,       //请求数据cp
+        total: 0,   //当前cp所有数据长度
+        minAmount: 0,//      最低开票金额
+        internetError: { // 网络 请求错误 
+          isShow: false,
+          text: &quot;&quot;,
+          type: &quot;&quot;,
+          showType: &#039;&#039;,
+          style: &quot;gray&quot;
+        },
+        isLoading: false,
+        nextSize: &#039;28rpx&#039;
+      })
+      my.removeStorage({
+        key: &#039;invoiceSubmitChange&#039;, // 缓存数据的key     
+      });
+      this.getRequestData(true)
+    }
+
+
+  },
+  onHide() {
+
+  },
+  onReachBottom() {
+    // 页面被拉到底部
+    if (this.data.data.length &lt; this.data.total &amp;&amp; this.data.total !== 0 &amp;&amp; this.data.typeOn == 1) {
+      this.setData({
+        isLoading: true
+      })
+      let page = this.data.pageNo
+      this.setData({
+        pageNo: ++page,
+      })
+      this.getRequestData(false)
+    }
+
+  },
+  onCardChange(data, eventType) {
+    let newArry = this.data.changeCardAry,
+        totalPrice = parseFloat(this.data.protoPrice),selectSlideType;
+     if (data.flag) {//卡片添加
+        newArry.push(data);
+        totalPrice += parseFloat(data.totlePrice);
+     }else{
+        if (newArry.length !== 0) {
+          for (let i = 0; i &lt; newArry.length; i++) {
+            if (newArry[i].index === data.index) {
+                newArry.splice(i, 1);
+                totalPrice -= parseFloat(data.totlePrice);            
+              break;
+            }
+          }
+        } 
+     }
+    if (newArry.length === this.data.data.length) {      
+        selectSlideType= true
+    } else {    
+        selectSlideType= false  
+    }
+    
+    this.setData({
+      selectSlideType,
+      eventType:&#039;off&#039;,
+      changeCardAry: newArry,
+      totalPrice: (totalPrice / 100).toFixed(2),
+      protoPrice: totalPrice
+    });
+    this.changeSize()
+  },
+  // 点击全选时改变的状态
+  selectAllSlide() {
+    const type = this.data.selectSlideType ? false : true;
+    this.setData({
+      isAddData: false,
+      eventType: type, //是否是点击态
+      selectSlideType: type
+    });
+
+  },
+
+  nextTo() { //跳转
+    if (this.data.totalPrice &lt;= 0) {
+      return
+    }
+    if (this.data.totalPrice &lt; this.data.minAmount) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: `最低开票${this.data.minAmount}元`,
+        duration: 2000,
+      });
+      return
+    }
+    let cpList = this.data.changeCardAry, cpString = &quot;&quot;;
+    cpList.forEach((n, i) =&gt; {
+      if (i === cpList.length - 1) {
+        cpString += n.cpOrderId
+      } else {
+        cpString += n.cpOrderId + &#039;,&#039;
+
+      }
+    })
+    my.setStorageSync({
+      key: &#039;invoiceGetValue&#039;,
+      data: {
+        click: true,
+        content: this.data.content,
+        type: this.data.invoiceType,             //发票类型
+        amount: this.data.totalPrice,    //申请发票金额,数字(元)
+        protoAmount: this.data.protoPrice,
+        tips: this.data.tips,
+        cpInfos: this.data.cpSource,          //开具发票的cp信息，json字符串
+        cpSource: this.data.cpSource,        //  cp来源
+        cpOrderIds: cpList,      // 开票的CP行程ID，多个以&quot;,&quot;分割
+        postFree: this.data.postFree,     // 包邮金额(分)
+        cpString: cpString
+      }
+    });
+
+    my.navigateTo({
+      url: &#039;../invoice/invoice&#039;
+    })
+  },
+  onChangeData(data) {//cp切换
+    let setData={
+      data: [], 
+      totalPrice: &#039;0.00&#039;,
+      protoPrice: 0,
+      changeCardAry: [],
+      toMonth: &#039;&#039;,
+      postFree: data.postFree,
+      tips: data.tip,
+      cpSource:data.cpSource,
+      content: data.content,
+      &quot;pageNo&quot;: 1,
+      typeOn: data.typeOn,
+      minAmount: data.minAmount,
+      isShowData: false,
+      isLoading: false
+    }
+    if (data.typeOn!==0) {
+      if(!this.data.isCpClick){
+        return
+      } 
+      my.showLoading({
+        content: &#039;加载中...&#039;
+      });
+      this.data.isCpClick=false;
+      setData.tip=this.data.invoiceType===this.data.eleInvoice?&#039;&#039;: data.tip
+      this.setData(setData)
+      this.getRequestData(null,data);
+    }else{
+      setData.tip=data.tip
+      this.setData(setData);
+       this.data.isCpClick=true;
+    }
+   
+   
+  },
+  formatData(data) {
+    let month = this.data.toMonth;
+    for (let i in data) {
+      let date = data[i].requestTime.slice(0, 7)
+      if (month !== date) {
+        data[i].toMonth = date;
+        month = date;
+      } else {
+        data[i].toMonth = &#039;&#039;;
+      }
+      if (!data[i].flag) {
+        data[i].flag = false
+      }
+      data[i].totlePrice = data[i].price
+      data[i].price = (data[i].price / 100).toFixed(2);
+    }
+
+    let d = this.data.data,
+        setDataObject={
+          selectSlideType: false,
+          eventType: &#039;off&#039;,
+          isAddData: true,
+          toMonth: month      
+        }
+    if (d.length === 0) {
+      if (data.length) {
+        d = data;
+        setDataObject.data=d;
+      } 
+    } else {
+      if(my.canIUse(&#039;page.$spliceData&#039;)){
+        this.$spliceData({ &#039;data&#039;: [d.length, 0, ...data]});
+      }else{
+        d.splice(d.length, 0, ...data);
+        setDataObject.data=d;
+      } 
+    }
+    this.setData(setDataObject)
+  },
+  getRequestData(type,data) {
+    let cpName = data ? data.cpSource : this.data.cpSource;
+    let param = {
+      &quot;cpSource&quot;:cpName,
+      &quot;type&quot;: this.data.invoiceType,
+      &quot;pageNo&quot;: this.data.pageNo,
+      &quot;div&quot;: &quot;IOSH080800&quot;,
+      &quot;pageSize&quot;: 10
+    }
+    let request = new InvoiceOrderListRequest();
+    request.setParam(param);
+    request.doRequest(res=&gt;{
+      my.hideLoading();     
+      this.data.isCpClick=true;
+      let internetIsShow=false,
+          internetShowType=&#039;&#039;,
+          internetType=&#039;&#039;,
+          internetText=&#039;&#039;,
+          isLoading=false,
+          isShowData=true,
+          nextData={};
+      if(type===null || this.data.typeOn===0){
+        if (data.cpSource !== this.data.cpSource || this.data.typeOn===0){
+          this.setData({
+            isShowData,
+            isLoading,
+            cpSource:this.data.cpSource,
+            &quot;internetError.isShow&quot;:internetIsShow ,
+            &quot;internetError.text&quot;: internetText,
+            &#039;internetError.showType&#039;: internetShowType,
+            &quot;internetError.type&quot;: internetType,
+          })
+          return
+        }
+         nextData.tip =  this.data.invoiceType === this.data.eleInvoice ?  &#039;&#039; :data.tip;
+      }
+      if (res.code == 0) {
+        let text = &quot;请检查您的网络&quot;
+        if (this.data.cpinfo.length) {
+          if (this.data.data.length) {
+            my.showToast({
+              type: &#039;none&#039;,
+              content: this.data.noInterentText,
+              duration: 2000,
+            });
+          } else {
+            internetIsShow=false;
+            internetShowType=2;
+            internetType= &quot;1&quot;;
+            internetText=text
+          }
+        } else {
+          internetIsShow=true;
+          internetShowType=&#039;&#039;;
+          internetType= &quot;1&quot;;
+          internetText=text
+        }
+        let pageNo = this.data.pageNo;
+        if (pageNo !== 1) {
+          pageNo--;
+        } else {
+          pageNo = 1
+        }
+        this.setData({
+          isLoading,          
+          isShowData,
+          &quot;internetError.isShow&quot;:internetIsShow ,
+          &quot;internetError.text&quot;: internetText,
+          &#039;internetError.showType&#039;: internetShowType,
+          &quot;internetError.type&quot;: internetType,
+          pageNo,
+
+        })
+        my.showToast({
+          type: &#039;none&#039;,
+          content: this.data.noInterentText,
+          duration: 3000,
+        });
+        return
+      }
+      if (!res.result) {//数据获取失败
+        let text = &#039;数据获取失败&#039;
+        if (res.code === 14) {
+          text = &quot;您尚未登录，请先登录&quot;
+        }
+        let pageNo = this.data.pageNo;
+        if (pageNo !== 1) {
+          pageNo--;
+        } else {
+          pageNo = 1
+        }
+        if(this.data.data.length&lt;=0){
+          internetIsShow=true;
+          internetShowType=&#039;&#039;;
+          internetType= &quot;1&quot;;
+          internetText=text
+        }
+        my.showToast({
+          type: &#039;none&#039;,
+          content: text,
+          duration: 3000,
+        });
+        this.setData({
+           isLoading,
+          &quot;internetError.isShow&quot;:internetIsShow ,
+          &quot;internetError.text&quot;: internetText,
+          &#039;internetError.showType&#039;: internetShowType,
+          &quot;internetError.type&quot;: internetType,       
+          pageNo
+        })
+        return
+      }
+      if (res.code === 1) {     
+        internetIsShow= false
+        let cpinfo = res.cpinfo;
+        nextData.tips = res.tips;
+        if (type) {//渲染整个页面
+          let cpinfo = res.cpinfo
+          if (this.data.invoiceType === this.data.eleInvoice) {
+            cpinfo.forEach((n) =&gt; {
+              if (n.typeOn) {
+                n.tip = &quot;&quot;
+              }
+            })
+          }
+          nextData.cpinfo=cpinfo;
+          nextData.tip=cpinfo[0].tip;
+          nextData.cpSource=cpinfo[0].cpSource;
+          nextData.postFree=cpinfo[0].postFree;
+          nextData.content=cpinfo[0].content;
+          nextData.typeOn=cpinfo[0].typeOn;
+          nextData.minAmount= cpinfo[0].minAmount;
+        }
+        if (res.total !== this.data.total) {
+          nextData.total=res.total
+        }
+        if (res.data.length &amp;&amp; this.data.typeOn!==0) {
+           this.formatData(res.data)
+        } else {
+          if (this.data.data.length &amp;&amp; this.data.data.length &gt;= res.total) {
+          } else {
+              internetShowType=2;
+              internetType= &quot;3&quot;;
+              internetText=&#039;没有可以开发票的行程&#039;;
+          }
+        }
+        nextData.isShowData=isShowData;
+        nextData.isLoading=isLoading;
+        nextData[&quot;internetError.isShow&quot;]=internetIsShow;
+        nextData[&quot;internetError.text&quot;]=internetText;
+        nextData[&#039;internetError.showType&#039;]=internetShowType;
+        nextData[&quot;internetError.type&quot;]=internetType;
+        this.setData(nextData)
+      }
+
+    });
+  },
+  onReGetData() {
+    if (this.data.internetError.type === &quot;1&quot;) {
+      my.showLoading({
+        content: &#039;加载中...&#039;
+      });
+      this.getRequestData(false)
+    }
+  },
+  changeSize() {
+    let price_length = this.data.totalPrice + &#039;&#039;;
+    price_length = price_length.length;
+    let card_length = this.data.changeCardAry.length, num = 6;
+    card_length += &#039;&#039;
+    card_length = card_length.length
+    let length = price_length + card_length;
+    let nextSize = &#039;28rpx&#039;;
+    if (length &lt; 14) {
+      nextSize = &#039;28rpx&#039;
+    } else {
+      nextSize = 28 - (length - 14) + &#039;rpx&#039;
+    }
+    this.setData({
+      nextSize
+    })
+  }
+
+})</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

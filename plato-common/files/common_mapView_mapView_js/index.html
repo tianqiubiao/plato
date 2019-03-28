@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/mapView/mapView.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/mapView/mapView.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.98</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">227</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">64.09</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.16</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">
+export default class mapView {
+    constructor(mapContext) {
+        this.mapCtx = mapContext;
+        this.mapCenterLocation = {};
+        this.mapData = {
+            markers: null,
+            latitude: null,
+            longitude: null,
+            scale: null,
+            route:null,
+        }
+        this.cacheMapData = {}
+    }
+
+    resetMap() {
+        this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+            setting: {
+                tiltGesturesEnabled: 0,
+                showScale: 0,
+                showCompass: 0
+            }
+        })
+    }
+
+
+    getCenterLocation(callback) {
+        let resCallback = callback;
+        this.mapCtx &amp;&amp; this.mapCtx.getCenterLocation({
+            success: (res) =&gt; {
+                if (resCallback) {
+                    this.mapCenterLocation = res;
+                    resCallback(res);
+                }
+            }
+        })
+    }
+
+    updateComponentsMarkers(toMarkers) {
+        this.cacheMapData.markers = toMarkers;
+        // this.mapCtx.updateComponents({
+        //     markers: toMarkers
+        // })
+    }
+
+    updateComponents(toMarkers, destlat, destlon, destscale) {
+        this.cacheMapData.markers = toMarkers;
+        this.cacheMapData.latitude = destlat;
+        this.cacheMapData.longitude = destlon;
+        this.cacheMapData.scale = destscale;
+
+        // this.mapCtx.updateComponents({
+        //     markers: toMarkers,
+        //     latitude: destlat,
+        //     longitude: destlon,
+        //     scale: destscale,
+        // })
+    }
+
+    moveToLocation() {
+        this.mapCtx.moveToLocation();
+    }
+
+
+    mapGetDistance(start, end) {
+        let radLat1 = start.lat * Math.PI / 180.0;
+        let radLat2 = end.lat * Math.PI / 180.0;
+        let a = radLat1 - radLat2;
+        let b = start.lon * Math.PI / 180.0 - end.lon * Math.PI / 180.0;
+        let s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2) +
+            Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+        s = s * 6378.137;// EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10000 * 1000;
+        return s;
+    }
+
+    getRecommendMarkerDistance(scale) {
+        let dis = 0;
+        if (scale &gt; 14 &amp;&amp; scale &lt; 15) {
+            dis = 250;
+        } else if (scale &gt;= 15 &amp;&amp; scale &lt; 16) {
+            dis = 200;
+        } else if (scale &gt;= 16 &amp;&amp; scale &lt; 17) {
+            dis = 150;
+        } else {
+            dis = 100;
+        }
+        return dis;
+    }
+    // 地图起终点
+    initBounds(points) {
+        if (points) {
+            let latMin = 90;
+            let lonMin = 180;
+            let latMax = -90;
+            let lonMax = -180;
+            points.forEach((point, index) =&gt; {
+                let pointLatitude = point.latitude;
+                let pointLongtitude = point.longitude;
+                if (pointLatitude &gt; latMax) {
+                    latMax = pointLatitude;
+                }
+                if (pointLatitude &lt; latMin) {
+                    latMin = pointLatitude;
+                }
+                if (pointLongtitude &lt; lonMin) {
+                    lonMin = pointLongtitude;
+                }
+                if (pointLongtitude &gt; lonMax) {
+                    lonMax = pointLongtitude;
+                }
+            });
+            let bounds = [];
+            let minPoint = {};
+            if ((latMin != 90) &amp;&amp; (lonMin != 180)) {
+                minPoint.latitude = latMin;
+                minPoint.longitude = lonMin;
+                bounds.push(minPoint);
+            }
+            let maxPoint = {}
+            if ((latMax != -90) &amp;&amp; (lonMax != -180)) {
+                maxPoint.latitude = latMax;
+                maxPoint.longitude = lonMax;
+                bounds.push(maxPoint);
+            }
+            return bounds;
+        }
+        return null;
+
+    }
+
+    processIncludePoints(includePoints) {
+        if (includePoints &amp;&amp; includePoints.length &gt;= 2) {
+            let bounds = this.initBounds(includePoints);
+            if (bounds &amp;&amp; bounds.length == 2) {
+                let minPoint = bounds[0];
+                let maxPoint = bounds[1];
+                if (minPoint &amp;&amp; maxPoint &amp;&amp; minPoint.latitude &amp;&amp; minPoint.longitude &amp;&amp; maxPoint.latitude &amp;&amp; maxPoint.longitude) {
+                    let longtitudeSpan = maxPoint.longitude - minPoint.longitude;
+                    let latitudeSpan = maxPoint.latitude - minPoint.latitude;
+                    if (longtitudeSpan &gt; 0 &amp;&amp; latitudeSpan &gt; 0) {
+
+                        let longtitudeMax = parseFloat(maxPoint.longitude) + parseFloat(longtitudeSpan / 5);
+                        let longtitudeMin = parseFloat(minPoint.longitude) - parseFloat(longtitudeSpan / 5);
+                        let latitudeMax = parseFloat(maxPoint.latitude) + parseFloat(latitudeSpan / 6);
+                        let latitudeMin = parseFloat(minPoint.latitude) - parseFloat(latitudeSpan * 1.2);
+                        let spanMax = {};
+                        spanMax.latitude = latitudeMax;
+                        spanMax.longitude = longtitudeMax;
+                        let spanMin = {};
+                        spanMin.latitude = latitudeMin;
+                        spanMin.longitude = longtitudeMin;
+                        includePoints.push(spanMax);
+                        includePoints.push(spanMin);
+                    }
+                }
+            }
+        }
+        return includePoints;
+    }
+    //   更新全览
+    fullView() {
+        let includePoints = new Array();
+        let markers = this.cacheMapData.markers;
+        if (markers &amp;&amp; markers.length &gt; 0) {
+            for (let i = 0; i &lt; markers.length; i++) {
+                let obj = {
+                    longitude: markers[i].longitude,
+                    latitude: markers[i].latitude
+                }
+                includePoints.push(obj)
+            }
+            includePoints = this.processIncludePoints(includePoints);
+            this.cacheMapData.includePoints = includePoints
+        } else {
+            //TODO
+        }
+        //    this.mapCtx.updateComponents({
+        //        &#039;include-points&#039;:includePoints
+        //    })
+    }
+    //   路线
+    paintingRoute(route) {
+            this.cacheMapData.route = route
+        //   this.mapCtx.updateComponents({
+        //       polyline:route
+        //   })
+    }
+
+    unifiedUpdateMap() {
+        let mapData = {};
+        if (this.cacheMapData) {
+            if (this.cacheMapData.markers) {
+                this.mapData.markers = this.cacheMapData.markers
+                mapData.markers = this.cacheMapData.markers
+            }
+
+            if (this.cacheMapData.latitude) {
+                this.mapData.latitude = this.cacheMapData.latitude
+                mapData.latitude = this.cacheMapData.latitude
+            }
+
+            if (this.cacheMapData.longitude) {
+                this.mapData.longitude = this.cacheMapData.longitude
+                mapData.longitude = this.cacheMapData.longitude
+            }
+
+            if (this.cacheMapData.scale) {
+                this.mapData.scale = this.cacheMapData.scale
+                mapData.scale = this.cacheMapData.scale
+            }
+
+            if (this.cacheMapData.route) {
+                this.mapData.route = this.cacheMapData.route
+                mapData.polyline = this.cacheMapData.route
+            }
+            if (this.cacheMapData.includePoints) {
+                this.mapData.includePoints = this.cacheMapData.includePoints
+                mapData.includePoints = this.cacheMapData.includePoints
+            }
+            this.cacheMapData = {};
+            this.mapCtx.updateComponents({ ...mapData, &#039;include-points&#039;: mapData.includePoints })
+        }
+
+    }
+
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

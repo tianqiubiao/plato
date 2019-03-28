@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/user-center/user-center.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/user-center/user-center.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.01</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">266</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">36.89</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.87</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import UserProfileRequest from &#039;../../common/network/requests/UserProfileRequest.js&#039;;
+import NetworkHelper from &#039;../../common/network/NetworkHelper.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import UserBannerRequest from &#039;../../common/network/requests/UserBannerRequest.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+
+Page({
+  data: {
+    userList: {// 用户信息的模拟数据
+      &quot;mobile&quot;: &quot;&quot;,// 手机号
+      &quot;nickname&quot;: &quot;&quot;,// 用户昵称
+      &quot;avatar&quot;: &quot;&quot;,// 用户头像
+      &quot;isAlipaySign&quot;: 0, // 开通免密签约状态 1: 已开通 0: 未开通
+    },
+    errorType: &#039;2&#039;,// 错误类型 根据错误类型判断显示页面 --&gt; 0 没有数据 1 网络错误 2 服务错误
+    text: &#039;个人中心&#039;,// 错误提示文字         --&gt;暂无数据 网络无连接 请求超时点击刷新 
+    style: &#039;gray&#039;, // 显示哪个错误图
+    sholdLoaing: false,// 控制页面loading之后显示
+    showErrorPage: false,// 错误页显示隐藏
+    showUserCenter: true,// 个人中心显示隐藏
+    refreshText: &#039;&#039;,
+    loading: true,
+    networkflag: false,
+    networkAvailable:true,
+    isFristShow:true,
+    bannerOption:{
+      list:[]
+    },
+    bannerSetting:{
+      list:&#039;list&#039;,
+      url:&#039;action&#039;,
+      urlType:&#039;action_type&#039;,
+      image:&#039;resource.content&#039;
+    }
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onReady() {
+    this.setData({
+      networkAvailable:getApp().globalData.network.networkAvailable
+    })
+   
+    // 页面加载完成
+    if(this.data.networkAvailable){
+      this.onRequestData();
+      this.getBanner()
+    }else{
+      my.hideLoading();// 去掉loading
+      // 没网显示错误页
+      this.errorPage()
+    }
+  },
+  onShow() {
+    getApp().globalData.controlClick = true
+    my.setNavigationBar({
+      title: &#039;个人中心&#039;
+    });
+    getApp().globalData.isNotMap=true
+    // 控制onShow的时候可以发送请求
+    if(!this.data.isFristShow){
+
+          this.setData({
+            networkAvailable: getApp().globalData.network.networkAvailable
+          })
+          // 页面加载完成
+          if (this.data.networkAvailable) {// 如果有网
+            this.onRequestData(this.data.loading)
+            this.getBanner()
+          } else {
+            // 没网显示错误页
+            this.errorPage()
+          }
+    }
+    this.setData({
+      isFristShow:false
+    })
+  },
+  onHide() {
+    // 页面隐藏
+    my.hideLoading();// 去掉loading
+  },
+  onUnload() {
+    // 页面被关闭
+    my.hideLoading();// 去掉loading
+  },
+  onRequestData(loading) {
+    // 页面显示
+    let self = this
+    // 请求用户信息数据
+    if (!loading) {
+      getApp().showLoading()
+    }
+    // 为true说明没有网
+    if (this.data.networkflag) {
+      setTimeout(()=&gt;{
+        my.hideLoading();// 去掉loading
+      },200)
+      // 没网显示错误页
+      this.errorPage()
+      return
+    }
+    // 有网
+    let userCenterRequest = new UserProfileRequest();
+    userCenterRequest.doRequest(res=&gt;{
+      TaxiLog(&quot;发送请求了----》&quot;+JSON.stringify(res))
+      my.hideLoading();// 去掉loading
+
+      // res.code = this.data.code
+      // 判断是否为登录状态
+      if (res.code === 14) {
+        self.setData({
+          showUserCenter: false,
+          showErrorPage: false,
+          // code:1
+        })
+        my.showToast({
+          content: &#039;登录状态获取失败&#039;,
+          duration: 1500,
+          success: () =&gt; {
+            my.navigateBack({});
+          },
+        });
+      } else {
+        my.hideLoading();// 去掉loading
+        self.setData({
+          showUserCenter: true,
+          showErrorPage: false,
+        })
+      }
+      // 未登录没数据的时候不执行下边代码
+      if (!res.data &amp;&amp; res.code === 14) {
+        return
+      }
+      if (res.code === 1) {
+        /*跳转到更换成功的页面*/
+        this.setData({
+          sholdLoaing: true,
+          userList: res.data,
+          showErrorPage: false,
+        })
+        // 手机号加密处理
+        let mobile =res.data.mobile ? res.data.mobile.toString().replace(/(\d{3})\d{6}(\d{2})/, &#039;$1******$2&#039;):&#039;&#039;
+        let nickname = res.data.nickname ? res.data.nickname : &#039;&#039;;
+        let avatar = res.data.avatar? res.data.avatar : &#039;&#039;;
+        this.setData({
+          userList: {
+            mobile: mobile,
+            nickname: nickname,
+            avatar: avatar,
+          }
+        })
+        LoginBindHelper.setUserMobile(res.data.mobile);
+        LoginBindHelper.saveLocalStorage();
+        getApp().globalData.isAlipaySign = res.data.isAlipaySign
+      }else{
+          this.setData({
+            networkAvailable: getApp().globalData.network.networkAvailable
+          })
+          // 页面加载完成
+          if (this.data.networkAvailable) {// 如果有网
+            // 服务错误 
+            this.errorPage(&#039;2&#039;,true,&#039;加载失败，请&#039;)
+          } else {
+            this.errorPage()
+          }
+      }
+    })
+  },
+  errorPage(errorType,showErrorPage,text,refreshText,sholdLoaing,showUserCenter){
+    let self = this;
+    self.setData({// 没网显示错误页
+      errorType: errorType||&#039;1&#039;,//错误页类型
+      showErrorPage: showErrorPage||true,//错误页显示
+      text: text||&#039;当前网络不佳，请&#039;,//默认网络状态文字
+      refreshText: refreshText||&#039;刷新重试&#039;,
+      sholdLoaing: sholdLoaing||false,
+      showUserCenter: showUserCenter||false
+    })
+  },
+  // 错误页的点击事件
+  onClickRefresh() {
+    // 判断网络
+    this.setData({
+      networkAvailable:getApp().globalData.network.networkAvailable
+    })
+    // 页面加载完成
+    if(this.data.networkAvailable){// 如果有网
+      this.setData({
+        networkflag: false
+      })
+    }else{
+      this.setData({
+        networkflag: true
+      })
+    }
+    this.onRequestData();
+    this.getBanner();
+  },
+  // 点击跳转我的行程
+  tapTrips() {
+    this.navigateToUrl(&#039;/page/my-travel/my-travel?source=travel&#039;)
+  },
+  // 点击跳转开发票
+  tapInvoice() {
+    this.navigateToUrl(&#039;/page/invoice/invoice-select-type/invoice-select-type&#039;)
+  },
+  // 点击跳转常见问题
+  tapHelp() {
+    this.navigateToUrl(&#039;/page/user-feedback/common-problem/common-problem&#039;)
+  },
+  // 点击跳转客服中心
+  tapComplaints() {
+    this.navigateToUrl(&#039;/page/user-feedback/index/index?source=usercenter&#039;)
+  },
+  // 点击跳转设置
+  tapSetting() {
+    let isAlipaySign = getApp().globalData.isAlipaySign;
+    // 传参判断免密默认值
+    let url = &#039;/page/user-setting/user-setting?isAlipaySign=&#039; + isAlipaySign
+    this.navigateToUrl(url)
+  },
+  // 跳转
+  navigateToUrl(jumpUrl,callback){
+    my.navigateTo({
+      url: jumpUrl,
+      success: callback||function () {
+        //成功的回调
+      }
+    })
+  },
+  getBanner(flag){
+    let location = getApp().globalData.userLoc
+    if((typeof(flag) !== &#039;undefined&#039; &amp;&amp; !flag) || !location.longitude || !location.latitude|| this.data.bannerOption.list.length){
+      return;
+    }
+    let UserBanner = new UserBannerRequest();
+    UserBanner.setParam({
+      &quot;longitude&quot;:location.longitude,
+      &quot;latitude&quot;:location.latitude
+    })
+    UserBanner.doRequest(res=&gt;{
+      if(res.code===0){
+        return
+      }
+      if(res.code==1){//成功 
+        let data=res.data,list=[];
+        data=data.slice(0,5);
+        data.forEach(item=&gt;{       
+          // list.push(item)
+          if(item.type==2 &amp;&amp; item.resource.type==2){
+               list.push(item)
+          }
+          
+        }) 
+        this.setData({
+            &#039;bannerOption.list&#039;:list
+        })
+      }
+      if(res.code==2){//失败
+
+      }
+    })
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

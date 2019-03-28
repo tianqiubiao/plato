@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/going/going-map.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/going/going-map.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">52.62</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1080</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">114.94</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">12.45</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import DataHelper, { TaxiOrderDetailSource } from &#039;../../service/datacenter/DataHelper.js&#039;;
+import { CancelOrderRequest } from &#039;../../common/network/BaseRequest.js&#039;;
+import DataFormatter from &#039;../../common/DataFormatter.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import util from &#039;../../common/util/util&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import { getDistance } from &#039;../../common/api/api.js&#039;;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;
+export default class GoingMap {
+    constructor(amapOrderID, delegate) {
+      this.amapOrderId = amapOrderID;
+      this._delegate = delegate;
+      this.index = 0;
+      this.num = 0;
+      this.toleranceNum = 3;
+    }
+
+    setMapContext(mapCtx) {
+        this.mapCtx = mapCtx;
+    }
+
+    onStateChange(statusCode) {
+      
+       
+        let dataHelper = DataHelper.getInstance();
+        let getCarData = dataHelper.orderDetailWithAmapOrderId(this.amapOrderId) ? dataHelper.orderDetailWithAmapOrderId(this.amapOrderId).multiCP : {};//顶部cp信息
+        // 状态判断
+        switch (statusCode) {
+            // 订单持续状态
+            case 101:
+                this._carMarkerShow = false;
+                getCarData = dataHelper.orderDetailWithAmapOrderId(this.amapOrderId) ? dataHelper.orderDetailWithAmapOrderId(this.amapOrderId).multiCP : {};
+                this._delegate.setData({
+                    showLocation: true
+                })
+
+                this.cancelLater = 1;
+                this.initStartDesc(getCarData);
+                // TaxiLog(&#039;gooing statusCode 101&#039;)
+                break;
+            // 订单取消
+            case 102:
+                // TaxiLog(&#039;gooing statusCode 102&#039;)
+                this._startDesc = [];
+                this._startShow = false;
+                this._carShow = false;
+                this._carMarkerShow = false;
+                this._delegate.setData({
+                    showLocation: false
+                })
+                break;
+            // 司机接单
+            case 103:
+                let driverLocation = {};
+                if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation) {
+                    driverLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation;
+                }
+                let startLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).startPoi : {};  //orderid订单id
+                this.cancelLater = null;
+                let param103 = {
+                    origin: driverLocation,
+                    destination: {
+                        lon: startLocation.lon || &#039;&#039;,
+                        lat: startLocation.lat || &#039;&#039;
+                    }
+                }
+                this.maintenanceRoute(param103, 103);
+
+                // if routeData没有 &amp;&amp; 当前的路线不是103 重新请求
+
+                // this.getRouteData(param, (res) =&gt; {
+                //     let routeData = res;
+                //     if (routeData) {
+                //         // this.routeData = routeData;
+                //         this.initPolygonRegion();
+                //         this.needRefreshRoute = true;
+                //         let isNeedRefresh = this.updatePoint(param,routeData);
+                //         let isOnRoute=this.isPointOnRoute();
+                //         console.log(&#039;isNeedRefresh-----------&#039;,JSON.stringify(isNeedRefresh))
+                //         console.log(&#039;isOnRoute-----------&#039;,JSON.stringify(isOnRoute))
+
+                //     }
+                // });
+
+                if (driverLocation &amp;&amp; driverLocation.lat &amp;&amp; driverLocation.lon) {
+                    // if (driverLocation.rotate) {
+                    //     this.rotate = driverLocation.rotate;
+                    // }
+
+                    this.processDriverPoint(driverLocation)
+                }
+                if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta) {
+                    this.driverETA = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta;
+                } else {
+                    this.driverETA = {};
+                }
+                this._delegate.setData({
+                    showLocation: true
+                })
+                // TaxiLog(&quot;this.goingData&quot; + JSON.stringify(this._delegate.goingData));
+                if (this._delegate.source == TaxiOrderDetailSource.DriverLocation) {
+                    this.driverLocationCallBack();
+                }
+                // TaxiLog(&quot;going  state 103    change start&quot; + JSON.stringify(this.routeData));
+                break;
+            // 司机到达
+            case 104:
+             if (this._delegate.source == TaxiOrderDetailSource.DriverLocation) {
+                    this.driverLocationCallBack();
+                }
+                let driverLocation104 = {};
+                if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation) {
+                    driverLocation104 = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation;
+                }
+                this.cancelLater = null;
+                this._startDesc = [];
+                this._startShow = false;
+                this._carShow = true;
+                this._carMarkerShow = true;
+                this.carTitleDesc = &quot;&quot;;
+                this.driverETA = {};
+                this.onLocationAdd();
+                this.onRouteClear();
+
+                if (driverLocation104 &amp;&amp; driverLocation104.lat &amp;&amp; driverLocation104.lon) {
+                    // if (driverLocation.rotate) {
+                    //     this.rotate = driverLocation.rotate;
+                    // }
+
+                    this.processDriverPoint(driverLocation104)
+                }
+                // setTimeout(()=&gt;{
+                //     this.addOverlays();
+                // },300)
+                
+                // return;
+
+
+                break;
+            // 开始计费
+            case 105:
+                if (this._delegate.source == TaxiOrderDetailSource.DriverLocation) {
+                    this.driverLocationCallBack();
+                }
+                let endLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).endPoi : {};  //orderid订单id
+                let driverLocation105 = {};
+                if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation) {
+                    driverLocation105 = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation;
+                }
+                if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta) {
+                    this.driverETA = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta;
+                } else {
+                    this.driverETA = {};
+                }
+                let param105 = {
+                    origin: driverLocation105,
+                    destination: {
+                        lon: endLocation.lon,
+                        lat: endLocation.lat
+                    }
+                }
+
+                this.maintenanceRoute(param105, 105);
+
+                if (driverLocation105 &amp;&amp; driverLocation105.lat &amp;&amp; driverLocation105.lon) {
+                    // if (driverLocation105.rotate) {
+                    //     this.rotate = driverLocation105.rotate;
+                    // }
+                    this.processDriverPoint(driverLocation105)
+                }
+
+                this._delegate.setData({
+                    driverCb: this.driverETA || {},
+                    showLocation: false
+                })
+                break;
+            case 109:
+            // 行程结束
+            case 106:
+             case 110:
+            case 112:
+            case 111:
+                this._delegate.setData({
+                    showLocation: false
+                })
+                break;
+            default:
+        }
+        if(statusCode &amp;&amp;  this.lastStatusCode &amp;&amp; statusCode ==  this.lastStatusCode){
+            // this.addOverlays(false);
+        }else{
+            this.addOverlays(true);
+        }
+        this.lastStatusCode = statusCode;
+        // TaxiLog(&quot;going  state change finish&quot;);
+    }
+
+    maintenanceRoute(param, status) {
+        if(this.routeDataStatus &amp;&amp; status &amp;&amp; this.routeDataStatus != status){
+            this.onRouteClear();
+        }
+        let routeData = this.routeData;
+        this.initPolygonRegion();
+        this.needRefreshRoute = true;
+        let isNeedRefresh = false;
+        let isOnRoute = false;
+      if (!routeData||!routeData.points) {
+        let orderStatus = status;
+        this.getRouteData(param, (res) =&gt; {
+          if (orderStatus == this._delegate.goingData.status) {
+            this.routeData = res;
+            this.routeDataStatus = orderStatus;
+            this.addOverlays(true);
+          }
+        });
+        return;
+      }
+        if (routeData &amp;&amp; this.routeDataStatus == status) {
+            isNeedRefresh = this.updatePoint(param, routeData);
+            isOnRoute = this.isPointOnRoute();
+        }
+
+
+        if (isOnRoute) {
+            let clearIndex = this.getClearIndex();
+            // console.log(&#039;clearIndex--------------&#039;, JSON.stringify(clearIndex))
+            let points = routeData[&quot;points&quot;];
+            let length = points.length || 0;
+            let newPoints = [];
+            for (let i = clearIndex; i &lt; length; i++) {
+                newPoints.push(points[i]);
+            }
+            routeData.points = newPoints;
+            this.routeData = routeData;
+      } if (isNeedRefresh) {
+        let orderStatus = status;
+        this.updateRoute();
+        this.getRouteData(param, (res) =&gt; {
+          // console.log(&#039;orderStatus---------&#039;,orderStatus)
+          // console.log(&#039;this._delegate.goingData.status---------&#039;,this._delegate.goingData.status)
+          if (orderStatus == this._delegate.goingData.status) {
+            this.routeData = res;
+            this.routeDataStatus = orderStatus;
+            this.addOverlays(true);
+          }
+        });
+      }
+
+        
+    }
+
+    driverLocationCallBack(error) {
+        let driverLocation = this._delegate.goingData.driverLocation || {} //orderid订单id
+        let oldLocation = this._delegate.oldData.driverLocation || {};
+        if (driverLocation &amp;&amp; oldLocation) {
+            if (this.isNeedRefreshRotate(driverLocation, oldLocation)) {
+                this.rotate = this.getRotate(driverLocation, oldLocation);
+
+            }
+        }
+
+        // TaxiLog(&quot;going function time is &quot; + new Date().getTime() + &quot; on drive chage &quot;);
+        // if (this.isNeedRefreshRotate(driverLocation)) {
+        //     console.log(&quot;driverLocation:&quot; + JSON.stringify(driverLocation));
+        //     console.log(&quot;&quot;)
+        //     this.rotate = this.getRotate(driverLocation);
+        // }
+        let driverETA = {};
+        if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta) {
+            driverETA = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation.eta;  //orderid订单id
+        }
+        TaxiLog(&quot;statemachine going driver location eta callback:&quot; + JSON.stringify(driverETA) + &quot;  &quot; + JSON.stringify(driverLocation));
+        this.driverETA = driverETA;
+        if (driverLocation &amp;&amp; driverLocation.lat &amp;&amp; driverLocation.lon) {
+            TaxiLog(&quot;statemachine going driver  location callback has driver location&quot;);
+            this.processDriverPoint(driverLocation);
+            // TaxiLog(&quot;statemachine going driver  location callback has driver location----&quot;);
+            this.addOverlays(false, true);
+        }
+    }
+    initStartDesc(getCarData) {
+        if (this._delegate.isShuttle) {
+            this._startDesc = [{ desc: &#039;等待司机应答&#039;, descColor: &#039;#212121&#039; }];
+        } else {
+            if (getCarData.length == 1) {
+                this._startDesc = [{ desc: &#039;正在呼叫车辆&#039;, descColor: &#039;#212121&#039; }];
+            }
+            else {
+                this._startDesc = [{ desc: &#039;正在呼叫&#039;, descColor: &#039;#212121&#039; },
+                { desc: getCarData.length + &#039;种车型&#039;, descColor: &#039;#4287FF&#039; }
+                ];
+            }
+        }
+    }
+    mapRegionChange(e) {
+        if (e.type == &quot;begin&quot;) {
+            this.isMoving = true;
+        }
+        else if (e.type == &quot;end&quot;) {
+            this.isMoving = false;
+            this.centerScale = e.scale;
+            this.centerLatitude = e.latitude;
+            this.centerLongtitude = e.longitude;
+            this.lasttime = (new Date()).valueOf();
+            // if (this.cachData) {
+            //   this.cachData.latitude = this.centerLatitude;
+            //   this.cachData.scale = this.centerScale;
+            //   this.cachData.longitude = this.centerLongtitude;
+            //   this.setData(this.cachData);
+            //   this.cachData = null;
+            // }
+        }
+    }
+
+    onRouteCallBack(error) {     //获取线路经纬度
+        this.routeData = DataHelper.getInstance().getRoute(this.amapOrderId);  //amaporderId订单id
+        this.initPolygonRegion();
+        // TaxiLog(&quot;statemachine route callback params&quot; + JSON.stringify(this.maxPoint) + &quot;  &quot; + JSON.stringify(this.minPoint) + &quot;  &quot; + JSON.stringify(this.routeData));
+
+        this.needRefreshRoute = true;
+        this.addOverlays();
+    }
+    onRouteClear() {    //清除线路
+        this.routeData = {};
+    }
+    onDriverCarClear() {  //清除司机司机坐标
+        // TaxiLog(&quot;statemachine clear car&quot;);
+        this.driverPoint = null;
+        // this.addOverlays();
+    }
+
+    onLocationClear() {   //清除光标
+        this._delegate.setData({
+            showLocation: false
+        });
+    }
+    onLocationAdd() {   //添加光标
+        // TaxiLog(&quot;statemchine function location going &quot;);
+        this._delegate.setData({
+            showLocation: true
+        });
+
+        // TaxiLog(&quot;statemchine function location going 2&quot;);
+        this.getLocation();
+        // TaxiLog(&quot;statemchine function location going 3&quot;);
+    }
+    getLocation() {   //获取用户都定位坐标
+        GetLocationHelper.getLocation().then(res =&gt; {
+            if (res &amp;&amp; res.longitude &amp;&amp; res.latitude) {
+                this.selfLongitude = res.longitude;
+                this.selfLatitude = res.latitude;
+            }
+        });
+
+    }
+
+
+    // getRotate(currPoint) {
+    //     if (this.driverPoint &amp;&amp; this.driverPoint.latitude &amp;&amp; this.driverPoint.longitude &amp;&amp; currPoint &amp;&amp; currPoint.lng &amp;&amp; currPoint.lat) {
+    //         let angle = parseInt(Math.atan2(currPoint.lng - this.driverPoint.longitude, currPoint.lat - this.driverPoint.latitude) * 180.0 / Math.PI);
+    //         return ((360 + angle) % 360);
+    //     }
+    //     return 0;
+    // }
+    // isNeedRefreshRotate(driverLocation) {
+    //     if (this.driverPoint &amp;&amp; this.driverPoint.latitude &amp;&amp; this.driverPoint.latitude) {
+    //         if (driverLocation &amp;&amp; driverLocation.lng &amp;&amp; driverLocation.lat &amp;&amp; this.driverPoint.longitude &amp;&amp; this.driverPoint.latitude) {
+    //             let newLat = Number(driverLocation.lat);
+    //             let newLon = Number(driverLocation.lng);
+
+    //             let distance = getDistance(this.driverPoint.latitude, this.driverPoint.longitude, newLat, newLon);
+    //             if (distance &lt; 5) {
+    //                 return false;
+    //             }
+    //         }
+    //         return true;
+    //     }
+    //     return true;
+    // }
+    getRotate(currPoint, lastPoint) {
+        if (lastPoint &amp;&amp; lastPoint.lat &amp;&amp; lastPoint.lon &amp;&amp; currPoint &amp;&amp; currPoint.lon &amp;&amp; currPoint.lat) {
+            let angle = parseInt(Math.atan2(currPoint.lon - lastPoint.lon, currPoint.lat - lastPoint.lat) * 180.0 / Math.PI);
+            return ((360 + angle) % 360);
+        }
+        return 0;
+    }
+    isNeedRefreshRotate(newLocation, driverLocation) {
+        if (newLocation &amp;&amp; newLocation.lat &amp;&amp; newLocation.lon) {
+            if (driverLocation &amp;&amp; driverLocation.lon &amp;&amp; driverLocation.lat &amp;&amp; newLocation.lon &amp;&amp; newLocation.lat) {
+                let lastLat = Number(driverLocation.lat);
+                let lastLon = Number(driverLocation.lon);
+                let newLat = Number(newLocation.lat);
+                let newLon = Number(newLocation.lon);
+
+                let distance = getDistance(lastLat, lastLon, newLat, newLon);
+                if (distance &lt; 5) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return true;
+    }
+    processDriverPoint(driverLocation) {
+        if (this.driverPoint) {
+            this.driverPoint.longitude = Number(driverLocation.lon);
+            this.driverPoint.latitude = Number(driverLocation.lat);
+            this.driverPoint.rotate = this.rotate;
+        } else {
+            // TaxiLog(&quot;statemachine going callback:&quot;+this._carDesc);
+            // TaxiLog(&quot;statemachine going driver  location callback has driver location&quot;);
+            this.driverPoint = {
+                id: 3,
+                iconPath: &#039;/image/index/expressCar.png&#039;,
+                longitude: Number(driverLocation.lon),
+                latitude: Number(driverLocation.lat),
+                width: 20,
+                height: 40,
+                anchorX: 0.5,
+                anchorY: 0.5,
+                customCallout: {
+                    type: 2,
+                    time: &quot;&quot;,
+                    descList: this._carDesc
+                },
+                markerLevel: 2,
+                rotate: this.rotate
+            };
+        }
+    }
+    initStartEndPoint() {
+        let startLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).startPoi : {};  //orderid订单id
+        let endLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).endPoi : {};  //orderid订单id
+        if (startLocation &amp;&amp; startLocation.lon &amp;&amp; startLocation.lat) {
+            this.startPoint = {  //行程起始点坐标
+                iconPath: &#039;/image/index/start-point.png&#039;,
+                longitude: Number(startLocation.lon),
+                latitude: Number(startLocation.lat),
+                width: 26,
+                height: 34,
+                anchorX: 0.5,
+                anchorY: 0.7,
+                customCallout: {
+                    type: 2,
+                    time: &quot;&quot;,
+                    isShow: 0
+                },
+                id: 1,
+                markerLevel: 2
+            };
+            this.startPointStr = {
+                iconPath: &#039;/image/index/blank.png&#039;,
+                longitude: Number(startLocation.lon),
+                latitude: Number(startLocation.lat),
+                width: 10,
+                height: 10,
+                anchorX: 0.5,
+                anchorY: 0.1,
+                id: 2,
+                markerLevel: 1,
+                iconAppendStr: startLocation.name,
+                iconAppendStrColor: &#039;#212121&#039;
+            }
+        }
+        if (endLocation &amp;&amp; endLocation.lon &amp;&amp; endLocation.lat) {
+            this.endPoint = {   //行程终点坐标点
+                iconPath: &#039;/image/index/end-point.png&#039;,
+                longitude: Number(endLocation.lon),
+                latitude: Number(endLocation.lat),
+                width: 26,
+                height: 34,
+                anchorX: 0.5,
+                anchorY: 0.7,
+                id: 3,
+                customCallout: {
+                    type: 2,
+                    time: &quot;&quot;,
+                    isShow: 0,
+                    descList: []
+                },
+                markerLevel: 2
+            };
+            this.endPointStr = {
+                iconPath: &#039;/image/index/blank.png&#039;,
+                longitude: Number(endLocation.lon),
+                latitude: Number(endLocation.lat),
+                width: 10,
+                height: 10,
+                anchorX: 0.5,
+                anchorY: 0.1,
+                id: 4,
+                markerLevel: 1,
+                iconAppendStr: endLocation.name,
+                iconAppendStrColor: &#039;#212121&#039;
+            }
+        }
+
+    }
+    addOverlays(isRefresh, isOnLyMarker) {
+        let mapDatas = {};
+        let markers = new Array();
+        TaxiLog(&quot;going add markers2 &quot; + this._carMarkerShow + &quot;  &quot; + this._carDesc + &quot;  &quot; + this._carShow + &quot;  &quot; + JSON.stringify(this.startPoint) + &quot;  &quot; + JSON.stringify(this.endPoint));
+        if ((!this.startPoint) || (!this.endLocation)) {
+            this.initStartEndPoint();
+        }
+        this.initMapParam(this.driverETA, isRefresh);
+        //   TaxiLog(&quot;going add markersqqqq22222 &quot; + JSON.stringify(this.startPoint) + &quot;  &quot; + JSON.stringify(this.endPoint));
+        if (this.startPoint) {
+            if (this._startShow &amp;&amp; this._startDesc &amp;&amp; this._startDesc.length &gt; 0) {
+                this.startPoint.customCallout.isShow = 1;
+                this.startPoint.customCallout.descList = this._startDesc;
+            }
+            else {
+                TaxiLog(&quot;going add markers unfinish &quot;);
+                this.startPoint.customCallout.isShow = 0;
+            }
+            markers.push(this.startPoint);
+            markers.push(this.startPointStr);
+        }
+        if (this.endPoint) {
+            markers.push(this.endPoint);
+            markers.push(this.endPointStr);
+        }
+        if (this.driverPoint &amp;&amp; this._carMarkerShow) {
+            if (this._carShow) {
+                if (this.driverETA) {
+                    mapDatas.driverCb = this.driverETA;
+                }
+                if (this._carDesc &amp;&amp; this._carDesc.length &gt; 0) {
+                    this.driverPoint.customCallout.isShow = 1;
+                    this.driverPoint.customCallout.descList = this._carDesc;
+                }
+                else {
+                    this.driverPoint.customCallout.isShow = 0;
+                }
+            } else {
+                this.driverPoint.customCallout.isShow = 0;
+            }
+            markers.push(this.driverPoint);
+        }
+        let polyline = {
+            color: &quot;#1FB53BFF&quot;,
+            width: 10,
+            iconWidth: 40,
+            dottedLine: false,
+            iconPath: &#039;/image/index/arrow.png&#039;,
+            points: []
+        };
+        //  TaxiLog(&quot;going statemachine polyline data     &quot; + JSON.stringify(this.routeData));
+        if (this.routeData &amp;&amp; this.routeData[&quot;points&quot;]) {
+            // TaxiLog(&quot;going statemachine polyline data     &quot;);
+            polyline.points = this.routeData[&quot;points&quot;];
+
+        }
+        //  app.log(&quot;going statemachine getmapregion 0000:&quot; + JSON.stringify(polyline) + &quot; &quot; + polyline.points.length);
+        // TaxiLog(&quot; going statemachine addoverlays call---------&quot; + isRefresh);
+        //  app.log(&quot;going statemachine getmapregion 11111&quot; + JSON.stringify(markers));
+        if (markers &amp;&amp; markers.length == 0) {
+            // TaxiLog(&quot; going statemachine addoverlays return---------&quot; + isRefresh);
+            return;
+        }
+        if (polyline &amp;&amp; polyline.points &amp;&amp; (polyline.points.length &gt; 0)) {
+            mapDatas.polyline = [polyline];
+            this.needRefreshRoute = false;
+        }
+        else if ((!polyline) || (!polyline.points) || (polyline.points.length == 0)) {
+            mapDatas.polyline = [];
+
+        }
+        if (markers &amp;&amp; markers.length &gt; 0) {
+            mapDatas.markers = markers;
+        }
+        mapDatas.latitude = this.centerLatitude;
+        mapDatas.scale = this.centerScale;
+        mapDatas.longitude = this.centerLongtitude;
+        if (this.includePoints &amp;&amp; this.includePoints.length &gt; 0) {
+            mapDatas.includePoints = this.includePoints;
+        }
+        if (isRefresh) {
+            if (this._delegate.isShow) {
+                this._delegate.setData(mapDatas);
+                // let sysInfo = my.getSystemInfoSync();
+                // if (sysInfo.platform == &#039;Android&#039;) {
+                //   this.setData(mapDatas);
+                // } else {
+                //   // this.mapCtx.setProps &amp;&amp; this.mapCtx.setProps({
+                //   //   includePoints: this.includePoints
+                //   // });
+                //   this.setData(mapDatas);
+                //   this.cachData=null;
+                // }
+                // TaxiLog(&quot; going statemachine addoverlays refresh---------&quot; + JSON.stringify(mapDatas));
+            }
+
+            return;
+        }
+        let nowTime = (new Date()).valueOf();
+        if ((nowTime - this.lasttime) &lt; 2000) {
+            mapDatas.includePoints = [];
+            let sysInfo = getApp().getSystemInfo();
+            if (sysInfo.platform == &#039;Android&#039;) {
+                this._delegate.setData(mapDatas);
+            } else {
+                if (isOnLyMarker) {
+                    this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+                        markers: markers
+                    });
+                    if (mapDatas &amp;&amp; mapDatas.driverCb) {
+                        this._delegate.setData({
+                            driverCb: this.driverETA
+                        });
+
+                    }
+                }
+                else {
+                    this._delegate.setData(mapDatas);
+                }
+            }
+            return;
+        }
+        this._delegate.setData(mapDatas);
+        // TaxiLog(&quot; going statemachine addoverlays ---------&quot; + JSON.stringify(mapDatas));
+    }
+    processIncludePoints() {
+        if (this.includePoints &amp;&amp; this.includePoints.length &gt;= 2) {
+            let bounds = this.initBounds(this.includePoints);
+            if (bounds &amp;&amp; bounds.length == 2) {
+                let minPoint = bounds[0];
+                let maxPoint = bounds[1];
+                if (minPoint &amp;&amp; maxPoint &amp;&amp; minPoint.latitude &amp;&amp; minPoint.longitude &amp;&amp; maxPoint.latitude &amp;&amp; maxPoint.longitude) {
+                    let longtitudeSpan = maxPoint.longitude - minPoint.longitude;
+                    let latitudeSpan = maxPoint.latitude - minPoint.latitude;
+                    if (longtitudeSpan &gt; 0 &amp;&amp; latitudeSpan &gt; 0) {
+                        let longtitudeMax = parseFloat(maxPoint.longitude) + parseFloat(longtitudeSpan / 4);
+                        let longtitudeMin = parseFloat(minPoint.longitude) - parseFloat(longtitudeSpan / 4);
+                        let latitudeMax = parseFloat(maxPoint.latitude) + parseFloat(latitudeSpan / 3);
+                        let latitudeMin = parseFloat(minPoint.latitude) - parseFloat(latitudeSpan * 3 / 4);
+                        let spanMax = {};
+                        spanMax.latitude = latitudeMax;
+                        spanMax.longitude = longtitudeMax;
+                        let spanMin = {};
+                        spanMin.latitude = latitudeMin;
+                        spanMin.longitude = longtitudeMin;
+                        this.includePoints.push(spanMax);
+                        this.includePoints.push(spanMin);
+                    }
+                }
+            }
+        }
+    }
+
+
+    initMapParam(driverETA, isRefresh) {
+        let statusCode = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) ? DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).status : &#039;&#039;;
+        TaxiLog(&quot;going add markers2 after initparam statusCode &quot; + statusCode);
+        if (!statusCode) {
+            return
+        }
+        switch (statusCode) {
+            case 101:
+                this._startShow = true;
+                this._carDesc = [];
+                this._carShow = false;
+                this._carMarkerShow = false;
+                let includePoints = [];
+                let startPoint = {};
+                if (this.startPoint) {
+                    startPoint.latitude = this.startPoint.latitude;
+                    startPoint.longitude = this.startPoint.longitude;
+                    includePoints.push(startPoint);
+                    this.includePoints = includePoints;
+                }
+                this.onRouteClear();
+                break;
+            case 103:
+                this._startDesc = [];
+                this._startShow = false;
+                this._carShow = true;
+                this._carMarkerShow = true;
+                this.carTitleDesc = &quot;距您&quot;;
+                if (driverETA &amp;&amp; driverETA.distance &amp;&amp; driverETA.travelTime) {
+                    // TaxiLog(&quot;statemachine going etas  &quot;);
+                    let distanceDesc = DataFormatter.formatDistance(driverETA.distance);
+                    let timeDesc = DataFormatter.formatMoment(driverETA.travelTime);
+                    if (this._carDesc &amp;&amp; this._carDesc[1]) {
+                        this._carDesc[1].desc = distanceDesc + &quot; &quot; + timeDesc;
+                        this._carDesc[0].desc = this.carTitleDesc;
+                    }
+                    else {
+                        this._carDesc = [{ desc: this.carTitleDesc, descColor: &#039;#757575&#039; },
+                        { desc: distanceDesc + &quot; &quot; + timeDesc, descColor: &#039;#212121&#039; }
+                        ];
+
+                    }
+                    // TaxiLog(&quot;statemachine going etas  &quot; + this._carDesc);
+                } else {
+                    this._carDesc = [];
+                }
+                // TaxiLog(&quot;statemachine 全览  103 logic &quot;);
+                let includeLinePoints = [];
+                if (this.driverPoint) {
+                    let carPoint = {};
+                    carPoint.latitude = this.driverPoint.latitude;
+                    carPoint.longitude = this.driverPoint.longitude;
+                    includeLinePoints.push(carPoint);
+                }
+                let startPoint4 = {};
+                if (this.startPoint) {
+                    startPoint4.latitude = this.startPoint.latitude;
+                    startPoint4.longitude = this.startPoint.longitude;
+                    includeLinePoints.push(startPoint4);
+                }
+                if (this.minPoint) {
+                    includeLinePoints.push(this.minPoint);
+                }
+                if (this.maxPoint) {
+                    includeLinePoints.push(this.maxPoint);
+                }
+
+                this.includePoints = includeLinePoints;
+                // TaxiLog(&quot;statemachine 全览  103 logic end &quot; + JSON.stringify(this.includePoints));
+                break;
+            case 104:
+                if (this._carDesc &amp;&amp; this._carDesc[1]) {
+                    this._carDesc[1].desc = &quot;车辆已到达&quot;;
+                    this._carDesc[0].desc = &quot;&quot;;
+                }
+                else {
+                    this._carDesc = [{ desc: &quot;&quot;, descColor: &#039;#757575&#039; },
+                    { desc: &quot;车辆已到达&quot;, descColor: &#039;#212121&#039; }
+                    ];
+                }
+                let includeLinePoints104 = [];
+                if (isRefresh) {
+                    if (this.selfLongitude &amp;&amp; this.selfLatitude) {
+                        let selfPoint = {};
+                        selfPoint.latitude = this.selfLatitude;
+                        selfPoint.longitude = this.selfLongitude;
+                        includeLinePoints104.push(selfPoint);
+                    }
+                    else {
+                        let startPoint104 = {};
+                        if (this.startPoint) {
+                            startPoint104.latitude = this.startPoint.latitude;
+                            startPoint104.longitude = this.startPoint.longitude;
+                            includeLinePoints104.push(startPoint104);
+                        }
+                    }
+                }
+                else if (this.driverPoint) {
+                    let carPoint104 = {};
+                    carPoint104.latitude = this.driverPoint.latitude;
+                    carPoint104.longitude = this.driverPoint.longitude;
+                    includeLinePoints104.push(carPoint104);
+                }
+                this.driverETA = {};
+                this.includePoints = includeLinePoints104;
+            TaxiLog(&quot;statemachine 全览  104 logic end &quot; + JSON.stringify(this.includePoints));
+                break;
+            case 105:
+                this._startDesc = [];
+                this._startShow = false;
+                this._carShow = true;
+                this._carMarkerShow = true;
+                this.carTitleDesc = &quot;剩余&quot;;
+                if (driverETA &amp;&amp; driverETA.distance &amp;&amp; driverETA.travelTime) {
+                    // TaxiLog(&quot;statemachine going etas  &quot;);
+                    let distanceDesc = DataFormatter.formatDistance(driverETA.distance);
+                    let timeDesc = DataFormatter.formatMoment(driverETA.travelTime);
+                    if (this._carDesc &amp;&amp; this._carDesc[1]) {
+                        this._carDesc[1].desc = distanceDesc + &quot; &quot; + timeDesc;
+                        this._carDesc[0].desc = this.carTitleDesc;
+                    }
+                    else {
+                        this._carDesc = [{ desc: this.carTitleDesc, descColor: &#039;#757575&#039; },
+                        { desc: distanceDesc + &quot; &quot; + timeDesc, descColor: &#039;#212121&#039; }
+                        ];
+
+                    }
+                    // TaxiLog(&quot;statemachine going etas  &quot; + this._carDesc);
+                } else {
+                    this._carDesc = [];
+                }
+                let includeCarPoints = [];
+                let endPoint2 = {};
+                if (this.endPoint) {
+                    endPoint2.longitude = this.endPoint.longitude;
+                    endPoint2.latitude = this.endPoint.latitude;
+                    includeCarPoints.push(endPoint2);
+                }
+
+                if (this.driverPoint) {
+                    let carPoint1 = {};
+                    carPoint1.latitude = this.driverPoint.latitude;
+                    carPoint1.longitude = this.driverPoint.longitude;
+                    includeCarPoints.push(carPoint1);
+                } else {
+                    let startPoint2 = {};
+                    if (this.startPoint) {
+                        startPoint2.latitude = this.startPoint.latitude;
+                        startPoint2.longitude = this.startPoint.longitude;
+                        includeCarPoints.push(startPoint2);
+                    }
+                }
+                this.includePoints = includeCarPoints;
+                break;
+            case 102:
+            case 106:
+            case 107:
+            case 108:
+            case 109:
+            case 110:
+            case 111:
+                this.onRouteClear();
+                this._startDesc = [];
+                this._startShow = false;
+                this._carShow = false;
+                this._carDesc = [];
+                this._carMarkerShow = false;
+                let includeStartEndPoints = [];
+                let startPoint1 = {};
+                if (this.startPoint) {
+                    // TaxiLog(&quot;going add markers2 after initparam statusCode startPoint&quot;);
+                    startPoint1.latitude = this.startPoint.latitude;
+                    startPoint1.longitude = this.startPoint.longitude;
+                    includeStartEndPoints.push(startPoint1);
+                }
+
+                let endPoint1 = {};
+                if (this.endPoint) {
+                    // TaxiLog(&quot;going add markers2 after initparam statusCode endPoint&quot;);
+                    endPoint1.longitude = this.endPoint.longitude;
+                    endPoint1.latitude = this.endPoint.latitude;
+                    includeStartEndPoints.push(endPoint1);
+                }
+
+                this.includePoints = includeStartEndPoints;
+                break;
+        }
+        // TaxiLog(&quot;going statemachine processincludepoi:&quot; + JSON.stringify(this.includePoints))
+
+        this.processIncludePoints();
+    }
+    initBounds(points) {
+        if (points) {
+            let latMin = 90;
+            let lonMin = 180;
+            let latMax = -90;
+            let lonMax = -180;
+            points.forEach((point, index) =&gt; {
+                let pointLatitude = point.latitude;
+                let pointLongtitude = point.longitude;
+                if (pointLatitude &gt; latMax) {
+                    latMax = pointLatitude;
+                }
+                if (pointLatitude &lt; latMin) {
+                    latMin = pointLatitude;
+                }
+                if (pointLongtitude &lt; lonMin) {
+                    lonMin = pointLongtitude;
+                }
+                if (pointLongtitude &gt; lonMax) {
+                    lonMax = pointLongtitude;
+                }
+            });
+            let minPoint = {};
+            if ((latMin != 90) &amp;&amp; (lonMin != 180)) {
+                minPoint.latitude = latMin;
+                minPoint.longitude = lonMin;
+            }
+            let maxPoint = {}
+            if ((latMax != -90) &amp;&amp; (lonMax != -180)) {
+                maxPoint.latitude = latMax;
+                maxPoint.longitude = lonMax;
+            }
+            let bounds = [];
+            bounds.push(minPoint);
+            bounds.push(maxPoint);
+            return bounds;
+
+        }
+        return null;
+
+    }
+    refreshMapRegion() {
+        // TaxiLog(&quot;定位执行&quot; + &quot;3333333333&quot;)
+        this.addOverlays(true);
+    }
+    initPolygonRegion() {
+        // TaxiLog(&quot;statemachine going init bounds&quot; + this.routeData);
+        // TaxiLog(&quot;statemachine going init bounds&quot; + JSON.stringify(this.routeData));
+        if (this.routeData &amp;&amp; this.routeData.points) {
+            // TaxiLog(&quot;statemachine going init bounds data ok &quot;);
+            let bounds = this.initBounds(this.routeData.points);
+            if (bounds &amp;&amp; bounds.length == 2) {
+                // TaxiLog(&quot;statemachine going init bounds length ok &quot;);
+                let minPoint = bounds[0];
+                if (minPoint &amp;&amp; minPoint.latitude &amp;&amp; minPoint.longitude) {
+                    // TaxiLog(&quot;statemachine going init bounds min ok &quot;);
+                    this.minPoint = minPoint;
+                }
+                let maxPoint = bounds[1];
+                if (maxPoint &amp;&amp; maxPoint.latitude &amp;&amp; maxPoint.longitude) {
+                    // TaxiLog(&quot;statemachine going init bounds max ok &quot;);
+                    this.minPoint = minPoint;
+                    this.maxPoint = maxPoint;
+                }
+            }
+        }
+    }
+
+    getRouteData(param, callBack) {
+        let origin = param.origin;
+        let destination = param.destination;
+        let startLon = null;
+        if (origin.lon) {
+            startLon = origin.lon;
+        } else {
+            startLon = origin.lon;
+        }
+        let endLon = null;
+        if (destination.lon) {
+            endLon = destination.lon;
+        } else {
+            endLon = destination.lon;
+        }
+        //&amp;key=944ba3c0b1c6d981a03c2f05f1e65322
+        let originStr = startLon + &quot;,&quot; + origin.lat;
+        let destinationStr = endLon + &quot;,&quot; + destination.lat;
+        let routeUrl = &quot;https://restapi.amap.com/v3/direction/driving?destinationtype=10&amp;origin=&quot; + originStr + &quot;&amp;destination=&quot; + destinationStr + &quot;&amp;extensions=base&amp;output=json&amp;key=41be7873eae26177877353f76faaf8ea&amp;s=rsx&quot;;
+        my.httpRequest({
+            url: routeUrl,
+            method: &#039;GET&#039;,
+            dataType: &#039;json&#039;,
+            success: (res) =&gt; {
+                let routeResult = {};
+                let data = res.data;
+                let infocode = data.infocode;
+                if (infocode == 10000) {
+                    let route = data.route;
+                    let paths = route.paths;
+                    let path = paths[0];
+                    routeResult.distance = Number(path.distance);
+                    routeResult.duration = Number(path.duration);
+                    let points = [];
+                    let steps = path.steps;
+                    steps.forEach((m, j) =&gt; {
+                        let step = steps[j];
+                        let polylineStr = step.polyline;
+                        let polylineStrs = polylineStr.split(&quot;;&quot;);
+                        polylineStrs.forEach((m, i) =&gt; {
+                            let polylinePoint = polylineStrs[i];
+                            let polylineLatlngs = polylinePoint.split(&quot;,&quot;);
+                            if (polylineLatlngs.length == 2) {
+                                let point = {};
+                                point.latitude = Number(polylineLatlngs[1]);
+                                point.longitude = Number(polylineLatlngs[0]);
+                                points.push(point);
+                            }
+                        });
+                    });
+                    routeResult.points = points;
+                    // console.log(&#039;routeResult -------------&#039;, routeResult)
+                    callBack(routeResult);
+                } else {
+                    callBack(null, 1);
+                }
+
+            },
+            fail: function (res) {
+                TaxiLog(&quot;statemachine route fail result is &quot; + JSON.stringify(res));
+                callBack(null, 1);
+                // my.alert({ content: JSON.stringify(res) });
+            },
+            complete: function (res) {
+                my.hideLoading();
+                // my.alert({ content: &#039;complete&#039; });
+            }
+        });
+    }
+    updateRoute() {
+        this.index = 0;
+        this.num++;
+        if (this.num &gt;= 12) {
+            this.toleranceNum = 18;
+        }
+        else if (this.num &gt;= 8) {
+            this.toleranceNum = 12;
+        }
+    }
+    getClearIndex() {
+        return this.clearIndex;
+    }
+    isPointOnRoute() {
+        return this.isOnRoute;
+    }
+    updatePoint(param, routeData) {
+        TaxiLog(&quot;update point be called0000&quot;);
+        this.clearIndex = 0;
+        this.isOnRoute = false;
+        TaxiLog(&quot;update point be called00001&quot;);
+        let driverLocation = null;
+        if (this.amapOrderId &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId) &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation) {
+            driverLocation = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).driverLocation;
+        }
+        // console.log(&#039;driverLocation----------------&#039;, driverLocation)
+        if (driverLocation == null || routeData == null) {
+            return false;
+        }
+        TaxiLog(&quot;update point be called22222&quot;);
+        let points = routeData[&quot;points&quot;];
+        let length = points.length;
+        let distance = 0;
+        TaxiLog(&quot;update point be called11111&quot;);
+        for (let i = 0; i &lt; length - 1; i++) {
+            let pointStart = points[i];
+            let pointEnd = points[i + 1];
+            distance = this.pointDistance(pointStart, pointEnd, driverLocation);
+            // console.log(&#039;distance-----------------&#039;, distance)
+            if (distance &gt; 60) {
+                this.clearIndex = i;
+            }
+            TaxiLog(&quot;update point be called4444&quot;);
+            if (distance &lt; 60) {
+                this.isOnRoute = true;
+                break;
+            }
+        }
+        TaxiLog(&quot;update point be called&quot;);
+        if (distance &gt; 60) {
+            this.index++;
+            if (this.index &gt;= this.toleranceNum) {
+              this.index=0; 
+            
+                return true;
+            }
+        } else {
+            this.index = 0;
+        }
+        return false;
+    }
+
+    pointDistance(pointStart, pointEnd, driverLocation) {
+        let distance;
+        let lineLength1, lineLength2, lineLength3;
+        lineLength1 = getDistance(pointStart.latitude, pointStart.longitude, pointEnd.latitude, pointEnd.longitude);// 线段的长度
+        lineLength2 = getDistance(pointStart.latitude, pointStart.longitude, driverLocation.lat, driverLocation.lon);// (x1,y1)到点的距离
+        lineLength3 = getDistance(pointEnd.latitude, pointEnd.longitude, driverLocation.lat, driverLocation.lon);// (x2,y2)到点的距离
+        if (lineLength2 &lt;= 5 || lineLength3 &lt;= 5) {
+            distance = 0;
+            return distance;
+        }
+        if (lineLength1 &lt;= 5) {
+            distance = lineLength2;
+            return distance;
+        }
+        //处理钝角三角形的case
+        if (lineLength3 * lineLength3 &gt;= lineLength1 * lineLength1 + lineLength2 * lineLength2) {
+            distance = lineLength2;
+            return distance;
+        }
+        if (lineLength2 * lineLength2 &gt;= lineLength1 * lineLength1 + lineLength3 * lineLength3) {
+
+            distance = lineLength3;
+
+            return distance;
+
+        }
+
+        let circumference = (lineLength1 + lineLength2 + lineLength3) / 2;// 半周长
+
+        let area = Math.sqrt(circumference * (circumference - lineLength1) * (circumference - lineLength2) * (circumference - lineLength3));// 海伦公式求面积
+
+        distance = 2 * area / lineLength1;// 返回点到线的距离（利用三角形面积公式求高）
+
+        return distance;
+
+    }
+};</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

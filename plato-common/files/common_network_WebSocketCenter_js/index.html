@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/network/WebSocketCenter.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/network/WebSocketCenter.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">68.92</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">409</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">57.14</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.67</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import TaxiLog from &#039;../TaxiLog.js&#039;;
+import CommomParamHelper from &#039;./CommomParamHelper.js&#039;;
+import LoginBindHelper  from &#039;../../common/login/LoginBindHelper.js&#039;;
+import ServiceAddress from &#039;../../common/network/ServiceAddress.js&#039;;
+/** 长连接参考文档 https://lark.alipay.com/renjie.hrj/gdndoo/tlzh4i */
+const DEFAULT_CONNECT_OPTIONS = {
+  KeepAlive: 20,
+  PING_TIMEOUT: 60,  //心跳超时时间限制
+  CONNECT_TIMEOUT:20, //连接超时
+
+  HIGH_QUALITY_NETWORK_PING_INTERVAL: 10,
+  LOW_QUALITY_NETWORK_PING_INTERVAL: 15,
+
+  RECONNECTION_TIME_INTERVAL: 5,//5s 断开重连间隔
+  MAX_RECONNECTION_TIME_INTERVAL: 60,// 最大断开重连时间间隔 
+  BIZTYPE_INSTANT_CAR:7,
+
+  PING: &#039;ping&#039;, //心跳  发送
+  PONG: &#039;pong&#039;  //心跳  回执
+
+};
+
+/***获取合适心跳间隔 */
+function getSuitablHeartTimeOut() {
+  let timeOut = DEFAULT_CONNECT_OPTIONS.LOW_QUALITY_NETWORK_PING_INTERVAL;
+  return timeOut * 1000;
+}
+
+/** 心跳  */
+let heartCheck = {
+  timeOut: getSuitablHeartTimeOut(),
+  HeartCheckTimeOutObj: null,
+  HeartCheckTimeOutServerTimeOutObj: null,
+  lastAdd:0,
+  reset:function(){
+    // TaxiLog(&quot;statemachine socket clear timeout &quot;+ this.HeartCheckTimeOutObj+&quot;   &quot;+this.HeartCheckTimeOutServerTimeOutObj);
+    clearTimeout(this.HeartChecktimeOutObj);
+    clearTimeout(this.HeartCheckTimeOutServerTimeOutObj);
+    return this;
+  },
+  start: function(){
+   let timeStamap=(new Date()).valueOf(); 
+   if(timeStamap-this.lastAdd&lt;this.timeOut){
+     return;
+   }
+   this.lastAdd=timeStamap;
+    //  TaxiLog(&quot;statemachine socket add timeout &quot;+ this.HeartCheckTimeOutObj+&quot;   &quot;+this.HeartCheckTimeOutServerTimeOutObj);
+    this.HeartCheckTimeOutObj = setTimeout(() =&gt; {
+      // TaxiLog(&#039;HeartCheckTimeOutObj timeout; isConnected:&#039; + WebSocketCenter.getInstance().isConnected + &#039; ; _isConnecting:&#039; + WebSocketCenter.getInstance()._isConnecting); //eslint-disable-line no-use-before-define
+      if(WebSocketCenter.getInstance().isConnected){  //eslint-disable-line no-use-before-define
+        WebSocketCenter.getInstance().sendsMessage(DEFAULT_CONNECT_OPTIONS.PING); //eslint-disable-line no-use-before-define
+        this.HeartCheckTimeOutServerTimeOutObj = setTimeout(() =&gt; { //eslint-disable-line no-use-before-define
+        if (WebSocketCenter.getInstance().isConnected &amp;&amp; WebSocketCenter.getInstance().checkIsTimeOut()){ //eslint-disable-line no-use-before-define
+          //  TaxiLog(&#039;ping 超时了&#039;);
+             WebSocketCenter.getInstance().checkRetryConnection();  //eslint-disable-line no-use-before-define
+        }
+      }, DEFAULT_CONNECT_OPTIONS.PING_TIMEOUT * 1000);
+      }
+  
+    }, this.timeOut);
+
+  }
+}
+
+
+// let param = {
+//    &quot;protoType&quot;:1,
+//    &quot;bizType&quot;:5,
+//    &quot;payLoad&quot;:&quot;{\&quot;zctest\&quot;:\&quot;zctest\&quot;}&quot;,
+//    &quot;qos&quot;:1,
+//    &quot;protoId&quot;:85482516
+//   }
+
+// {&quot;protoType&quot;:1,
+// &quot;bizType&quot;:5,
+// &quot;payLoad&quot;:&quot;{\&quot;instant_order\&quot;:[{\&quot;amapOrderId\&quot;:\&quot;quhaobo\&quot;}]}&quot;,
+// 、&quot;qos&quot;:1,
+// &quot;protoId&quot;:104069679}
+
+export default class WebSocketCenter {
+
+  constructor(delegate) {
+    this.instance = null;
+    this._reconnectCount = 0;
+    this.unConnect = true;
+    this.isConnected = false;
+    this._lastPongTimeStamp = null;
+    this._connetctTimer = null;
+    this._isConnecting = false; //是否正在连接
+    this._isAlreadyInit = false;
+    this.delegate = delegate;    //代理对象 
+  }
+
+  /** 单例 */
+  static getInstance(delegate) {
+    if (!this.instance) {
+      this.instance = new WebSocketCenter(null);
+      this.instance.closeWebSocket();
+      this.instance.delegate = delegate;
+    }
+    return this.instance;
+  }
+
+  
+
+ 
+  /** 连接长链接 */
+  _connectSocket() {
+
+    this.closeWebSocket(); //先断开防止创建多个weboscket
+
+    this.unConnect = false;
+
+   /**开始连接 */
+    this._isConnecting = true;
+    this.delegate &amp;&amp; this.delegate.handleWebsocketConnectingEnvent &amp;&amp; this.delegate.handleWebsocketConnectingEnvent();
+
+    let tid = getApp().globalData.commomConfig.tid || &#039;&#039;;
+    // TaxiLog(&#039;tid = &#039; + tid);
+    tid =  encodeURIComponent(tid);
+    // TaxiLog(&#039;encodeURIComponent tid = &#039; + tid);
+
+    let diu = CommomParamHelper.getDiu()|| &quot;&quot;;
+    // TaxiLog(&#039;diu = &#039; + diu);
+
+    let dip = CommomParamHelper.getDip();
+    // TaxiLog(&#039;dip = &#039; + dip);
+
+    let sessonid = LoginBindHelper.getUserSessionId() || &#039;&#039;;
+    let sid = sessonid.replace(&quot;sessionid=&quot;, &quot;&quot;);
+    // TaxiLog(&#039;sid = &#039; + sid);
+
+    let uid = LoginBindHelper.getAmapUserId() || &#039;&#039;;
+    // TaxiLog(&#039;uid = &#039; + uid);
+
+    //本地测试代码
+    // tid = encodeURIComponent(&quot;W2RGfrZ3h2UDAEDF+u7vqJy1&quot;);
+    // diu=&#039;ABE03D47-CE88-4D98-B94B-81BE1F6257EB&#039;;
+    // sid=&#039;naov0v9huy6m70l28llod01qfka86hw6&#039;;
+    // uid = &#039;61492220&#039;;
+
+    let  param = {
+      diu: diu,
+      dip: dip,
+      keepAlive: DEFAULT_CONNECT_OPTIONS.KeepAlive,
+      sid: sid,
+      uid: uid,
+      tid: tid,
+    }
+    let commParam = CommomParamHelper.appendWebSocketParam();
+
+    let totalParam = Object.assign(param,commParam);
+    // TaxiLog(&#039;connectSocket totalParam:&#039; + JSON.stringify(totalParam));
+    let paramStr = null;
+    for(let key in totalParam){
+      if(paramStr){
+          paramStr += &#039;&amp;&#039;+key+&#039;=&#039;+totalParam[key];
+      }else{
+          paramStr = &#039;?&#039;+key+&#039;=&#039;+totalParam[key];
+      }
+    }
+
+    let url = ServiceAddress.WebSocketServer;
+    url = url + paramStr;
+
+    /** 连接长链接 */
+    // TaxiLog(&#039;connectSocket +&#039; + url);
+
+   this.initEventHandle();
+
+    let self  = this;
+    //连接超时判断
+    clearTimeout(this._connetctTimer);
+    this._connetctTimer = setTimeout(() =&gt; {
+          TaxiLog(&#039;connectSocket Time Out&#039;);
+          self.delegate &amp;&amp; this.delegate.handleWebsocketConnectTimeOut&amp;&amp; this.delegate.handleWebsocketConnectTimeOut();
+          self.checkRetryConnection();
+      }
+      , DEFAULT_CONNECT_OPTIONS.CONNECT_TIMEOUT * 1000);
+
+      /**连接 */
+   my.connectSocket({
+      url: url, // 开发者服务器接口地址，必须是 wss 协议，且域名必须是后台配置的合法域名
+      header: {
+        &#039;content-type&#039;: &#039;application/json&#039;,
+      },
+      method: &quot;GET&quot;,
+       success: (res) =&gt; {
+           TaxiLog(&#039;connectSocket success&#039;);
+       },
+       fail:()=&gt;{
+           self.checkRetryConnection();
+       },
+      complete: (res) =&gt; {
+        TaxiLog(&#039;complete ==  &#039; + JSON.stringify(res));
+      },
+    });
+
+  }
+
+  initEventHandle() {
+  //  TaxiLog(&#039;initEventHandle +&#039; + this._isAlreadyInit);
+      let self  = this;
+      if (!this._isAlreadyInit) {
+      this._isAlreadyInit = true;
+      /**监听打开webscoket链接 */
+      my.onSocketOpen(res =&gt; {
+        clearTimeout(self._connetctTimer);
+        self._isConnecting = false;;
+        TaxiLog(&#039;WebSocket 连接已打开！&#039; + JSON.stringify(res));
+        self._reconnectCount = 0; // 重置重连次数
+        self.isConnected = true;
+
+          self.delegate &amp;&amp; self.delegate.handleWebsocketConnectedEnvent &amp;&amp; self.delegate.handleWebsocketConnectedEnvent();
+
+        //开启心跳
+        self._startHeartCheck();
+
+      });
+
+      /** 注意： 回调方法的注册在整个小程序启动阶段只要做一次，调多次会有多次回调 */
+      my.onSocketMessage((res) =&gt; {
+        // TaxiLog(&#039;收到数据==&#039; + res.data);
+        self._reconnectCount = 0;
+        self.isConnected = true;
+        self._isConnecting = false;
+    
+        if (res.data === DEFAULT_CONNECT_OPTIONS.PONG) {//心跳成功
+          self._lastPongTimeStamp = (new Date()).valueOf();
+          // TaxiLog(&#039;this._lastPongTimeStamp&#039; + this._lastPongTimeStamp);
+          self._startHeartCheck();
+        } else {
+          self.publishJsonData(res.data); // 发送一次上行消息告诉服务器收到信息
+          //解析数据
+          self.parseReceiveData(res.data);
+        }
+      });
+
+
+      //**监听关闭webscoket链接 */
+      my.onSocketClose(res =&gt; {
+        // TaxiLog(&#039;连接已关闭！&#039; + JSON.stringify(res));
+        // 避免主动调用closeSocket触发的重连
+        if (self.unConnect) {
+            //断线重连
+            self.checkRetryConnection();
+        }
+      });
+
+      my.onSocketError((res) =&gt; {
+          // TaxiLog(&#039;WebSocket 连接打开失败，请检查！&#039; + JSON.stringify(res));
+          self.checkRetryConnection();
+      });
+
+      }
+
+
+  }
+
+  checkIsTimeOut(){
+    //检查时间是否超时
+    let currrentTimeStamp = (new Date()).valueOf();
+    let timeOut =  currrentTimeStamp - this._lastPongTimeStamp;
+
+    if(timeOut &gt; DEFAULT_CONNECT_OPTIONS.PING_TIMEOUT * 1000){
+        return true;
+    }
+
+    return false;
+  }
+
+  //构造上行消息
+  publishJsonData(data) {
+    let param = {};
+    if (data) {
+      let model = JSON.parse(data);
+      let protoId = model.protoId;
+      let bizType = model.bizType;
+      if (bizType == DEFAULT_CONNECT_OPTIONS.BIZTYPE_INSTANT_CAR) {
+        param = {
+          bizType: bizType,
+          protoId: protoId,
+          protoType: 2,
+        };
+        this.sendsMessage(JSON.stringify(param));
+      }else{
+        // TaxiLog(&#039;不合法的bizType &#039;+ bizType);
+      }
+    }
+
+  }
+
+  //接受处理的数据
+  parseReceiveData(data) {
+    if (data) {
+      let model = JSON.parse(data);
+      let payLoad = model.payLoad;
+        TaxiLog(&#039;payLoad&#039; + payLoad);
+        if (this.delegate &amp;&amp; this.delegate.handleWebSocketPayLoad) {
+            this.delegate.handleWebSocketPayLoad(payLoad)
+        }
+    }
+  }
+
+
+  //发送数据
+  sendsMessage(content) {
+    let data = {
+      data: content,
+    }
+    let self = this;
+    // TaxiLog(&#039;发送数据&#039; + content);
+    my.sendSocketMessage({
+      data: content, // 需要发送的内容
+      success: (res) =&gt; {
+        // TaxiLog(&#039;数据发送成功！&#039; + content);
+      },
+      fail:(res)=&gt;{
+        // TaxiLog(&#039;数据发送失败！&#039; + content);
+        self.checkRetryConnection();
+      }
+    });
+  }
+
+  /** 关闭websocket*/
+  closeWebSocket() {
+
+    if (this.unConnect == true) {
+        return;
+    }
+
+    clearTimeout(this._connetctTimer);
+    heartCheck.reset();
+    my.closeSocket();
+    // TaxiLog(&#039;关闭websocket&#039;);
+    this.isConnected = false;
+    this._isConnecting = false;
+
+    this._handleWebsocketCloseEvent();
+    this.unConnect = true;
+  }
+
+
+  /**外部调用 */
+  connectWebSocket() {
+      if(this.lockReconnect){
+          clearTimeout(this.timer);
+          this.lockReconnect = false;
+      }
+      // TaxiLog(&#039;页面重新连接&#039;);
+      this._connectSocket();
+  }
+
+  checkRetryConnection() {
+
+      this.closeWebSocket();
+
+      let needRetryConnection = true;
+      if (this.delegate) {
+          needRetryConnection = this.delegate.needRetryConnection &amp;&amp; this.delegate.needRetryConnection();
+      }
+      if(needRetryConnection){
+          this._retryConnection();
+      } else {
+          if(this.lockReconnect){
+              clearTimeout(this.timer);
+              this.lockReconnect = false;
+          }
+      }
+  }
+
+  /**心跳检测*/
+  _startHeartCheck() {
+    heartCheck.reset().start();
+  
+  }
+  
+   /**处理长连接断开事件 */
+  _handleWebsocketCloseEvent(){
+     if(this.delegate){
+       this.delegate.handleWebsocketCloseEnvent &amp;&amp; this.delegate.handleWebsocketCloseEnvent(this._reconnectCount);
+     }
+  }
+
+  /**断线重连 */
+  _retryConnection() {
+    // TaxiLog(&#039;_retryConnection 000000&#039; + this.lockReconnect);
+      if (this.lockReconnect) return;
+      this.lockReconnect = true;
+      clearTimeout(this.timer);
+      let self = this;
+      if (this._reconnectCount &lt; DEFAULT_CONNECT_OPTIONS.MAX_RECONNECTION_TIME_INTERVAL / DEFAULT_CONNECT_OPTIONS.RECONNECTION_TIME_INTERVAL) {
+        this._reconnectCount++;
+        // TaxiLog(&#039;_retryConnection 11111&#039; + this.lockReconnect);
+        let timerInterval = (this._reconnectCount - 1) * DEFAULT_CONNECT_OPTIONS.RECONNECTION_TIME_INTERVAL;
+        timerInterval = timerInterval * 1000;
+        this.timer = setTimeout(() =&gt; {
+          // TaxiLog(&#039;断线重连&#039; + this._reconnectCount);
+          self._connectSocket();
+          self.lockReconnect = false;
+        }, timerInterval);
+      } else {
+        // TaxiLog(&#039;_retryConnection 222222&#039; + this.lockReconnect);
+        this.lockReconnect = false;
+      }
+    // TaxiLog(&#039;_retryConnection 333333&#039; + this.lockReconnect);
+  }
+
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/network/CommomParamHelper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/network/CommomParamHelper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">67.89</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">238</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">47.90</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.21</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import TaxiLog from &#039;../TaxiLog.js&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import util from &#039;../util/util.js&#039;;
+import deepPath from &#039;../../common/lib/deepPath.js&#039;
+import LoginBindHelper from &quot;../login/LoginBindHelper&quot;;
+class CommomParamHelper {
+
+  /** 添加定位参数 */
+  static appendLocation() {
+    
+    return new Promise((resolve, reject) =&gt; {
+      if(getApp().globalData.cityAdcode&amp;&amp;getApp().globalData.cityAdcode!==&#039;&#039;) {
+        let parm = {
+           &#039;longitude&#039;: deepPath(getApp().globalData,[&#039;userLoc&#039;,&#039;longitude&#039;]) || &quot;&quot;,
+           &#039;latitude&#039;: deepPath(getApp().globalData,[&#039;userLoc&#039;,&#039;latitude&#039;])|| &quot;&quot;
+        }
+        resolve(parm);
+      }else {
+        GetLocationHelper.getLocation()
+              .then(res=&gt;{
+              let parm = {
+                  &#039;longitude&#039;: (res &amp;&amp; res.longitude) || &quot;&quot;,
+                  &#039;latitude&#039;: (res &amp;&amp; res.latitude) || &quot;&quot;
+                 }
+              resolve(parm);
+              })
+              .catch(res=&gt;{
+                 let parm = {
+                  &#039;longitude&#039;: (res &amp;&amp; res.longitude) || &quot;&quot;,
+                  &#039;latitude&#039;: (res &amp;&amp; res.latitude) || &quot;&quot;
+                 }
+              resolve(parm);
+              });
+        }
+              
+      });
+    }
+
+
+
+  /**取diu */
+  static getDiu() {
+    // let sysInfo = my.getSystemInfoSync();
+    let sysInfo = getApp().getSystemInfo();
+    if (sysInfo.platform == &#039;Android&#039;) {
+      return getApp().globalData.commomConfig.imei;
+    } else {
+      return getApp().globalData.commomConfig.idfa;
+    }
+  }
+
+  /**取dip 参数 */
+  static getDip() {
+    return 15220;
+  }
+
+  /**tid参数 */
+  static fetchTid() {
+    let app = getApp();
+    return new Promise((resolve, reject) =&gt; {
+      if (app.globalData.commomConfig.tid) {
+        resolve({ &#039;tid&#039;: app.globalData.commomConfig.tid })
+      } else {
+        my.call(&#039;getConfig&#039;, {
+          configKeys: [&#039;did&#039;]
+        }, (result) =&gt; {
+          let did = result.data &amp;&amp; result.data.did;
+          if (did) {
+            app.globalData.commomConfig.tid = did;
+          }else{
+            my.reportAnalytics(&#039;fetchTidFailed&#039;, {
+               &#039;data&#039;:JSON.stringify(result)
+             });
+          }
+          resolve({ &#039;tid&#039;: did })
+        });
+      }
+    });
+  }
+
+  /**取imei参数(安卓) */
+  static fetchIMEI() {
+    let app = getApp();
+
+    return new Promise((resolve, reject) =&gt; {
+      if (app.globalData.commomConfig.imei) {
+        resolve({ &#039;imei&#039;: app.globalData.commomConfig.imei });
+      } else {
+        if (LoginBindHelper.isUserAuthorized()) {//允许授权
+          my.call(&#039;getClientInfo&#039;, (result) =&gt; {
+            let imei = result[&#039;device.id&#039;];
+            if (imei) {
+              app.globalData.commomConfig.imei = imei;
+            }
+            resolve({ &#039;imei&#039;: imei });
+          });
+        } else {
+          app.globalData.commomConfig.imei = null;
+          resolve({ &#039;imei&#039;: null });
+        }
+      }
+    });
+  }
+
+  //网络状态
+  static addNetworkType() {
+
+    return new Promise((resolve, reject) =&gt; {
+      if (getApp().globalData.network &amp;&amp; getApp().globalData.network.networkType) {
+        let networkType = getApp().globalData.network.networkType;
+        resolve({ &#039;networkType&#039;: networkType });
+      } else {
+        my.getNetworkType({
+          complete: (res) =&gt; {
+            getApp().globalData.network = {
+              networkType: res.networkType,
+              networkAvailable: res.networkAvailable,
+            };
+            resolve({ &#039;networkType&#039;: getApp().globalData.network.networkType });
+          }
+        });
+      }
+    });
+  }
+
+  /**取idfa参数（iPhone）*/
+  static fetchIDFA() {
+    let app = getApp();
+
+    return new Promise((resolve, reject) =&gt; {
+      if (app.globalData.commomConfig.idfa) {
+        let idfa = app.globalData.commomConfig.idfa
+        resolve({ &#039;idfa&#039;: idfa });
+      } else {
+        if (LoginBindHelper.isUserAuthorized()) {//允许授权
+          my.call(&#039;idfa&#039;, {}, (result) =&gt; {
+            let idfa = result.idfa;
+            if (idfa) {
+              if (idfa === &#039;00000000-0000-0000-0000-000000000000&#039;) {//过滤掉idfa无效的情况
+                 app.globalData.commomConfig.idfa = null;
+              } else {
+                app.globalData.commomConfig.idfa = idfa;
+              }
+            } else {
+                app.globalData.commomConfig.idfa = null;
+            }
+            resolve({ &#039;idfa&#039;:  app.globalData.commomConfig.idfa });
+          });
+        } else {
+          app.globalData.commomConfig.idfa = null;
+          resolve({ &#039;idfa&#039;: app.globalData.commomConfig.idfa });
+        }
+      }
+
+    });
+  }
+
+  /** 添加设备参数 */
+  static appSysInfoParam(callback) {
+    let commParam = {};
+    let app = getApp();
+    let sysInfo = getApp().getSystemInfo();;
+    commParam[&#039;channel&#039;] = &quot;alipay_mini&quot;;
+    commParam[&#039;miniSDKVersion&#039;] = my.SDKVersion;
+    if(sysInfo.model){
+      commParam[&#039;model&#039;] = sysInfo.model;
+    }
+    if(sysInfo.platform){
+      commParam[&#039;platform&#039;] = sysInfo.platform;
+    }
+    commParam[&#039;pixelRatio&#039;] = sysInfo.pixelRatio;
+    commParam[&#039;windowWidth&#039;] = sysInfo.windowWidth;
+    commParam[&#039;windowHeight&#039;] = sysInfo.windowHeight;
+    commParam[&#039;screenWidth&#039;] = sysInfo.screenWidth;
+    commParam[&#039;screenHeight&#039;] = sysInfo.screenHeight;
+    commParam[&#039;language&#039;] = sysInfo.language;
+    commParam[&#039;alipayVersion&#039;] = sysInfo.version;
+    commParam[&#039;storage&#039;] = sysInfo.storage;
+    commParam[&#039;currentBattery&#039;] = sysInfo.currentBattery;
+    commParam[&#039;system&#039;] = sysInfo.system;
+    commParam[&#039;brand&#039;] = sysInfo.brand;
+    commParam[&#039;fontSizeSetting&#039;] = sysInfo.fontSizeSetting;
+    commParam[&#039;miniProgramVersion&#039;] = app.miniProgramVersion();
+    commParam[&#039;dip&#039;] = this.getDip(); //支付宝小程序
+    return commParam;
+  }
+
+  static getCommparams(callback) {
+    let sysInfo = getApp().getSystemInfo();
+    let fun;
+    let commParam = this.appSysInfoParam();
+
+    if (sysInfo.platform == &#039;Android&#039;) {
+      fun = this.fetchIMEI;
+    } else {//iOS
+      fun = this.fetchIDFA;
+    }
+    let p = Promise.all([this.addNetworkType(), this.appendLocation(), this.fetchTid(), fun()]);
+    let vals = {};
+    p.then((val =&gt; {
+      val.map(item =&gt; {
+        vals = Object.assign(item, vals);
+      })
+      for (let key in vals) {
+        let value = vals[key];
+        if (value) {
+          commParam[key] = value;
+        }
+      }
+      // TaxiLog(JSON.stringify(commParam));
+      callback(commParam)
+    }));
+  }
+
+  /** 长连接参数 */
+  static appendWebSocketParam() {
+    let commParam = {};
+    let app = getApp();
+    let sysInfo = getApp().getSystemInfo();
+    commParam[&#039;system&#039;] = encodeURI(sysInfo.system);
+    if(sysInfo.model){
+      commParam[&#039;model&#039;] = encodeURI(sysInfo.model);
+    }
+    if(sysInfo.platform){
+      commParam[&#039;platform&#039;] = encodeURI(sysInfo.platform);
+    }
+    commParam[&#039;brand&#039;] = encodeURI(sysInfo.brand);
+    commParam[&#039;div&#039;] =  encodeURI(app.miniProgramVersion());
+    return commParam;
+  }
+}
+
+
+
+
+
+
+export default CommomParamHelper;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

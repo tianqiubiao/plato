@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/cp-index/cp-index.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/cp-index/cp-index.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.99</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1058</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">65.22</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">9.73</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import deepPath from &#039;../../common/lib/deepPath.js&#039;;
+import mapView from &#039;../../common/mapView/mapView.js&#039;;
+import EmpowerRequest from &#039;../../common/network/requests/EmpowerRequest.js&#039;;
+import SetEmpowerRequest from &#039;../../common/network/requests/SetEmpowerRequest.js&#039;;
+import OrderUtil from &#039;../../common/util/OrderUtil.js&#039;;
+import DataFormatter from &#039;../../common/DataFormatter.js&#039;
+// class OnStartEndRouteCallBack extends ActionCallBack {  ------TODO
+//     constructor(delegate) {
+//         super();
+//         this._delegate = delegate;
+//     }
+//     onStartEndRouteCallBack(routeData, error) {
+//         this._delegate.onStartEndRouteCallBack(routeData, error);
+//     }
+// }
+
+Page({
+    data: {
+        scale: 16,
+        polyline: [],
+        includePoints: [],
+        allPoints: [],
+        style: &#039;height:calc(100% - 388rpx);width:100%&#039;,
+        markers: [],
+        uid: &#039;cp_index_id&#039;,
+        needRefresh: false,          //前后台切换判断是否需要刷新运力页面
+        infoData: {},             //页面第一次加载存储起终点数据
+        positionBottom: &#039;bottom: 453rpx;&#039;,//修改起终点&amp;个人中心
+        isPositionBottom: &#039;bottom: 545rpx;&#039;,//定位按钮
+        beginTimer: false,      //是否启动刷新定时器
+        arriveTime: [],
+        mainMap: &#039;mainMap&#039;,
+        mustFresh: false,            //控制从搜索页到运力页面是否刷新
+        isOrdering: false,           //是否在下单中
+        isFirstRender: true,
+        openSecret: false,             //控制开启免密（下单异常时）
+        isClickPerson: false,
+        isTips: false,
+        showElement: false, //授权弹框展示
+        isdripping: false, //是否滴滴展示
+        authorizationList: [],
+        powerInfo: {},
+        agreeOrder: false, //用户默认方案2再次点击变量控制
+        showCp: [],
+        closeStrategy: &#039;&#039;,
+        targetSumbit: false
+    },
+    onTips(value) {
+        this.setData({ isTips: value });
+        TaxiLog(&quot;组件Tips改变了&quot;, this.data.isTips)
+        if (this.data.isTips) {
+            this.setData({
+                positionBottom: &#039;bottom: 523rpx;&#039;,
+                isPositionBottom: &#039;bottom: 615rpx;&#039;,
+            })
+        } else {
+            this.setData({
+                positionBottom: &#039;bottom: 453rpx;&#039;,
+                isPositionBottom: &#039;bottom: 545rpx;&#039;,
+            })
+        }
+        TaxiLog(&quot;positionBottom-&quot;, this.data.positionBottom, &quot;isPositionBottom--，&quot;, this.data.isPositionBottom)
+    },
+    //下单开启免密，控制免密页面的显示和隐藏
+    onOpenSecret(secretFlag) {
+        this.setData({ openSecret: secretFlag });
+        TaxiLog(&quot;执行是否显示函数，参数为----&quot;, secretFlag);
+        //免密弹窗展示埋点 
+        if (secretFlag) {
+            my.reportAnalytics(&#039;freepay_popup_show&#039;, {});
+        }
+    },
+    onGetCtx(item) {
+        //点击去开启免密时，保存detail组件。
+        if (this.item) return;
+        this.item = item;
+    },
+    onSuccess() {
+        //免密开启成功后，调用detail组件的方法。
+        this.item.isEmpower();
+    },
+    //判断是否能点击图标
+    onHasTap(flagValue) {
+        this.data.isOrdering = flagValue;
+    },
+    moveToLocation() {
+        TaxiLog(&#039;moveToLocation====&#039; + JSON.stringify(this.renderMarkers))
+        // this.setData({
+        //     latitude: this.lastLatitude,
+        //     longitude: this.lastLongitude,
+        //     scale: this.lastScale,
+        //     markers: this.renderMarkers,
+        //     includePoints: this.includePoints,
+        //     polyline: [{
+        //         points: this.data.allPoints,
+        //         color: &quot;#1FB53BFF&quot;,
+        //         width: 10,
+        //         iconWidth: 40,
+        //         dottedLine: false,
+        //         iconPath: &#039;/image/index/arrow.png&#039;
+        //     }]
+        // })
+        let polyline = [{
+            points: this.data.allPoints,
+            color: &quot;#1FB53BFF&quot;,
+            width: 10,
+            iconWidth: 40,
+            dottedLine: false,
+            iconPath: &#039;/image/index/arrow.png&#039;
+        }]
+        this.mapView.updateComponents(this.renderMarkers, this.lastLatitude, this.lastLongitude, this.lastScale);
+        this.mapView.fullView();
+        this.mapView.paintingRoute(polyline)
+        this.mapView.unifiedUpdateMap()
+    },
+    onCallout(num) {
+        TaxiLog(&#039;oncallout=======》&#039; + num);
+        if (this.renderMarkers) {
+            if (num === &#039;...&#039;) {
+                this.data.arriveTime = this.renderMarkers[0].customCallout.descList = [{ desc: &#039;在此处上车&#039;, descColor: &#039;#212121&#039; }];
+            } else {
+                this.data.arriveTime = this.renderMarkers[0].customCallout.descList = [{ desc: num + &#039;分钟后&#039;, descColor: &#039;#4287FF&#039; }, { desc: &#039;上车&#039;, descColor: &#039;#212121&#039; }];
+            }
+        }
+
+        TaxiLog(&#039;coindex绘制marker=====&#039; + JSON.stringify(this.renderMarkers))
+        setTimeout(() =&gt; {
+            // this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+            //     markers: this.renderMarkers
+            // })
+            this.mapView.updateComponentsMarkers(this.renderMarkers)
+            this.mapView.unifiedUpdateMap();
+        }, 300)
+    },
+    moveToSearch() {
+        //如果在下单中，则不做任何操作
+        if (this.data.isOrdering) return;
+
+        // getApp().globalData.startEndObj.endPoint = null;
+        if (!getApp().globalData.startEndObj.startPoint) {
+
+            let startInfo = null;
+            if (this.data.amapOrderId) {
+                startInfo = DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId).startPoi;
+            } else {
+                startInfo = getApp().globalData.startEndObj.startPoint;
+            }
+
+            if (startInfo) {
+                getApp().globalData.startEndObj.startPoint = {};
+                getApp().globalData.startEndObj.startPoint.lon = startInfo.lon;
+                getApp().globalData.startEndObj.startPoint.lat = startInfo.lat;
+                getApp().globalData.startEndObj.startPoint.name = startInfo.name;
+            }
+
+        }
+        //跳转前清空订单号
+        this.setData({ amapOrderId: &#039;&#039; });
+        getApp().router.navigateTo({
+            url: &#039;/page/search/search?from=cp&#039;
+        })
+    },
+    regionchange(e) { //改变地图的视野时候修改
+        TaxiLog(&#039;regionchange====&#039; + JSON.stringify(e));
+        if (e.type === &#039;begin&#039;) {
+            this.prevLat = e.latitude;
+            this.preLon = e.longitude;
+            this.prevScale = e.scale;
+        }
+        if (e.type == &#039;end&#039;) {
+            this.currentLat = e.latitude;
+            this.currentLon = e.longitude;
+            this.currentScale = e.scale;
+            if (this.currentLat == this.prevLat &amp;&amp; this.preLon == this.currentLon &amp;&amp; this.prevScale == this.currentScale) {
+                return;
+            }
+            this.lastLatitude = e.latitude;
+            this.lastLongitude = e.longitude;
+            this.lastScale = e.scale;
+        }
+    },
+    moveToPersonMsg() {
+        //如果在下单中，则不做任何操作
+        if (this.data.isOrdering) return;
+        // 判断是否有网络
+        // my.getNetworkType({
+        // success: (res) =&gt; {
+        // TaxiLog(&#039;------------------&#039;+res.networkAvailable)
+        //   if (res.networkAvailable) {// 如果有网
+        //标记，此时点击了个人中心按钮
+        this.setData({ isClickPerson: true });
+        setTimeout(() =&gt; {
+            this.setData({ isClickPerson: false });
+        }, 1600)
+        //1.判断是否登录 如果已经登录 跳转用户中心 否则跳转登录
+        let isLogin = LoginBindHelper.isLogin();
+        if (isLogin) {
+            // 已经登录，跳转个人中心页面
+            TaxiLog(&#039;map index ++++++ is login&#039;);
+            this.goToUserCenter();
+        } else {
+            LoginBindHelper.login({
+                onSuccess: this.loginSuccessFunc, // 登录成功回调
+                onFail: this.loginFailFunc,       // 登录失败回调
+                ctx: this                         // this
+            });
+        }
+        //   } else {
+        //     // 提示
+        //     // my.showToast({
+        //     //     content: &#039;当前网络不佳，请重试&#039;,
+        //     //     duration: 3000,
+        //     //     success: () =&gt; {
+        //     //     TaxiLog(&#039;触发了toast&#039;)
+        //     //     },
+        //     // });
+        //     }
+        // }
+        // })
+    },
+    // 登录成功回调方法，跳转至用户中心
+    loginSuccessFunc() {
+        TaxiLog(&#039;4444444--login success +++++++++&#039;);
+        setTimeout(() =&gt; {
+            this.goToUserCenter();
+        }, 800)
+    },
+    onShareAppMessage() {
+        return getApp().getShareAppMessage();
+    },
+    // 登录失败回调方法
+    loginFailFunc() {
+        TaxiLog(&#039;login failed +++++++++&#039;);
+        // TODO
+        this.setData({ isClickPerson: false });
+    },
+    // 跳转用户中心
+    goToUserCenter() {
+        setTimeout(() =&gt; {
+            getApp().router.navigateTo({
+                url: &#039;/page/user-center/user-center&#039;
+            });
+        }, 800);
+    },
+    //跳转安全助手
+    moveToSafeHelper() {
+        //如果在下单中，则不做任何操作
+        if (this.data.isOrdering) return;
+        //TODO
+        let unFinishIds = OrderUtil.getUnfinisedOrderIdS();
+        let unFinishId = null;
+        if(unFinishIds &amp;&amp; unFinishIds &gt; 0){
+            unFinishId = unFinishIds[0];
+        }
+        let unPayOrderIds = OrderUtil.getUnPayOrderIds();
+        let unPayOrderId = null;
+        if(unPayOrderIds &amp;&amp; unPayOrderIds &gt; 0){
+            unPayOrderId = unPayOrderIds[0];
+        }
+        if (unFinishId) {
+            getApp().router.navigateTo({
+                url: &#039;/page/safe-helper/safe-helper?amapOrderId=&#039; + unFinishIds
+            })
+        } else if (unPayOrderId) {
+            getApp().router.navigateTo({
+                url: &#039;/page/safe-helper/safe-helper?amapOrderId=&#039; + unPayOrderId
+            })
+        } else {
+            getApp().router.navigateTo({
+                url: &#039;/page/safe-helper/safe-helper&#039;
+            })
+        };
+    },
+    onUnload() {
+        TaxiLog(&quot;cp-index页面被销毁了--------------------------&quot;);
+        TaxiLog(&quot;页面销毁清除了定时器------------------&quot;);
+        if (this.timer) {
+            //从页面清除定时器，以及调用组件的方法，清除组件中的定时器。
+            this.onClearInterval();
+            this.timerCtx.clearTimerId();
+        }
+        // MessageCenter.getInstance().removeObserverActionCallback(&#039;cpIndexCar&#039;); -----TODO
+    },
+    onShow() {
+        // 授权请求
+        let isLogin = LoginBindHelper.isLogin();
+        if (isLogin) {
+            let empowerRequest = new EmpowerRequest;
+            empowerRequest.setParam();
+            empowerRequest.doRequest((res) =&gt; {
+                my.hideLoading();
+                if (res &amp;&amp; res.code == 1 &amp;&amp; res.data.authorizationList &amp;&amp; res.data.authorizationList.length &gt; 0) {
+                    this.cpList = [];
+                    this.empowerData = res;
+                    this.setData({
+                        authorizationList: res.data.authorizationList
+                    })
+                } else {
+                    this.setData({
+                        showElement: false // 弹框不展示
+                    })
+                }
+            })
+
+        } else {
+            // 清除本地待支付/进行中的订单相关数据
+            DataHelper.getInstance().clearData();
+        }
+        this.cpList = [];
+
+
+        TaxiLog(&quot;执行cp-index的onshow方法&quot;);
+        my.setNavigationBar({
+            title: &quot;高德打车&quot;
+        });
+        getApp().globalData.isNotMap = true
+        TaxiLog(&quot;开始执行cp-index页面的onshow方法----------------------&quot;);
+
+        // 实现从规划页面到本页面的卡片刷新
+        if (getApp().globalData.isrefreshCarlist) {
+            let mess = this.getInfos();
+            let beforeMess = this.data.infoData;
+            TaxiLog(&quot;beforeMess-----&quot;, beforeMess)
+            if (beforeMess &amp;&amp; beforeMess.startInfo &amp;&amp; beforeMess.endInfo &amp;&amp; mess &amp;&amp; mess.startInfo &amp;&amp; mess.endInfo) {
+                if ((mess.startInfo.lat !== beforeMess.startInfo.lat) || (mess.startInfo.lon !== beforeMess.startInfo.lon) || (mess.endInfo.lat !== beforeMess.endInfo.lat) || (mess.endInfo.lon !== beforeMess.endInfo.lon)) {
+                    beforeMess.startInfo = mess.startInfo;
+                    beforeMess.endInfo = mess.endInfo;
+                    this.data.infoData = beforeMess;
+                    this.setData({
+                        latitude: this.lastLatitude ? this.lastLatitude : mess.startInfo.startLat,
+                        longitude: this.lastLongitude ? this.lastLongitude : mess.startInfo.startLon,
+                        scale: this.lastScale ? this.lastScale : 16,
+                        includePoints: [],
+                        polyline: [],
+                        markers: []
+                    })
+                }
+            }
+            this.setData({ mustFresh: true });
+            getApp().globalData.isrefreshCarlist = false;
+        }
+        // let stringLength = this.data.infoData;
+        // this.stringLengthInit();
+        this.renderMarkers = [
+            {
+                iconPath: &quot;/image/index/start-point.png&quot;,
+                id: Math.random(),
+                latitude: deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lat&#039;]),
+                longitude: deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lon&#039;]),
+                width: 24,
+                height: 31,
+                anchorX: 0.5,
+                anchorY: 0.7,
+                markerLevel: 2,
+                customCallout: {
+                    type: 2,
+                    time: &quot;1&quot;,
+                    isShow: 1,
+                    descList: this.data.arriveTime
+                },
+            },
+            {
+                iconPath: &quot;/image/index/blank.png&quot;,
+                id: Math.random(),
+                latitude: deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lat&#039;]),
+                longitude: deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lon&#039;]),
+                width: 10,
+                height: 10,
+                anchorX: 0.5,
+                anchorY: 0.1,
+                markerLevel: 1,
+                iconAppendStr: DataFormatter.spliceString(deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;name&#039;])),
+                iconAppendStrColor: &#039;#212121&#039;
+            },
+            {
+                id: Math.random(),
+                iconPath: &quot;/image/index/end-point.png&quot;,
+                latitude: deepPath(this.data.infoData, [&#039;endInfo&#039;, &#039;lat&#039;]),
+                longitude: deepPath(this.data.infoData, [&#039;endInfo&#039;, &#039;lon&#039;]),
+                width: 24,
+                height: 31,
+                anchorX: 0.5,
+                anchorY: 0.7,
+                markerLevel: 2,
+                customCallout: {
+                    type: 2,
+                    isShow: 0,
+                    descList: []
+                },
+            },
+            {
+                iconPath: &quot;/image/index/blank.png&quot;,
+                id: Math.random(),
+                latitude: deepPath(this.data.infoData, [&#039;endInfo&#039;, &#039;lat&#039;]),
+                longitude: deepPath(this.data.infoData, [&#039;endInfo&#039;, &#039;lon&#039;]),
+                width: 10,
+                height: 10,
+                anchorX: 0.5,
+                anchorY: 0.1,
+                markerLevel: 1,
+                iconAppendStr: DataFormatter.spliceString(deepPath(this.data.infoData, [&#039;endInfo&#039;, &#039;name&#039;])),
+                iconAppendStrColor: &#039;#212121&#039;
+            },
+        ];
+        if (!this.data.isFirstRender) {
+            //地图路线设置
+            let sysInfo = getApp().getSystemInfo();
+            if (sysInfo.platform == &#039;Android&#039;) {
+                setTimeout(() =&gt; {
+                    this.drawRoute();
+                }, 500)
+            } else {
+                this.drawRoute();
+            }
+
+
+        }
+        //前台切换到后台的刷新函数。
+        this.refresh();
+        // 控制组件开启定时器，实现每隔2Min刷新运力的效果,判断页面是否显示
+        TaxiLog(&quot;开启定时器-----------&quot;);
+        this.setData({ beginTimer: true, inShow: true });
+        TaxiLog(&quot;beginTimer---------------&quot;, this.data.beginTimer);
+
+        //控制免密页面的显示
+        if (this.data.showSecret) {
+            //页面隐藏时如果免密页面存在，则页面显示时再次显示。否则会导致页面中其他四个按钮浮现在免密页面上方
+            setTimeout(() =&gt; {
+                this.onOpenSecret(true);
+                this.data.showSecret = false;
+            }, 300)
+        }
+
+        //页面显示时，判断如果是从个人中心页面返回，则把标记重新置为false
+        if (this.data.isClickPerson) {
+            this.setData({ isClickPerson: false });
+        }
+    },
+    onReady() {
+        //1.定义地图变量
+        let mapCtx = my.createMapContext(&#039;map&#039;);
+        this.mapView = new mapView(mapCtx);
+        this.data.isFirstRender = false;
+        //禁止地图手势3d
+        this.mapView.resetMap();
+        // this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+        //     setting: {
+        //         tiltGesturesEnabled: 0,
+        //         showScale: 0,
+        //         showCompass: 0
+        //     }
+        // });
+        let sysInfo = getApp().getSystemInfo();
+        if (sysInfo.platform == &#039;Android&#039;) {
+            setTimeout(() =&gt; {
+                this.drawRoute();
+            }, 400)
+        } else {
+            this.drawRoute();
+        }
+    },
+    onCloseTimer() {
+        this.setData({ beginTimer: false });
+    },
+    //接收从组件传过来的timer,在onHide和在页面卸载的时候清除定时器。
+    onClear(timer, timerCtx) {
+        TaxiLog(&quot;子组件把this.timer传到了cp-index页面---------&quot;);
+        //保存组件的定时器
+        this.timer = timer;
+        //保存组件的实例
+        this.timerCtx = timerCtx;
+    },
+    onClearInterval() {
+        if (this.timer) {
+            TaxiLog(&quot;清楚了页面中的定时器id----------&quot;);
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    },
+    onClearFresh() {
+        TaxiLog(&quot;执行了清空mustFresh的函数-----------------------------&quot;);
+        this.setData({ mustFresh: false });
+    },
+    onHide() {
+        TaxiLog(&quot;onhide======================lat》&quot; + this.lastLatitude + &#039;lon====&#039; + this.lastLongitude)
+        this.setData({
+            inShow: false   //判断页面是否显示
+        })
+        // TaxiLog(&quot;隐藏cp-index------------------------------------------&quot;);
+        TaxiLog(&quot;页面隐藏清除了定时器------------------&quot;);
+        if (this.timer) {
+            //从页面清除定时器，以及调用组件的方法，清除组件中的定时器。
+            this.onClearInterval();
+            this.timerCtx.clearTimerId();
+        }
+        //清除carlist回调
+        // MessageCenter.getInstance().removeObserverActionCallback(&#039;cpIndexCar&#039;); -----TODO
+        //切换到后台，如果免密页面显示，则进行标记，且隐藏免密页面。
+        if (this.data.openSecret) {
+            TaxiLog(&quot;页面隐藏还存在绑定免密的页面&quot;)
+            this.onOpenSecret(false);
+            this.data.showSecret = true;
+        }
+    },
+    // 页面从后台切前台，看是否需要刷新逻辑。
+    refresh() {
+        TaxiLog(&quot;执行cp-index的refresh方法----------------------------&quot;);
+        let thisTimeStamp = (new Date()).valueOf();
+        TaxiLog(&quot;thisTimeStamp-----------&quot;, thisTimeStamp);
+        // let lastTimeStamp = DataHelper.getInstance().getCarlistTimeStamp();
+        // TaxiLog(&quot;lastTimeStamp----------------&quot;, lastTimeStamp)
+        // let timeGap = (thisTimeStamp - lastTimeStamp) / 1000 / 60;
+        // if (timeGap &lt;= 2) {
+        //     TaxiLog(&quot;两次时间差小于2min-------------------------!&quot;)
+        //     this.setData({ needRefresh: false });
+        // } else {
+        //     this.setData({ needRefresh: true });
+        //     TaxiLog(&quot;两次时间差大于2min-------------------------!&quot;)
+        // }
+
+    },
+    //如果needRefresh的值为true后，得控制其值改为false.
+    onFalseNeedRefresh() {
+        this.setData({ needRefresh: false });
+    },
+    onLoad(query) {
+        this.userEmpowerConfig = {};
+        TaxiLog(&#039;父组件onload&#039;);
+        TaxiLog(&#039;刷新页面 cpi-index-------flag&#039; + query.flag);
+        TaxiLog(&#039;刷新页面 cpi-index-------amapOrderId&#039; + query.amapOrderId);
+        this.setData({ isFlag: query.flag });
+        this.setData({ amapOrderId: query.amapOrderId });
+
+        let mess = this.getInfos();
+        this.setData({
+            infoData: mess,
+            latitude: deepPath(mess, [&#039;startInfo&#039;, &#039;lat&#039;]),
+            longitude: deepPath(mess, [&#039;startInfo&#039;, &#039;lon&#039;])
+        })
+        // this.getPoi = JSON.parse(query.setPoi);
+    },
+    // stringLengthInit(length){
+    //     return length * 3
+    // },
+    getInfos() {
+        let startInfo = {};
+        let endInfo = {};
+        if (this.data.amapOrderId) {
+            startInfo = DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId).startPoi;
+            endInfo = DataHelper.getInstance().orderDetailWithAmapOrderId(this.data.amapOrderId).endPoi;
+            TaxiLog(&quot;通过amapOrderId获取起终点--------&quot;);
+        } else {
+            TaxiLog(&quot;没有通过amapOrderId获取起终点---------&quot;);
+            startInfo = getApp().globalData.startEndObj.startPoint;
+            endInfo = getApp().globalData.startEndObj.endPoint;
+
+            // startInfo = this.getPoi.startPoi;
+            // endInfo = this.getPoi.endPoi;
+
+        }
+        return { startInfo, endInfo }
+    },
+    onBegin(num) {
+        TaxiLog(&#039;onBegin======&#039; + num);
+        if (num) {
+            this.setData({ style: &#039;height:calc(100% - 456rpx);width:100%&#039; });
+        } else {
+            this.setData({ style: &#039;height:calc(100% - 388rpx);width:100%&#039; });
+        }
+    },
+    drawRoute() {
+        TaxiLog(&#039;drawRoute==============&gt;&#039;);
+        let info = this.data.infoData;
+        // let messageCenter = MessageCenter.getInstance();
+        let origin = {};
+        origin.startLat = deepPath(info, [&#039;startInfo&#039;, &#039;lat&#039;]);
+        origin.startLng = deepPath(info, [&#039;startInfo&#039;, &#039;lon&#039;]);
+        // origin.startLng = 116.378596;
+        // origin.startLat = 39.865208;
+
+
+        let destination = {};
+        destination.endLat = deepPath(info, [&#039;endInfo&#039;, &#039;lat&#039;]);
+        destination.endLng = deepPath(info, [&#039;endInfo&#039;, &#039;lon&#039;]);
+        // destination.endLng = 116.378596;
+        // destination.endLat = 39.998374;
+        let routeJsonData = {};
+        routeJsonData.destination = destination;
+        routeJsonData.origin = origin;
+        TaxiLog(&#039;routeJsonData======&#039; + JSON.stringify(routeJsonData));
+        this.getRouteData(routeJsonData, (res) =&gt; {
+            this.onStartEndRouteCallBack(res);
+        })
+
+    },
+    onStartEndRouteCallBack(routeData) {
+        TaxiLog(&#039;onStartEndRouteCallBack&#039;);
+        if (routeData == null) {
+            let info = this.data.infoData;
+            // let pointsArr = [{
+            //     latitude: deepPath(info, [&#039;startInfo&#039;, &#039;lat&#039;]),
+            //     longitude: deepPath(info, [&#039;startInfo&#039;, &#039;lon&#039;])
+            // }, {
+            //     latitude: deepPath(info, [&#039;endInfo&#039;, &#039;lat&#039;]),
+            //     longitude: deepPath(info, [&#039;endInfo&#039;, &#039;lon&#039;])
+            // }]
+            // this.includePoints = [...pointsArr];
+            // this.processIncludePoints();
+            let latitude = this.lastLatitude ? this.lastLatitude : deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lat&#039;]);
+            let longitude = this.lastLongitude ? this.lastLongitude : deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lon&#039;]);
+            let scale = this.lastScale ? this.lastScale : 16;
+            this.polyline = [];
+            this.mapView.updateComponents(this.renderMarkers, latitude, longitude, scale);
+            this.mapView.fullView();
+            this.mapView.paintingRoute(this.polyline)
+            this.mapView.unifiedUpdateMap()
+            // this.setData({
+            //     latitude: this.lastLatitude ? this.lastLatitude :  deepPath(info,[&#039;startInfo&#039;,&#039;lat&#039;]),
+            //     longitude: this.lastLongitude ? this.lastLongitude :  deepPath(info,[&#039;startInfo&#039;,&#039;lon&#039;]),
+            //     includePoints: this.includePoints,
+            //     polyline: [],
+            //     markers: this.renderMarkers,
+            //     scale: this.lastScale ? this.lastScale : 16
+            // })
+            return;
+        }
+        let points = routeData &amp;&amp; routeData.points;
+        this.data.allPoints = points;
+        // this.includePoints = [...points];
+        // this.processIncludePoints();
+        // 开始绘画
+        let latitude = this.lastLatitude ? this.lastLatitude : deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lat&#039;]);
+        let longitude = this.lastLongitude ? this.lastLongitude : deepPath(this.data.infoData, [&#039;startInfo&#039;, &#039;lon&#039;]);
+        let scale = this.lastScale ? this.lastScale : 16;
+        this.polyline = [{
+            points: points,
+            color: &quot;#1FB53BFF&quot;,
+            width: 10,
+            iconWidth: 40,
+            dottedLine: false,
+            iconPath: &#039;/image/index/arrow.png&#039;
+        }]
+        // console.log(&#039;开始绘制路线==============&#039; ,JSON.stringify(this.renderMarkers,&#039;1111111111111111&#039;,latitude,&#039;22222222222222&#039;,longitude,&#039;33333333333&#039;,scale));
+        this.mapView.updateComponents(this.renderMarkers, latitude, longitude, scale);
+        this.mapView.fullView();
+        this.mapView.paintingRoute(this.polyline)
+        this.mapView.unifiedUpdateMap()
+
+        // this.setData({
+        //     latitude: this.lastLatitude ? this.lastLatitude :  deepPath(this.data.infoData,[&#039;startInfo&#039;,&#039;lat&#039;]),
+        //     longitude: this.lastLongitude ? this.lastLongitude : deepPath(this.data.infoData,[&#039;startInfo&#039;,&#039;lon&#039;]),
+        //     markers: this.renderMarkers,
+        //     includePoints: this.includePoints,
+        //     scale: this.lastScale ? this.lastScale : 16,
+        //     polyline: [{
+        //         points: points,
+        //         color: &quot;#1FB53BFF&quot;,
+        //         width: 10,
+        //         iconWidth: 40,
+        //         dottedLine: false,
+        //         iconPath: &#039;/image/index/arrow.png&#039;
+        //     }]
+        // })
+        // this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+        //     latitude: this.lastLatitude ? this.lastLatitude : this.data.infoData.startInfo.startLat,
+        //     longitude: this.lastLongitude ? this.lastLongitude : this.data.infoData.startInfo.startLon,
+        //     markers: this.renderMarkers,
+        //     &#039;include-points&#039;: this.includePoints,
+        //     scale: this.lastScale ? this.lastScale : 16,
+        //     polyline: [{
+        //         points: points,
+        //         color: &quot;#1FB53BFF&quot;,
+        //         width: 10,
+        //         iconWidth: 40,
+        //         dottedLine: false,
+        //         iconPath: &#039;/image/index/arrow.png&#039;
+        //     }]
+        // })
+    },
+    // processIncludePoints() {
+    //     if (this.includePoints &amp;&amp; this.includePoints.length &gt; 2) {
+    //         let bounds = this.mapView.initBounds(this.includePoints);
+    //         if (bounds &amp;&amp; bounds.length == 2) {
+    //             let minPoint = bounds[0];
+    //             let maxPoint = bounds[1];
+    //             if (minPoint &amp;&amp; maxPoint &amp;&amp; minPoint.latitude &amp;&amp; minPoint.longitude &amp;&amp; maxPoint.latitude &amp;&amp; maxPoint.longitude) {
+    //                 let longtitudeSpan = maxPoint.longitude - minPoint.longitude;
+    //                 let latitudeSpan = maxPoint.latitude - minPoint.latitude;
+    //                 if (longtitudeSpan &gt; 0 &amp;&amp; latitudeSpan &gt; 0) {
+    //                     let longtitudeMax = maxPoint.longitude + (longtitudeSpan / 4);
+    //                     let longtitudeMin = minPoint.longitude - (longtitudeSpan * 3 / 4);
+    //                     let latitudeMax = maxPoint.latitude + (latitudeSpan / 6);
+    //                     let latitudeMin = minPoint.latitude - (latitudeSpan * 2 / 3);
+    //                     let spanMax = {};
+    //                     spanMax.latitude = latitudeMax;
+    //                     spanMax.longitude = longtitudeMax;
+    //                     let spanMin = {};
+    //                     spanMin.latitude = latitudeMin;
+    //                     spanMin.longitude = longtitudeMin;
+    //                     this.includePoints.push(spanMax);
+    //                     this.includePoints.push(spanMin);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // },
+    // initBounds(points) {
+    //     if (points) {
+    //         let latMin = 90;
+    //         let lonMin = 180;
+    //         let latMax = -90;
+    //         let lonMax = -180;
+    //         points.forEach((point, index) =&gt; {
+    //             let pointLatitude = point.latitude;
+    //             let pointLongtitude = point.longitude;
+    //             if (pointLatitude &gt; latMax) {
+    //                 latMax = pointLatitude;
+    //             }
+    //             if (pointLatitude &lt; latMin) {
+    //                 latMin = pointLatitude;
+    //             }
+    //             if (pointLongtitude &lt; lonMin) {
+    //                 lonMin = pointLongtitude;
+    //             }
+    //             if (pointLongtitude &gt; lonMax) {
+    //                 lonMax = pointLongtitude;
+    //             }
+    //         });
+    //         let minPoint = {};
+    //         if ((latMin != 90) &amp;&amp; (lonMin != 180)) {
+    //             minPoint.latitude = latMin;
+    //             minPoint.longitude = lonMin;
+    //         }
+    //         let maxPoint = {}
+    //         if ((latMax != -90) &amp;&amp; (lonMax != -180)) {
+    //             maxPoint.latitude = latMax;
+    //             maxPoint.longitude = lonMax;
+    //         }
+    //         let bounds = [];
+    //         bounds.push(minPoint);
+    //         bounds.push(maxPoint);
+    //         return bounds;
+    //     }
+    //     return null;
+    // },
+    getRouteData(param, callBack) {
+        let origin = param.origin;
+        let destination = param.destination;
+        let startLon = null;
+        if (origin.startLon) {
+            startLon = origin.startLon;
+        } else {
+            startLon = origin.startLng;
+        }
+        let endLon = null;
+        if (destination.endLon) {
+            endLon = destination.endLon;
+        } else {
+            endLon = destination.endLng;
+        }
+        //&amp;key=944ba3c0b1c6d981a03c2f05f1e65322
+        let originStr = startLon + &quot;,&quot; + origin.startLat;
+        let destinationStr = endLon + &quot;,&quot; + destination.endLat;
+        let routeUrl = &quot;https://restapi.amap.com/v3/direction/driving?destinationtype=10&amp;origin=&quot; + originStr + &quot;&amp;destination=&quot; + destinationStr + &quot;&amp;extensions=base&amp;output=json&amp;key=41be7873eae26177877353f76faaf8ea&amp;s=rsx&quot;;
+
+        my.httpRequest({
+            url: routeUrl,
+            method: &#039;GET&#039;,
+            dataType: &#039;json&#039;,
+            success: (res) =&gt; {
+                let routeResult = {};
+                let data = res.data;
+                let infocode = data.infocode;
+                if (infocode == 10000) {
+                    let route = data.route;
+                    let paths = route.paths;
+                    let path = paths[0];
+                    routeResult.distance = Number(path.distance);
+                    routeResult.duration = Number(path.duration);
+                    let points = [];
+                    let steps = path.steps;
+                    steps.forEach((m, j) =&gt; {
+                        let step = steps[j];
+                        let polylineStr = step.polyline;
+                        let polylineStrs = polylineStr.split(&quot;;&quot;);
+                        polylineStrs.forEach((m, i) =&gt; {
+                            let polylinePoint = polylineStrs[i];
+                            let polylineLatlngs = polylinePoint.split(&quot;,&quot;);
+                            if (polylineLatlngs.length == 2) {
+                                let point = {};
+                                point.latitude = Number(polylineLatlngs[1]);
+                                point.longitude = Number(polylineLatlngs[0]);
+                                points.push(point);
+                            }
+                        });
+                    });
+                    routeResult.points = points;
+                    callBack(routeResult);
+                } else {
+                    callBack(null, 1);
+                }
+
+            },
+            fail: function (res) {
+                TaxiLog(&quot;statemachine route fail result is &quot; + JSON.stringify(res));
+                callBack(null, 1);
+                // my.alert({ content: JSON.stringify(res) });
+            },
+            complete: function (res) {
+                my.hideLoading();
+                // my.alert({ content: &#039;complete&#039; });
+            }
+        })
+    },
+
+    // 点击呼叫
+    loginSuccess() {
+        setTimeout(() =&gt; {
+            let empowerRequest = new EmpowerRequest;
+            empowerRequest.setParam();
+            empowerRequest.doRequest((res) =&gt; {
+                my.hideLoading();
+                // 判断是否需要下单
+                if (res &amp;&amp; res.code == 1 &amp;&amp; res.data.authorizationList &amp;&amp; res.data.authorizationList.length &gt; 0) {
+                    this.cpList = [];
+                    this.empowerData = res;
+                    this.setData({
+                        authorizationList: res.data.authorizationList,
+                        targetSumbit: true
+                    })
+                } else {
+                    this.setData({
+                        targetSumbit: true
+                    })
+                }
+            })
+        }, 800);
+
+        // this.onSumbmitCpList(array, newArray);
+    },
+    //登录后重新拉取授权
+    onSumbmitCpList(array, newArray) {
+        this.setData({ targetSumbit: false })
+        let isLogin = LoginBindHelper.isLogin();
+        let needSubmitCp = array;
+        let filterCpList = {};
+        let isSubmit = false;
+        if (isLogin) {
+            // 判断服务授权下发是否拿到
+            if (this.empowerData &amp;&amp; this.data.authorizationList) {
+                let empowerConfig = this.userEmpowerConfig;
+                // 用户点击授权
+                if (this.empowerData.data.interceptionStrategy == 1) {
+                    filterCpList = this.filterCp(array);
+                } else if (this.empowerData.data.interceptionStrategy == 2) {
+                    filterCpList = this.filterCp(newArray);
+                }
+                if (filterCpList.empowerCp &amp;&amp; filterCpList.empowerCp.length == 0) {
+                    needSubmitCp = array;
+                    isSubmit = true;
+                } else {
+                    if (empowerConfig.empower === true) {
+                        needSubmitCp = array;
+                        empowerConfig.empower = null;
+                        isSubmit = true;
+                    } else if (empowerConfig.empower === false) {
+                        if (empowerConfig.closeStrategy == 1) {
+                            needSubmitCp = filterCpList.continueSubmit;
+                        } else if (empowerConfig.closeStrategy == 2) {
+
+                            let nickCp = this.filterCp(array);
+
+                            needSubmitCp = nickCp.continueSubmit;
+
+                            isSubmit = true;
+
+                        } else if (empowerConfig.closeStrategy == 3) {
+                            needSubmitCp = array;
+                        }
+                        empowerConfig.empower = null;
+                    } else {
+                        this.setData({ showElement: true, showCp: filterCpList.showCp })
+                        my.reportAnalytics(&quot;auth_popup&quot;, {
+                            popup: 1
+                        });
+                    }
+                }
+
+            } else {
+                needSubmitCp = array;
+                isSubmit = true;
+            }
+        } else {
+            LoginBindHelper.login({
+                onSuccess: this.loginSuccess, // 登录成功回调
+                onFail: this.loginFailFunc,       // 登录失败回调
+                ctx: this                         // this
+            });
+        }
+
+        return {
+            submitCPList: needSubmitCp,
+            isSubmit: isSubmit
+        }
+
+    },
+
+    //判断授权
+    filterCp(array) {
+        //服务配置的CP拦截策略（1：用户勾选的CP中，如果有任意一个CP需要授权，则需要拦截
+        let empowerCp = [];
+        let continueSubmit = [];
+        let showCp = [];
+        let mandateName = &quot;&quot;;
+        let lastShowCp = [];
+        let matchAutor = {};
+        let empowerParam = [];
+        if (this.data.authorizationList.length &gt; 0 &amp;&amp; this.empowerData) {
+
+            my.hideLoading();
+
+            for (let i = 0; i &lt; array.length; i++) {
+                let arraySource = array[i].cpSource;
+                let isCPMatch = false;
+                for (let j = 0; j &lt; this.data.authorizationList.length; j++) {
+                    let autor = this.data.authorizationList[j];
+
+                    let isAuth = false;
+                    let isAuthMatch = false;
+                    if (this.cpList &amp;&amp; this.cpList.length &gt; 0) {
+                        for (let index in this.cpList) {
+                            let cp = this.cpList[index];
+
+                            if (cp.cpName == autor.cpName &amp;&amp; cp.authorizeType == autor.authorizeType) {
+                                isAuth = true;
+                            }
+                        }
+                    }
+
+                    if (isAuth) {
+                        continue;
+                    }
+
+                    for (let k = 0; k &lt; autor.cpSourceList.length; k++) {
+                        if (autor.cpSourceList[k] == arraySource) {
+                            isCPMatch = true;
+                            isAuthMatch = true;
+                        }
+                    }
+                    if (isAuthMatch) {
+                        matchAutor[autor.cpName] = autor;
+                    }
+                }
+                if (isCPMatch === false) {
+                    continueSubmit.push(array[i]);
+                } else {
+                    empowerCp.push(array[i]);
+                }
+
+            }
+
+            for (let i in matchAutor) {
+                showCp.push(matchAutor[i]);
+            }
+
+            // 需要授权的cp
+            return {
+                empowerCp: empowerCp,
+                continueSubmit: continueSubmit,
+                showCp: showCp
+            };
+        } else {
+            return {
+                empowerCp: [],
+                continueSubmit: [],
+                showCp: []
+            }
+        }
+    },
+    onIsdripping(data) {
+        this.setData({
+            isdripping: data
+        })
+    },
+    // 点击关闭授权弹框
+    onClosElastic() {
+        this.setData({ showElement: false })
+        this.userEmpowerConfig.empower = false;
+        if (this.empowerData.data.closeStrategy == 1) {
+            this.userEmpowerConfig.closeStrategy = 1;
+        } else if (this.empowerData.data.closeStrategy == 2) {
+            this.userEmpowerConfig.closeStrategy = 2;
+            my.showToast({
+                content: this.empowerData.data.unauthorizedTip
+            })
+        } else if (this.empowerData.data.closeStrategy == 3) {
+            this.userEmpowerConfig.closeStrategy = 3;
+            my.showToast({
+                content: this.empowerData.data.unauthorizedTip
+            })
+        }
+        this.setData({ targetSumbit: true })
+
+    },
+    // 点击同意授权按钮
+    onAgreeMent(cpList) {
+        my.showLoading({
+            content: &quot;加载中&quot;
+        });
+        //发送授权请求 
+        if (!getApp().globalData.network.networkAvailable) {
+            my.hideLoading();
+            my.showToast({
+                content: &quot;网络异常,请重试&quot;
+            })
+        } else {
+            // &quot;cpSourceList&quot;: [&quot;car_didi_api&quot;],
+            // &quot;authorizeType&quot;: &quot;1&quot;
+            let params = [];
+            for (let i = 0; i &lt; cpList.length; i++) {
+                let param = {
+                    cpSourceList: cpList[i].cpSourceList,
+                    authorizeType: cpList[i].authorizeType
+                }
+                params.push(param)
+            }
+            let setEmpowerRequest = new SetEmpowerRequest;
+            setEmpowerRequest.setParam({
+                multiCpAuthorization: JSON.stringify(params)
+            });
+            // 用户是否登录
+            setEmpowerRequest.doRequest((res) =&gt; {
+                if (res &amp;&amp; res.code == 1) {
+                    if (cpList &amp;&amp; cpList.length &gt; 0) {
+                        for (let i in cpList) {
+                            let cp = cpList[i];
+                            this.cpList.push(cp);
+                        }
+                    }
+                    my.hideLoading();
+                    this.setData({ showElement: false })
+                    this.userEmpowerConfig.empower = true;
+                } else {
+                    my.hideLoading();
+                    my.showToast({
+                        content: res.message || &quot;授权失败,请重试&quot;
+                    })
+                    // this.setData({ showElement: false })
+                    this.userEmpowerConfig.empower = false;
+                }
+                this.setData({ targetSumbit: true })
+            });
+        }
+    }
+})</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

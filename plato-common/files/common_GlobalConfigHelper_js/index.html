@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/GlobalConfigHelper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/GlobalConfigHelper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">71.55</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">138</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">41.95</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.81</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">
+import ConfigInitResquet from &#039;./network/requests/ConfigInitResquet.js&#039;
+import TaxiLog from &#039;./TaxiLog.js&#039;;
+
+const GAPDE_AOSCONFIG_KEY = &quot;GAODE_TAXI_ALIMINI_AOSCONFIG&quot;;
+
+
+export default class GlobalConfigHelper {
+
+
+    constructor() {
+        this.synLocalStorage = false;
+        this.isRequested = null;
+        this.callbackFuns = [];
+        this.callbackKeys = [];
+        this.comConfig = {
+            &quot;wssSwitch&quot;: true, //长连接开关 。 默认开  AOS控制
+        };
+    }
+
+    //单例
+    static getInstance() {
+        if (!this.instance) {
+            this.instance = new GlobalConfigHelper();
+        }
+        return this.instance;
+    }
+
+    /**请求AOS云控 */
+    requestConfig(resFunc) {
+        let request = new ConfigInitResquet();
+        this.isRequested = true;
+        let self = this;
+        let callBack = resFunc;
+        request.setParam({});
+        request.doRequest(res =&gt; {
+            if (res &amp;&amp; res.code == 1) {
+                let data = res.data;
+                if (data) {
+                    self.comConfig = data;
+                    self.saveLocalStorage();
+                }
+            } else {
+                self.loadLocalStorage();
+                setTimeout(()=&gt;{
+                    GlobalConfigHelper.getInstance().requestConfig();
+                }, 5000);
+            }
+            if (callBack) {
+                callBack();
+            }
+        })
+    }
+
+    saveLocalStorage() {
+        if (this.synLocalStorage || !this.comConfig) {
+            return;
+        }
+
+        my.setStorage({
+            key : GAPDE_AOSCONFIG_KEY, // 缓存数据的key
+            data : GlobalConfigHelper.getInstance().comConfig, // 要缓存的数据
+            success: function() {
+                GlobalConfigHelper.getInstance().synLocalStorage = true;
+            },
+            fail: function() {
+
+            },
+            complete: function() {
+
+            }
+        });
+    }
+
+    loadLocalStorage() {
+        let config = my.getStorageSync({ key: GAPDE_AOSCONFIG_KEY });
+        if (config.data) {
+            // TaxiLog(&#039;fetchLocalStorage:&#039; + userInfoData.data);
+            GlobalConfigHelper.getInstance().comConfig = config.data;
+        }
+    }
+
+    /**长连接开关 */
+    isEnableWebsocket() {
+        return this._getConfigFrom(&#039;wssSwitch&#039;);
+    }
+
+    getConfigForKey(key , resFunc) {
+
+        if (!resFunc) {
+            return;
+        }
+        if (!key) {
+            resFunc(null);
+        }
+
+        let config = this._getConfigFrom(key);
+        let self = this;
+
+        if (config != undefined &amp;&amp; config != null) {
+            resFunc(config);
+            return;
+        }
+
+        this.callbackKeys.push(key);
+        this.callbackFuns.push(resFunc);
+
+        if (!this.isRequested){
+            let self = this;
+            this.requestConfig(()=&gt;{
+
+                let callbackKeys = self.callbackKeys;
+                let callbackFuns = self.callbackFuns;
+
+                self.callbackKeys = [];
+                self.callbackFuns = [];
+
+                for (let i =0; i &lt; callbackKeys.length; i++) {
+                    let iKey = callbackKeys[i];
+                    let iResFunc = callbackFuns[i];
+                    iResFunc(self._getConfigFrom(key));
+                }
+            });
+        }
+    }
+
+    _getConfigFrom(key) {
+
+        if (!key || !this.comConfig) {
+            return null;
+        }
+
+        let comConfig = JSON.parse(JSON.stringify(this.comConfig));
+        let config = comConfig[key];
+
+        return config;
+    }
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

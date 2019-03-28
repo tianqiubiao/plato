@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/going/going.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/going/going.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">65.81</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">1614</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">101.31</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">21.14</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import DataHelper, { TaxiOrderDetailSource } from &#039;../../service/datacenter/DataHelper.js&#039;;
+import { CancelOrderRequest } from &#039;../../common/network/BaseRequest.js&#039;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+import util from &#039;../../common/util/util&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import { getDistance } from &#039;../../common/api/api.js&#039;;
+import GoingMap from &#039;./going-map.js&#039;
+import IndexScheme from &#039;../../common/schema/indexScheme.js&#039;
+import TaxiMessageService from &#039;../../service/messagecenter/TaxiMessageService.js&#039;
+import OrderNetImplement from &#039;../../service/datacenter/OrderNetImplement.js&#039;
+import SwitchRequest from &#039;../../common/network/requests/SwitchRequest.js&#039;
+import CancelFellRequest from &#039;../../common/network/requests/QueryCancelFeeRequest.js&#039;
+import GetPrivacyNumber from &#039;/common/network/requests/GetPrivacyNumber.js&#039;;
+import DataFormatter from &#039;../../common/DataFormatter.js&#039;;
+
+Page({
+  data: {
+    tips: false,     //顶部tips卡片
+    cancel: false,  //取消卡片
+    driver: false,  //司机卡片
+    replace: false, //重新打车
+    position: false,  //定位
+    refresh: false, //刷新
+    statusCancel: false,  //取消成功卡片
+    noDriverCall: false,  //暂无司机应答卡片
+    statusCode: &quot;&quot;,       //状态
+    driverCb: {},
+    tipsData: {},
+    goingCpData: {},
+    driverData: {},
+    vehicle: {},
+    showsCompass: 0,  //指南者隐藏
+    showsScale: 0, //比例尺隐藏
+    safeHelperBtn: &#039;bottom: 192rpx&#039;,//安全助手位置
+    positionRefresh: &#039;bottom: 192rpx&#039;,//刷新及定位按钮位置
+    safe: false,   //安全助手
+    addMoreCar: false, //添加更多车辆
+    addCarList: false,
+    addCancel: false,
+    isShowPic: false,
+    canceling: false,
+    addCarData: {},
+    cancelReason: false, //取消原因
+    addToHome: false,  //一键添加首页
+    addToHomeTop: &#039;&#039;,   //一键添加首页位置
+    carListLength: &#039;&#039;,
+    amapOrderId: &#039;&#039;,
+    //下面是路线需要
+    showLocation: false,
+    scale: 15,
+    longitude: 116.397477, //中心点经度
+    latitude: 39.908692,   //中心点纬度
+    includePoints: [], //可视区显示坐标
+    markers: [],  //显示坐标点坐标点
+    polyline: [],
+    privacyNumberGuide: false,//隐私号引导开关
+    privacyNumberDial: false,//拨打电话询问开关
+    includePadding: { left: 0, right: 0, top: 0, bottom: 0 },
+    userPrivacyNumber: &quot;&quot;,
+    driverPrivacyNumber: &quot;&quot;,
+    noNetwork: false,
+  },
+
+  onLoad(query) {
+    if (!util.isValidAlipay()) {
+      my.redirectTo({
+        url: &#039;../errorpage/errorpage&#039;
+      });
+      return;
+    }
+    this.isShow = false;
+    this.clicker = true;
+    this.cancelNum = 0;
+    this.status109 = true;
+    this.reTaxi = false;
+
+    let currentPath = &quot;page/going/going&quot;;
+
+    this.cancel = query[&quot;cancel&quot;];
+    this.scheme = query[&quot;from&quot;];
+
+    let schemeQuery = IndexScheme.parseScheme(currentPath, getApp());
+
+    if (schemeQuery) {
+      this.amapOrderId = schemeQuery[&quot;amapOrderId&quot;];
+    } else {
+      this.amapOrderId = query[&quot;amapOrderId&quot;];
+    }
+    // console.log(&quot;this.amapOrderId:&quot; + this.amapOrderId)
+    TaxiMessageService.shareInstance().registerMessageObserver(&#039;TaxiOrderDetailMessage&#039;, this, this.handleOrderDetailMessage);
+    // 兼容 没有 amapOrderId 的情况
+    if (!this.amapOrderId) {
+      getApp().reLaunchToHomePage();
+      return;
+    }
+
+    if (getApp().globalData.userLoc.longitude &amp;&amp; getApp().globalData.userLoc.latitude) {
+      let longtitude = getApp().globalData.userLoc.longitude;
+      let latitude = getApp().globalData.userLoc.latitude;
+      this.setData({
+        scale: 15,
+        longitude: longtitude,
+        latitude: latitude
+      });
+    }
+    getApp().emitter.on(&#039;CANCELTIPS&#039;, () =&gt; {
+      this.flag = true;
+      this.canceling = true;
+      this.setData({ canceling: true });
+      // my.showLoading({
+      //   content: &quot;取消中&quot;
+      // })
+    })
+    this.goingMap = new GoingMap(this.amapOrderId, this);
+
+    //地图路线
+    this.goingMap.initStartEndPoint();
+    this.rotate = 0;
+    this.setData({ isShowPic: false });
+
+    let res = my.getStorageSync({ key: &#039;showSwitch&#039; });
+    if (res.data) {
+      this.switchFlag = false;
+    } else {
+      this.switchFlag = true;
+    }
+    this.switchCpFlag = true;
+    this.addCp = &#039;unAddCp&#039;;
+
+
+  },
+  isValidGoingdata() {
+    if (this.goingData) {
+      let reqData = this.goingData;
+      if (reqData.status == 101 &amp;&amp; reqData.multiCP &amp;&amp; reqData.multiCP.length &gt; 0) {
+        let flag = false;
+        for (let i in reqData.multiCP) {
+          if (reqData.multiCP[i].cpInfo &amp;&amp;
+            reqData.multiCP[i].cpInfo.brandRideName &amp;&amp;
+            reqData.multiCP[i].cpInfo.rideType &amp;&amp;
+            reqData.multiCP[i].cpInfo.productType &amp;&amp;
+            reqData.multiCP[i].cpInfo.amapRideType &amp;&amp;
+            reqData.multiCP[i].cpInfo.amapRideTypeName &amp;&amp;
+            reqData.multiCP[i].cpInfo.rideTypeName &amp;&amp;
+            reqData.multiCP[i].cpInfo.cpSource &amp;&amp;
+            reqData.multiCP[i].cpInfo.brandName &amp;&amp;
+            reqData.multiCP[i].cpInfo.serviceTel &amp;&amp;
+            reqData.multiCP[i].cpInfo.serviceTel &amp;&amp;
+            reqData.multiCP[i].cpInfo.brandIconUrl
+          ) {
+            flag = true;
+          }
+        }
+        return flag;
+      }
+      return true;
+    }
+
+    return false;
+  },
+
+  onShow() {
+    this.oldData = {};
+    let flag = false;
+    this.rideTypeSwitchConf = getApp().globalData.rideTypeSwitchConf;
+
+    if (!this.goingData) {
+      let reqData = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId);
+      this.goingData = reqData;
+    }
+    flag = this.isValidGoingdata();
+    if (this.goingData) {
+      this.isShuttle = false;
+      if (this.goingData.amapServiceID &amp;&amp; (this.goingData.amapServiceID == 3 || this.goingData.amapServiceID == 4)) {
+        this.isShuttle = true;
+      }
+      if (!this.isShuttle &amp;&amp; this.switchFlag &amp;&amp; this.rideTypeSwitchConf &amp;&amp; this.rideTypeSwitchConf.entrance &amp;&amp; this.rideTypeSwitchConf.popupDelta &amp;&amp; this.rideTypeSwitchConf.popupSwitch &amp;&amp; this.goingData.status == 101 &amp;&amp; this.goingData.cacheCP) {
+        this.startSwitch();
+      }
+      if (!this.isShuttle &amp;&amp; this.goingData.status == 101 &amp;&amp; this.goingData.previousStatus != 108) {
+        this.switchCpInit();
+      }
+      if (flag) {
+        this.onStateChange();
+      }
+
+    }
+    this.isShow = true;
+    OrderNetImplement.getInstance().closeWebsocket();
+    if (this.flag) {
+      this.flag = false;
+      if (!getApp().globalData.network.networkAvailable) {
+        my.hideLoading();
+        this.setData({ canceling: false });
+        this.cancelCanfirm();
+      } else {
+        let canaelNumParam = {
+          &quot;cpSource&quot;: this.goingData.cpInfo.cpSource,
+          &quot;amapOrderId&quot;: this.amapOrderId
+        }
+        DataHelper.getInstance().fetchCancelNumber(canaelNumParam, (res) =&gt; {
+          my.showLoading({
+            content: &#039;取消中...&#039;
+          })
+          this.cancelNumCallBack(res.code);
+        })
+      }
+    }
+  },
+
+  onHide() {
+    // this.setData({
+    //   IsHasOrder: false
+    // })
+    if (this.getUrl() == &quot;page/going/going&quot;) {
+      this.changeNavigationBar(this.data.statusCode)
+    }
+    // this.setData({ isShowPic: false });
+    my.hideToast();
+  },
+
+  onReady() {
+    this.mapCtx = my.createMapContext(&#039;userMap&#039;);
+    this.mapCtx.showsScale &amp;&amp; this.mapCtx.showsScale({ isShowsScale: 0 });
+    this.mapCtx.showsCompass &amp;&amp; this.mapCtx.showsCompass({ isShowsCompass: 0 });
+
+    //禁止地图手势3d
+    this.mapCtx &amp;&amp; this.mapCtx.updateComponents &amp;&amp; this.mapCtx.updateComponents({
+      setting: {
+        tiltGesturesEnabled: 0,
+        showScale: 0,
+        showCompass: 0
+      }
+    });
+    if (this.goingMap) {
+      this.goingMap.setMapContext(this.mapCtx);
+
+    }
+
+    /**检查数据的完整性 */
+    this.isLoading = false;
+    let param = {
+      amapOrderId: this.amapOrderId,
+      extension: &quot;all&quot;,
+      cpOno: &#039;&#039;,
+      cpSource: &#039;&#039;
+    }
+    let flag = this.isValidGoingdata();
+    if (!flag || !this.goingData || !this.goingData.status) {
+      this.isLoading = true;
+      getApp().showLoading();
+      let param = {
+
+        amapOrderId: this.amapOrderId,
+        extension: &quot;all&quot;,
+        cpOno: &#039;&#039;,
+        cpSource: &#039;&#039;
+      }
+      DataHelper.getInstance().fetchOrderDetail(this.amapOrderId, param, (res) =&gt; {
+        this.isLoading = false;
+        getApp().hideLoading();
+        // console.log(&quot;goingData:&quot; + JSON.stringify(this.goingData));
+        if (res &amp;&amp; res.code == 14) {
+          LoginBindHelper.login({
+            onSuccess: this.loginSuccessFunc, // 登录成功回调
+            onFail: this.loginFailFunc,       // 登录失败回调
+            ctx: this                         // this
+          });
+          return;
+        } else if (res &amp;&amp; res.code == 1) {
+          this.goingData = res.orderDetail;
+          this.onStateChange();
+        } else if (!getApp().globalData.network.networkAvailable &amp;&amp; (!this.goingData || !this.goingData.status)) {
+          this.setData({
+            noNetwork: true
+          })
+        }
+      })
+    } else {
+      this.onStateChange();
+    }
+  },
+
+  onUnload() {
+    my.hideToast();
+    // 页面被关闭
+    TaxiLog(&quot;going delete observe&quot;);
+    if (this.isLoading) {
+      getApp().showLoading();
+    }
+    this.changeNavigationBar = null;
+    TaxiMessageService.shareInstance().unregisterMessageObserver(this);
+    clearTimeout(this.switchTimer);
+  },
+
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+
+  regionchange(e) {
+    if (this.goingMap) {
+      this.goingMap.mapRegionChange(e);
+    }
+  },
+  handleOrderDetailMessage(message) {
+    if (message &amp;&amp; message.data &amp;&amp; message.data.orderDetail &amp;&amp; message.data.orderDetail.amapOrderID == this.amapOrderId) {
+      this.source = message.data.source;
+      this.oldData = this.goingData;
+      this.goingData = message.data.orderDetail;
+      this.onStateChange();
+    }
+
+  },
+  // 103,104,105状态刷新数据
+  freshDriverCardView(tipsData, isShuttle) {
+    if (this.goingData.status != 103 &amp;&amp; this.goingData.status != 104 &amp;&amp; this.goingData.status != 105) {
+      return;
+    }
+
+    let cpInfo = this.goingData.cpInfo || {};
+    let driverInfo = this.goingData.driver || {};
+    let vehicle = this.goingData.vehicle || {};
+    this.phoneNum = cpInfo.serviceTel || &#039;4008802252&#039;;
+    this.driverNum = driverInfo.phoneNumber || &#039;&#039;;
+    this.cpName = cpInfo.brandName || &#039;&#039;;
+    this.rideTypeName = cpInfo.rideTypeName || &#039;&#039;;
+    this.setData({
+      driverData: driverInfo,
+      vehicle: vehicle,
+      goingCpData: cpInfo
+    })
+    if (tipsData) {
+      tipsData.goingZhima = true;
+      tipsData.tipsText = true;
+      tipsData.images = &#039;/image/going/car.png&#039;;
+      tipsData.uiStyle = {
+        imageMarginTop: &quot;46rpx&quot;,
+        imageMarginLeft: &quot;30rpx&quot;,
+        imageWidth: &quot;64rpx&quot;,
+        imageHeight: &quot;50rpx&quot;,
+        marginTop: &quot;30rpx&quot;
+      }
+      if (this.goingData.status == 103) {
+        if (isShuttle) {
+          tipsData = this.isShuttleDataChange(tipsData);
+        } else {
+          if (this.data.driverCb &amp;&amp; this.data.driverCb.distance &amp;&amp; this.data.driverCb.travelTime) {
+            let distance = DataFormatter.formatDistance(this.data.driverCb.distance); // 距离
+            let mininner = DataFormatter.formatMoment(this.data.driverCb.travelTime); //时间
+            tipsData.title = &quot;司机正在前往上车地点&quot;;
+            tipsData.text = &quot;距上车地点&quot; + distance + &quot;,预计&quot; + mininner + &quot;到达&quot;;
+          } else {
+            tipsData.title = &quot;司机正在前往上车地点&quot;;
+            tipsData.text = &quot;正在获取司机距离和到达时间&quot;;
+          }
+        }
+      } else if (this.goingData.status == 104) {
+        tipsData.title = &quot;司机已经到达上车地点&quot;;
+        tipsData.text = &quot;请您尽快上车&quot;;
+        if (isShuttle) {
+          tipsData = this.isShuttleDataChange(tipsData);
+        }
+      } else if (this.goingData.status == 105) {
+        if (this.data.driverCb &amp;&amp; this.data.driverCb.distance &amp;&amp; this.data.driverCb.travelTime) {
+          let distances = DataFormatter.formatDistance(this.data.driverCb.distance); // 距离 
+          let mins = DataFormatter.formatMoment(this.data.driverCb.travelTime) //时间
+          tipsData.title = &quot;推荐路线&quot;;
+          tipsData.text = tipsData.shuttleDriverETA = &quot;距离目的地&quot; + distances + &quot;,预计&quot; + mins + &quot;到达&quot;;
+        } else {
+          tipsData.title = &quot;司机已确认接到您&quot;;
+          tipsData.text = tipsData.shuttleDriverETA = &quot;行程开始,请您全程系好安全带&quot;;
+        }
+        if (isShuttle) {
+          tipsData = this.isShuttleDataChange(tipsData);
+        }
+      }
+    }
+    return tipsData;
+  },
+
+  // 获取数据
+  onStateChange() {
+    let param = {
+      amapOrderId: this.amapOrderId
+    }
+    let statusCode = this.goingData.status;
+    let previousStatus = this.goingData.previousStatus || &#039;&#039;;
+    if (statusCode != 101) {
+      clearTimeout(this.switchTimer);
+      my.removeStorage({
+        key: &#039;showSwitch&#039;,
+      });
+    }
+    if (this.goingData.amapServiceID &amp;&amp; (this.goingData.amapServiceID == 3 || this.goingData.amapServiceID == 4)) {
+      this.isShuttle = true;
+    }
+    TaxiLog(&quot;going function time is &quot; + new Date().getTime() + &quot; on state chage &quot; + statusCode);
+    let getDriver = null;
+    let getGoingCpData = null;
+
+    if (this.getUrl() == &quot;page/going/going&quot;) {
+      this.changeNavigationBar(statusCode);
+    }
+    this.changeStatus(statusCode);
+    this.iconPosition(statusCode);// 定位、刷新、安全助手icon位置
+
+    if (this.isShow) {
+      this.goingMap.onStateChange(statusCode);
+    }
+    this.handStatusTipsData(this.isShuttle);
+  },
+
+  handStatusTipsData(isShuttle) {
+    let tipsData = {
+      showTips: true,
+      waitAndAnswer: false,
+      goingZhima: false,
+      cars: false,
+      roll: false,
+      shuttleText: false,
+      shuttleTimer: false,
+      shuttle103Text: false,
+      shuttleCp: false,
+      tipsText: false,
+      shuttleDriverETAText: false,
+      tipBox: &quot;status-tip-box&quot;,
+      textColor: &#039;&#039;,
+      scrollHeight: &#039;&#039;,
+      shuttleDayFlag: false
+    };
+    // 状态判断
+    switch (this.goingData.status) {
+      // 订单持续状态
+      case 101:
+        let roundData = this.goingData.multiCP || [];
+        this.cancelLater = 1;
+        if (!roundData || roundData.length &lt; 0) {
+          return;
+        }
+        tipsData.images = &#039;/image/going/loading.gif&#039;;
+        tipsData.uiStyle = {
+          imageMarginTop: &quot;22rpx&quot;,
+          imageMarginLeft: &quot;20rpx&quot;,
+          imageWidth: &quot;100rpx&quot;,
+          imageHeight: &quot;100rpx&quot;,
+          marginTop: &quot;30rpx&quot;
+        }
+        tipsData.textColor = &quot;#4287FF&quot;;
+        tipsData.driver = roundData;
+        if (roundData.length &amp;&amp; roundData.length == 1) {
+          if (isShuttle) {
+            tipsData.textColor = &#039;&#039;;
+            tipsData = this.isShuttleDataChange(tipsData, roundData.length);
+          } else {
+            tipsData.waitAndAnswer = true;
+            tipsData.title = roundData[0].cpInfo.brandRideName;
+            tipsData.text = &#039;服务商已向司机派单,请稍候&#039;;
+            tipsData.tipsText = true;
+          }
+        } else if (roundData.length &amp;&amp; roundData.length &gt; 1) {
+          if (isShuttle) {
+            tipsData.textColor = &#039;&#039;;
+            tipsData = this.isShuttleDataChange(tipsData, roundData.length);
+          } else {
+            tipsData.title = roundData.length + &quot;种车型&quot;;
+            tipsData.waitAndAnswer = true;
+            tipsData.cars = true;
+            tipsData.tipBox = &quot;status-tip-box-change&quot;;
+            tipsData.uiStyle = {
+              imageMarginTop: &quot;22rpx&quot;,
+              imageMarginLeft: &quot;20rpx&quot;,
+              imageWidth: &quot;100rpx&quot;,
+              imageHeight: &quot;100rpx&quot;,
+              marginTop: &quot;48rpx&quot;,//上边距
+            }
+            if (roundData.length &gt; 6) {
+              tipsData.roll = true;
+              tipsData.scrollHeight = &quot;312rpx&quot;;
+            }
+          }
+        }
+        break;
+
+      // 司机接单
+      case 103:
+      // 司机到达
+      case 104:
+      // 开始计费
+      case 105:
+        this.cancelLater = null;
+        tipsData = this.freshDriverCardView(tipsData, isShuttle);
+        break;
+      case 107:
+      case 108:
+      case 110:
+        tipsData = this.orderCancelChange(tipsData)
+        break;
+
+      // 取消成功 
+      case 109:
+        if (this.goingMap) {
+          this.goingMap._startDesc = &quot;&quot;;
+          this.goingMap._startShow = false;
+          this.goingMap._carShow = false;
+          this.goingMap._carDesc = [];
+          this.goingMap._carMarkerShow = false;
+          this.goingMap.addOverlays(true);
+        }
+        if (!this.cancelLater &amp;&amp; this.data.replace &amp;&amp; this.data.statusCancel &amp;&amp; this.status109 &amp;&amp; !this.scheme) {
+          this.status109 = false;
+          setTimeout(() =&gt; {
+            if (!this.reTaxi) {
+              my.navigateTo({
+                url: &quot;/page/cancel-page/cancel-page?phoneNum=&quot; + this.phoneNum + &quot;&amp;amapOrderId=&quot; + this.amapOrderId + &quot;&amp;showReason=1&quot;
+              });
+            } else {
+              //TODO
+            }
+          }, 1800)
+        }
+        break;
+
+      // 行程结束
+      case 106:
+      case 111:
+      case 112:
+        // TaxiLog(&#039;--------gooing statusCode 106 pr 112：&#039; + statusCode)
+        this.pageReturn();
+        break;
+      default:
+    }
+
+    this.setData({ tipsData })
+
+
+  },
+  orderCancelChange(tipsData) {
+    if (this.goingData.status != 107 &amp;&amp; this.goingData.status != 108 &amp;&amp; this.goingData.status != 110) {
+      return;
+    }
+    if (tipsData) {
+      tipsData.tipsText = true;
+      tipsData.images = &#039;/image/going/yellow.png&#039;;
+      tipsData.uiStyle = {
+        imageMarginTop: &quot;42rpx&quot;,
+        imageMarginLeft: &quot;32rpx&quot;,
+        imageWidth: &quot;60rpx&quot;,
+        imageHeight: &quot;60rpx&quot;,
+        marginTop: &quot;30rpx&quot;
+      }
+      if (this.goingData.status == 107) {
+        tipsData.text = &quot;请您重新发送订单&quot;;
+        tipsData.title = &quot;司机取消订单&quot;;
+      } else if (this.goingData.status == 108) {
+        tipsData.text = &quot;正在为您改派&quot;;
+        tipsData.title = &quot;订单改派中&quot;;
+      } else if (this.goingData.status == 110) {
+        tipsData.text = &quot;请您重新发送订单&quot;;
+        tipsData.title = &quot;客服取消订单&quot;;
+      }
+    }
+    return tipsData;
+  },
+
+  isShuttleDataChange(tipsData, length) {
+    if (tipsData) {
+      tipsData.images = &#039;/image/going/Shape.png&#039;;
+      tipsData.uiStyle = {
+        imageWidth: &quot;60rpx&quot;,
+        imageHeight: &quot;60rpx&quot;,
+        imageMarginTop: &quot;42rpx&quot;,
+        imageMarginLeft: &quot;32rpx&quot;,
+        marginTop: &quot;30rpx&quot;,//上边距
+      }
+      tipsData.shuttleText = true;
+      tipsData.goingZhima = false;
+      tipsData.tipsText = false;
+      tipsData.shuttleDayFlag = true;
+      tipsData.shuttleDriverETAText = true;
+      if (this.goingData &amp;&amp; this.goingData.timestamp &amp;&amp; this.goingData.departTime) {
+        let timeData = this.formatDay(this.goingData.timestamp,this.goingData.departTime);
+        if (timeData.day) {
+          tipsData.shuttleDay = timeData.day;
+        } else {
+          tipsData.shuttleDayFlag = false;
+        }
+        tipsData.shuttleTimer = true;
+        // tipsData.shuttleDate = timeData.date;
+        tipsData.shuttleTime = timeData.clock;
+      } else {
+        tipsData.shuttleTimer = false;
+      }
+      if (this.goingData.maxWaitTime &amp;&amp; this.goingData.status != 105) {
+        tipsData.shuttleDriverETA = this.goingData.maxWaitTime;
+      } else {
+        tipsData.shuttleDriverETAText = false;
+      }
+      tipsData.shuttleCarAgreeMent = &quot;服务及乘车须知&quot;;
+      if (this.goingData.status == 101 &amp;&amp; length &gt; 0) {
+        tipsData.shuttleCp = true;
+        tipsData.title = &quot;等待司机应答&quot;;
+        tipsData.shuttleDriverText = &quot;将为你选派以下&quot; + length + &quot;种车型的司机：&quot;;
+        if (length &gt; 4) {
+          tipsData.shuttleRoll = true;
+          tipsData.scrollHeight = &#039;128rpx;&#039;;
+        }
+      } else if (this.goingData.status == 103) {
+        tipsData.title = &quot;司机已接单&quot;;
+        tipsData.shuttle103Text = true;
+      } else if (this.goingData.status == 104 || this.goingData.status == 105) {
+        tipsData.shuttleDayFlag = false;
+        tipsData.shuttle103Text = true;
+        tipsData.shuttleTimer = false;
+        tipsData.images = &#039;/image/going/car.png&#039;;
+        tipsData.tipsText = false;
+        tipsData.uiStyle = { //图片ui样式
+          imageMarginTop: &quot;46rpx&quot;,
+          imageMarginLeft: &quot;30rpx&quot;,
+          imageWidth: &quot;64rpx&quot;,
+          imageHeight: &quot;50rpx&quot;,
+          marginTop: &quot;30rpx&quot;
+        }
+        if (this.goingData.status == 105) {
+          tipsData.shuttleDriverETAText = true;
+        }
+      }
+    }
+    return tipsData;
+  },
+
+  // view层setData刷新
+  changeStatus(statusCode) {
+    this.setData({
+      noNetwork: false,
+      statusCode: statusCode,
+      tips: this.changeTipsValue(statusCode),
+      addToHome: this.changeTipsValue(statusCode),
+      addToHomeTop: this.changeTopValue(statusCode),
+      addMoreCar: this.changeAddMoreCarValue(statusCode),
+      addCarList: this.changeAddCarListValue(statusCode),
+      cancel: this.changeCancelValue(statusCode),
+      driver: this.changeDriverValue(statusCode),
+      replace: this.changeReplaceValue(statusCode),
+      position: this.changePositionValue(statusCode),
+      refresh: this.changeRefreshValue(statusCode),
+      statusCancel: this.changeStatusCancelValue(statusCode),
+      safe: true,
+      noDriverCall: this.changeNoDriverCallValue(statusCode),
+      amapOrderId: this.amapOrderId
+    })
+  },
+
+  // 司机页面取消行程
+  onCloseDriver() {
+    this.cancelConfirmPage();
+    my.reportAnalytics(&quot;cancelconfirm&quot;, {
+      status: this.data.statusCode
+    });
+  },
+
+  // 取消行程
+  onCancelTip() {
+    this.time = new Date().getTime() / 1000;
+    my.reportAnalytics(&quot;cancelconfirm&quot;, {
+      status: this.data.statusCode
+    });
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;由于网络原因取消失败，请重试&#039;,
+      });
+    } else {
+      if (this.clicker) {
+        this.clicker = false;
+        if (this.switchFlag &amp;&amp; this.switchCpFlag &amp;&amp; this.goingData &amp;&amp; this.goingData.cacheCP &amp;&amp; this.goingData.cacheCP.length &gt; 0 &amp;&amp; this.goingData.createTime &amp;&amp; this.goingData.createTime &gt; 0 &amp;&amp; this.rideTypeSwitchConf &amp;&amp; this.rideTypeSwitchConf.retainDelta &amp;&amp; this.time - this.goingData.createTime / 1000 &gt; this.rideTypeSwitchConf.retainDelta &amp;&amp; this.rideTypeSwitchConf.retainOnCancellationSwitch) {
+          this.retainDelta = true;
+          my.setStorage({
+            key: &#039;showSwitch&#039;,
+            data: {
+              showSwitch: true
+            }
+          })
+          this.switchFlag = false;
+          my.showLoading({
+            content: &quot;加载中...&quot;
+          });
+          let switchParam = this.setSwitchParam();
+          my.reportAnalytics(&quot;addcp_popup&quot;, {
+            time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+            source: &quot;byCancel&quot;
+          })
+          this.addcpClose = &quot;byCancel&quot;;
+          DataHelper.getInstance().fetchSwitchCP(this.amapOrderId, switchParam, (res) =&gt; {
+            my.hideLoading();
+            if (res &amp;&amp; res.code == 1 &amp;&amp; this.goingData.status == 101) {
+              this.setData({ addCarData: res.orderDetail.switchCPInfo, addCarList: true, addCancel: true })
+              this.iconPosition(this.goingData.status)
+            } else {
+              this.setData({ addCarData: [], addCarList: true })
+            }
+          })
+          this.clicker = true;
+
+        } else {
+          this.switchFlag = false;
+          my.confirm({
+            title: &#039;是否取消本次行程?&#039;,
+            content: &#039;再等一会吧,正在全力为您呼叫司机&#039;,
+            confirmButtonText: &#039;继续打车&#039;,
+            cancelButtonText: &#039;取消行程&#039;,
+            success: (res) =&gt; {
+              if (res.confirm == false) {
+                if (this.data.statusCode == 103 || this.data.statusCode == 104) {
+                  this.cancelConfirmPage();
+                } else {
+                  my.showLoading({
+                    content: &quot;取消订单&quot;,
+                  });
+                  this.cancelTip();
+                }
+              } else {
+                let res = my.getStorageSync({ key: &#039;showSwitch&#039; });
+                if (this.retainDelta) {
+                  this.switchFlag = false;
+                } else {
+                  if (!res.data) {
+                    this.switchFlag = true;
+                  }
+
+                }
+              }
+            },
+            complete: () =&gt; {
+              this.clicker = true;
+            }
+          });
+        }
+      }
+    }
+  },
+  // 取消行程回调
+  cancelCallBack(code) {
+    if (code == 158) {
+      my.hideLoading();
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;查询订单状态失败&#039;,
+      });
+      my.reportAnalytics(&quot;cancelresult&quot;, {
+        cpname: this.cpName || this.addCp,
+        cancelresult: &quot;fail&quot;
+      })
+    } else if (code == 159) {
+      my.hideLoading();
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;行程状态已改变，取消失败&#039;,
+      });
+      my.reportAnalytics(&quot;cancelresult&quot;, {
+        cpname: this.cpName || this.addCp,
+        cancelresult: &quot;fail&quot;
+      })
+    } else if (code != 1) {
+      my.hideLoading();
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;取消失败&#039;,
+      });
+      my.reportAnalytics(&quot;cancelresult&quot;, {
+        cpname: this.cpName || this.addCp,
+        cancelresult: &quot;fail&quot;
+      })
+    } else {
+      my.reportAnalytics(&quot;cancelresult&quot;, {
+        cpname: this.cpName || this.addCp,
+        cancelresult: &quot;success&quot;
+      })
+      my.hideLoading();
+    }
+    this.canceling = false;
+    this.setData({ canceling: false });
+  },
+  startSwitch() {
+    if (this.goingData &amp;&amp; this.goingData.createTime &amp;&amp; this.goingData.createTime &gt; 0 &amp;&amp; this.goingData.cacheCP &amp;&amp; this.goingData.cacheCP.length &gt; 0) {
+      this.switchTimer = setInterval(() =&gt; {
+        let dateTime = new Date().getTime() / 1000;
+        let createTime = this.goingData.createTime / 1000;
+        if (dateTime - createTime &gt; this.rideTypeSwitchConf.popupDelta &amp;&amp; this.switchFlag &amp;&amp; !this.retainDelta &amp;&amp; getApp().globalData.network.networkAvailable) {
+          my.setStorage({
+            key: &#039;showSwitch&#039;,
+            data: {
+              showSwitch: true
+            },
+          })
+          this.addcpClose = &quot;byAuto&quot;;
+          my.reportAnalytics(&quot;addcp_popup&quot;, {
+            time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+            source: &quot;byAuto&quot;
+          })
+          this.getSwitchCpData &amp;&amp; this.getSwitchCpData();
+        }
+      }, 1000)
+    }
+  },
+
+  // 跳转至取消二次确认页
+  cancelConfirmPage() {
+    if (!getApp().globalData.network.networkAvailable) {
+      this.cancelCanfirm();
+    } else {
+      this.travelTime = this.data.driverCb.travelTime || &#039;&#039;;
+      my.navigateTo({
+        url: &quot;/page/cancel-page/cancel-page?amapOrderId=&quot; + this.amapOrderId + &quot;&amp;statusCode=&quot; + this.data.statusCode + &quot;&amp;travelTime=&quot; + this.travelTime + &quot;&amp;phoneNum=&quot; + this.phoneNum
+      })
+    }
+  },
+  // 取消次数回调
+  cancelNumCallBack(error) {
+    if (error == 161 &amp;&amp; this.goingData.status == 104) {
+      my.hideLoading();
+      my.confirm({
+        title: &#039;请联系服务商取消订单&#039;,
+        content: this.phoneNum || &#039;4008802252&#039;,
+        confirmButtonText: &#039;立即呼叫&#039;,
+        cancelButtonText: &#039;关闭&#039;,
+        success: (result) =&gt; {
+          if (result.confirm) {
+            my.makePhoneCall({ number: this.phoneNum });
+          }
+        }
+      });
+      my.reportAnalytics(&quot;cancelresult&quot;, {
+        cpname: this.cpName || this.addCp,
+        cancelresult: &quot;fail&quot;
+      })
+      this.canceling = false
+      this.setData({ canceling: false })
+      return;
+    } else {
+      this.cancelTip();
+    }
+  },
+
+  // 取消行程请求
+  cancelTip() {
+    let param = {
+      &quot;amapOrderId&quot;: this.amapOrderId,
+    };
+    DataHelper.getInstance().cancleOrder(this.amapOrderId, param, (res) =&gt; {
+      if (res &amp;&amp; res.code) {
+        this.cancelCallBack(res.code);
+      }
+    })
+  },
+
+  // 取消次数超过确认框
+  cancelCanfirm() {
+    this.cancelNum++;
+    if (this.cancelNum &gt; 3) {
+      my.confirm({
+        title: &#039;取消失败，请联系客服处理&#039;,
+        content: this.phoneNum || &#039;4008802252&#039;,
+        confirmButtonText: &#039;立即呼叫&#039;,
+        cancelButtonText: &#039;关闭&#039;,
+        success: (result) =&gt; {
+          if (result.confirm) {
+            my.makePhoneCall({ number: this.phoneNum });
+          }
+        }
+      });
+      this.canceling = false;
+    } else {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;由于网络原因取消失败，请重试&#039;,
+      });
+      this.canceling = false;
+    }
+    my.reportAnalytics(&quot;cancelresult&quot;, {
+      cpname: this.cpName || this.addCp,
+      cancelresult: &quot;fail&quot;
+    })
+  },
+
+  // 支付跳转保护
+  pageReturn() {
+    if (this.getUrl() == &quot;page/safe-helper/safe-helper&quot; || this.getUrl() == &quot;page/cancel-page/cancel-page&quot; || this.getUrl() == &quot;page/alarm/alarm&quot;) {
+      my.navigateBack({
+        delta: 1
+      });
+    } else if (this.getUrl() == &quot;page/cancel-page/cancel-page-rule/cancel-page-rule&quot;) {
+      my.navigateBack({
+        delta: 2
+      });
+    } else if (this.getUrl() == &quot;page/h5-page/h5-page&quot;) {
+      if (getApp().getSystemInfo().platform == &quot;Android&quot;) {
+        my.navigateBack({
+          delta: 2
+        });
+      } else {
+        my.navigateBack({
+          delta: 1
+        });
+      }
+    }
+    this.num = this.num ? ++this.num : 1;
+    if (this.num == 1) {
+      setTimeout(() =&gt; {
+        my.redirectTo({
+          url: &quot;/page/taxi-over-payment/taxi-over-payment?amapOrderId=&quot; + this.amapOrderId + &quot;&amp;from=going&quot;
+        })
+      }, 600)
+    } else {
+      //TODO
+    }
+  },
+
+  //点击重新打车向运力页传递flag和id
+  onSetFlagId() {
+    let flag = true;
+    let amapOrderId = this.amapOrderId;
+    this.reTaxi = true;
+    if (this.isShuttle) {
+      my.navigateBack({
+        delta: 1
+      })
+    } else {
+      my.redirectTo({
+        url: &#039;/page/cp-index/cp-index?flag=&#039; + flag + &#039;&amp;amapOrderId=&#039; + amapOrderId
+      })
+    }
+
+  },
+
+  // 同时呼叫无数据时刷新
+  onRefreshData() {
+    my.setStorage({
+      key: &#039;showSwitch&#039;,
+      data: {
+        showSwitch: true
+      },
+    })
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;当前网络不佳&#039;,
+      });
+    } else {
+      my.showLoading({
+        content: &quot;加载中...&quot;
+      });
+      let switchParam = this.setSwitchParam();
+      DataHelper.getInstance().fetchSwitchCP(this.amapOrderId, switchParam, (res) =&gt; {
+        my.hideLoading();
+        if (res &amp;&amp; res.code == 1 &amp;&amp; this.goingData.status == 101) {
+          let addCarData = res.orderDetail.switchCPInfo;
+          let addCarList = true;
+          let addCancel = false;
+          if (this.retainDelta) {
+            addCancel = true;
+          }
+          let carListLength = res.orderDetail.switchCPInfo.cpList.length;
+          this.setData({ addCarData: res.orderDetail.switchCPInfo, addCarList: true, addCancel, carListLength });
+          this.iconPosition(this.goingData.status);
+        } else {
+          this.setData({ addCarData: [], addCarList: true })
+        }
+      })
+    }
+
+  },
+  getSwitchCpData() {
+    clearTimeout(this.switchTimer);
+    let switchParam = this.setSwitchParam();
+    my.setStorage({
+      key: &#039;showSwitch&#039;,
+      data: {
+        showSwitch: true
+      },
+    })
+    this.switchFlag = false;
+    DataHelper.getInstance().fetchSwitchCP(this.amapOrderId, switchParam, (res) =&gt; {
+      my.hideLoading();
+      if (res &amp;&amp; res.code == 1 &amp;&amp; this.goingData.status == 101) {
+        let carListLength = res.orderDetail.switchCPInfo.cpList.length;
+        this.carListLength = carListLength;
+        this.setData({ addCarData: res.orderDetail.switchCPInfo, addCarList: true, addCancel: false, carListLength });
+        this.iconPosition(this.goingData.status);
+      } else {
+        if (this.clickInSwitchCp) {
+          this.setData({ addCarData: [], addCarList: true })
+        }
+      }
+    })
+  },
+  switchCpInit() {
+    if (this.rideTypeSwitchConf.entrance &amp;&amp; this.switchCpFlag) {
+      let carListLength;
+      if (this.goingData &amp;&amp; this.goingData.cacheCP &amp;&amp; this.goingData.cacheCP.length &gt; 0) {
+        this.addMoreCarInit = true;
+        carListLength = this.carListLength ? this.carListLength : this.goingData.cacheCP.length;
+        this.setData({ carListLength, addMoreCar: true })
+      } else if (this.goingData &amp;&amp; this.goingData.cacheCP &amp;&amp; this.goingData.cacheCP.length &lt;= 0) {
+        this.addMoreCarInit = false;
+        this.setData({ addMoreCar: false })
+      } else {
+        let switchParam = this.setSwitchParam();
+        DataHelper.getInstance().fetchSwitchCP(this.amapOrderId, switchParam, (res) =&gt; {
+          if (res &amp;&amp; res.code == 1 &amp;&amp; res.orderDetail.switchCPInfo.cpList &amp;&amp; res.orderDetail.switchCPInfo.cpList.length &gt; 0) {
+            this.addMoreCarInit = true;
+            carListLength = res.orderDetail.switchCPInfo.cpList.length;
+            this.setData({ carListLength, addMoreCar: true })
+          } else {
+            this.addMoreCarInit = false;
+            this.setData({ addMoreCar: false })
+          }
+
+        })
+      }
+    } else {
+      this.addMoreCarInit = false;
+    }
+    this.iconPosition(this.goingData.status)
+  },
+
+  //同时呼叫
+  onSubmitCp(array, newArray) {
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        content: &quot;操作失败,请重试&quot;
+      });
+      my.hideLoading();
+    } else {
+      let departTime = Date.parse(new Date());
+      let startInfo = {};
+      let endInfo = {};
+      this.arrayLength = array.length;
+      startInfo = {
+        startLat: this.goingData.startPoi.lat || &#039;&#039;,
+        startLon: this.goingData.startPoi.lon || &#039;&#039;,
+        startName: this.goingData.startPoi.name || &#039;&#039;
+      };
+      endInfo = {
+        endLat: this.goingData.endPoi.lat || &#039;&#039;,
+        endLon: this.goingData.endPoi.lon || &#039;&#039;,
+        endName: this.goingData.endPoi.name || &#039;&#039;
+      };
+      let cacheCP = [];
+      if (newArray) {
+        cacheCP = newArray;
+      }
+      let multiCpDatas = [];
+      this.cpname = &#039;&#039;;
+      for (let i in array) {
+        multiCpDatas.push({
+          cpSource: array[i].cpInfo.cpSource || &#039;&#039;,
+          amapRideType: array[i].cpInfo.amapRideType || &#039;&#039;,
+          city: array[i].preTravel.cityID || &#039;&#039;,
+          productType: array[i].cpInfo.productType || &#039;&#039;,
+          rideType: array[i].cpInfo.rideType || &#039;&#039;,
+          price: array[i].preTravel.estimatePrice || &#039;&#039;,
+          priceb: array[i].preTravel.couponPrice || &#039;&#039;,
+          estimateIdPrice: array[i].preTravel.estimatePriceID || &#039;&#039;,
+          estimateTime: array[i].preTravel.estimateTime || &#039;&#039;,
+          estimateMileage: array[i].preTravel.estimateMileage || &#039;&#039;,
+          driverArriveTime: array[i].preTravel.driverArriveTime || &#039;&#039;,
+        })
+        this.cpname += (&quot;&amp;&quot; + array[i].cpInfo.brandRideName);
+      }
+      this.cps = array.length || 0;
+      let newarray = [...array, ...this.goingData.multiCP];
+      let param = {
+        startInfo: JSON.stringify(startInfo),
+        multiCpData: JSON.stringify(multiCpDatas),
+        endInfo: JSON.stringify(endInfo),
+        departTime: departTime,
+        formId: &quot;&quot;,
+        adcode: getApp().globalData.adcode || &#039;&#039;,
+        aoid: this.amapOrderId
+      }
+      DataHelper.getInstance().submitOrder(param, startInfo, endInfo, newarray, cacheCP, null, (res) =&gt; {
+        this.multipleSubmitOrderCallBack(res);
+      })
+    }
+  },
+
+  //展示多运力呼叫弹窗
+  onShowAddCarList() {
+    this.switchFlag = false;
+    this.clickInSwitchCp = true;
+    if (!getApp().globalData.network.networkAvailable) {
+      this.setData({ addCarData: [], addCarList: true })
+    } else {
+      my.showLoading({
+        content: &quot;加载中...&quot;
+      });
+      my.reportAnalytics(&quot;addcp_popup&quot;, {
+        time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+        source: &quot;byClick&quot;
+      })
+      this.addcpClose = &quot;byClick&quot;;
+      this.getSwitchCpData &amp;&amp; this.getSwitchCpData();
+    }
+
+  },
+
+  onCloseList() {
+    if (this.addcpClose == &quot;byClick&quot;) {
+      my.reportAnalytics(&quot;addcp_close&quot;, {
+        time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+        source: &quot;byClick&quot;
+      })
+    } else if (this.addcpClose == &quot;byAuto&quot;) {
+      my.reportAnalytics(&quot;addcp_close&quot;, {
+        time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+        source: &quot;byAuto&quot;
+      })
+    } else if (this.addcpClose == &quot;byCancel&quot;) {
+      my.reportAnalytics(&quot;addcp_close&quot;, {
+        time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+        source: &quot;byCancel&quot;
+      })
+    }
+
+    this.setData({ addCarList: false })
+  },
+
+  // 同时呼叫回调
+  multipleSubmitOrderCallBack(res) {
+    my.hideLoading();
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        content: &quot;操作失败,请重试&quot;
+      });
+    } else {
+      if (res.orderDetail &amp;&amp; res.orderDetail.status == 101 &amp;&amp; res.code == 1) {
+        this.addCp = &#039;addCp&#039;;
+        my.reportAnalytics(&quot;addcp_success&quot;, {
+          time: new Date().getTime() / 1000 - this.goingData.createTime / 1000,
+          cps: this.cps,
+          cpname: this.cpname
+        })
+        my.showToast({
+          content: &#039;已为你同时呼叫&#039; + res.orderDetail.multiCP.length + &#039;种车型&#039;
+        });
+        // TaxiLog(&quot;444444&quot; + JSON.stringify(moreCarData))
+        let carListLength = this.carListLength - this.arrayLength;
+        this.carListLength = carListLength
+        if (this.carListLength &lt;= 0) {
+          this.switchCpFlag = false;
+          this.setData({
+            addCarList: false,
+            addMoreCar: false
+          })
+        } else {
+          this.setData({
+            addCarList: false,
+            carListLength
+          })
+        }
+
+        if (this.goingMap) {
+          this.goingMap.initStartDesc(res.orderDetail.multiCP);
+          this.goingMap.addOverlays();
+        }
+      } else {
+        my.hideLoading();
+        my.showToast({
+          content: &quot;操作失败,请重试&quot;
+        });
+      }
+
+    }
+  },
+
+  // 继续等待
+  onClose() {
+    this.setData({
+      addCarList: false,
+    });
+    my.showLoading({
+      content: &quot;取消订单&quot;,
+    });
+    this.cancelTip();
+  },
+
+  //跳至安全助手
+  moveToSafeHelper() {
+    if (!this.canceling) {
+      if (this.goingData.status == 109 || this.goingData.status == 102 || this.goingData.status == 110 || this.goingData.status == 101 || this.goingData.status == 107) {
+        getApp().router.navigateTo({
+          url: &#039;/page/safe-helper/safe-helper&#039;
+        })
+      } else {
+        getApp().router.navigateTo({
+          url: &#039;/page/safe-helper/safe-helper?amapOrderId=&#039; + this.amapOrderId
+        })
+      }
+    }
+  },
+
+  // 定位,刷新,安全助手位置
+  iconPosition(statusCode) {
+    if (statusCode == 101 &amp;&amp; this.data.addMoreCar) {
+      this.setData({
+        positionRefresh: &#039;bottom: 292rpx;&#039;,
+        safeHelperBtn: &#039;bottom: 292rpx;&#039;
+      })
+    } else if (this.data.cancel || this.data.replace) {
+      this.setData({
+        positionRefresh: &#039;bottom: 192rpx;&#039;,
+        safeHelperBtn: &#039;bottom: 192rpx;&#039;
+      })
+    } else if (statusCode == 104) {
+      this.setData({
+        positionRefresh: &#039;bottom: 387rpx;&#039;,
+        safeHelperBtn: &#039;bottom: 387rpx;&#039;
+      })
+    } else {
+      this.setData({
+        positionRefresh: &#039;bottom: 387rpx;&#039;,
+        safeHelperBtn: &#039;bottom: 490rpx;&#039;
+      })
+    }
+  },
+
+  getRouteStatus(orderid) {  //获取路线状态
+    let statusCode = this.goingData.status;  //amapOrderId订单id
+  },
+  moveToLocation() {
+    this.mapCtx.moveToLocation()
+  },
+  //地图路路线所需求方法
+  checkRouteOrder(orderid) {
+    if (!this.goingmap) {
+      this.goingMap = new GoingMap(this.amapOrderId, this);
+    }
+    this.goingMap.setMapContext(this.mapCtx);
+    TaxiLog(&quot;statemachine add map callback 44444&quot;);
+  },
+
+  refreshRoute() {
+    let refreshNowTime = (new Date()).valueOf();
+    if ((refreshNowTime - this.lastClickTime) &lt; 400) {
+      this.lastClickTime = refreshNowTime;
+      return;
+    }
+    else if ((refreshNowTime - this.lastRefreshTime) &lt; 5000) {
+      this.lastClickTime = refreshNowTime;
+      my.showToast({
+        content: &quot;重算路径与当前一致，稍后再试&quot;,
+      });
+      return;
+    }
+    this.lastClickTime = refreshNowTime;
+    this.lastRefreshTime = (new Date()).valueOf();
+  },
+  refreshMapRegion() {
+    this.goingMap.refreshMapRegion();
+  },
+
+  // 登录成功回调
+  loginSuccessFunc() {
+    this.mapCtx = my.createMapContext(&#039;userMap&#039;);
+    this.mapCtx.showsScale &amp;&amp; this.mapCtx.showsScale({ isShowsScale: 0 });
+    this.mapCtx.showsCompass &amp;&amp; this.mapCtx.showsCompass({ isShowsCompass: 0 });
+
+    /**检查数据的完整性 */
+    this.isLoading = false;
+    this.goingData = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId)
+    if (!this.goingData) {
+      this.isLoading = true;
+      getApp().showLoading();
+      let param = {
+        amapOrderId: this.amapOrderId,
+        extension: &quot;all&quot;,
+        cpOno: &#039;&#039;,
+        cpSource: &#039;&#039;
+      }
+      DataHelper.getInstance().fetchOrderDetail(this.amapOrderId, param, (res) =&gt; {
+        this.isLoading = false;
+        getApp().hideLoading();
+        if (res &amp;&amp; res.code == 1) {
+          this.goingData = res.orderDetail;
+          this.onStateChange();
+        } else {
+          this.setData({
+            noNetwork: true
+          })
+        }
+      })
+    } else {
+      this.onStateChange();
+    }
+  },
+
+  // 登录失败回调
+  loginFailFunc() {
+
+  },
+  //更改状态
+  changeTipsValue(statusCode) { //tips开关
+    if (statusCode == 101 || statusCode == 103 || statusCode == 104 || statusCode == 105 || statusCode == 107 || statusCode == 108 || statusCode == 110) {
+      return true;
+    }
+    return false;
+  },
+  changeReplaceValue(statusCode) {  //重新打车开关
+    if (statusCode == 102 || statusCode == 107 || statusCode == 109 || statusCode == 110) {
+      return true;
+    }
+    return false;
+  },
+  changeCancelValue(statusCode) { //取消开关
+    if (statusCode == 101 || statusCode == 108) {
+      return true;
+    }
+    return false;
+  },
+  changeDriverValue(statusCode) { //司机卡片开关
+    if (statusCode == 103 || statusCode == 104 || statusCode == 105) {
+      return true;
+    }
+    return false;
+  },
+  changePositionValue(statusCode) { //定位开关
+    if (statusCode == 101 || statusCode == 102 || statusCode == 103 || statusCode == 104 || statusCode == 105) {
+      return true;
+    }
+    return false;
+  },
+  changeRefreshValue(statusCode) {  //刷新开关
+    if (statusCode == 103 || statusCode == 105) {
+      return true;
+    }
+    return false;
+  },
+  changeNoDriverCallValue(statusCode) { //暂无司机应答开关
+    if (statusCode == 102) {
+      return true;
+    }
+    return false
+  },
+  changeStatusCancelValue(statusCode) { // 109展示tips
+    if (statusCode == 109) {
+      return true
+    }
+    return false
+  },
+  changeAddMoreCarValue(statusCode) { //多cp推荐开关
+    if (statusCode != 101) {
+      return false
+    } else if (statusCode == 101 &amp;&amp; this.addMoreCarInit &amp;&amp; this.switchCpFlag) {
+      return true
+    }
+  },
+  changeAddCarListValue(statusCode) {
+    if (statusCode != 101) {
+      return false
+    }
+  },
+
+  // 一键添加首页位置
+  changeTopValue(statusCode) {
+    if (statusCode == 101 &amp;&amp; DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).multiCP.length &gt; 1) {
+      let top;
+      let length = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId).multiCP.length;
+      top = 134 + length * 54;
+      top &gt; 509 ? top = 509 : top;
+      return top + &quot;rpx&quot;
+    } else {
+      return &quot;169rpx&quot;
+    }
+  },
+
+  // 设置title
+  changeNavigationBarValue(statusCode) {
+    if (statusCode == 101) {
+      return &quot;等待应答&quot;
+    } else if (statusCode == 102) {
+      return &quot;暂无应答&quot;
+    } else if (statusCode == 103) {
+      return &quot;司机接单&quot;
+    } else if (statusCode == 104) {
+      return &quot;司机到达&quot;
+    } else if (statusCode == 105) {
+      return &quot;行程中&quot;
+    } else if (statusCode == 107) {
+      return &quot;司机取消&quot;
+    } else if (statusCode == 108) {
+      return &quot;改派新订单&quot;
+    } else if (statusCode == 109) {
+      return &quot;取消订单&quot;
+    } else if (statusCode == 110) {
+      return &quot;客服关单&quot;
+    } else {
+      return &quot;&quot;
+    }
+  },
+
+  // 获取当前页面
+  getUrl() {
+    let pages = getCurrentPages() //获取加载的页面
+    let currentPage = pages[pages.length - 1] //获取当前页面的对象
+    let url = currentPage.route //当前页面url
+    return url;
+  },
+
+  // 更改title
+  changeNavigationBar(statusCode) {
+    my.setNavigationBar({
+      title: this.changeNavigationBarValue(statusCode)
+    })
+  },
+  setSwitchParam() {
+    let rideTypes;
+    let isIntegrated;
+    let newTime = Math.floor(new Date().getTime() / 1000);
+    this.goingData.multiCP.map(item =&gt; {
+      item.selected = &quot;1&quot;;
+    })
+    if (this.goingData &amp;&amp; this.goingData.cacheCP &amp;&amp; this.goingData.cacheCP.length &gt; 0 &amp;&amp; this.goingData.multiCP) {
+      rideTypes = this.goingData.multiCP.concat(this.goingData.cacheCP);
+      isIntegrated = &quot;1&quot;;
+    } else {
+      rideTypes = this.goingData.multiCP;
+      isIntegrated = &quot;0&quot;;
+    }
+    let lastRequestTime = Math.floor(getApp().globalData.firstCarListRequsetTime / 1000) || &#039;&#039;;
+    let switchParam = {
+      startLon: this.goingData.startPoi.lon,
+      startLat: this.goingData.startPoi.lat,
+      startName: this.goingData.startPoi.name,
+      endLon: this.goingData.endPoi.lon,
+      endLat: this.goingData.endPoi.lat,
+      endName: this.goingData.endPoi.name,
+      rideTypes: JSON.stringify(rideTypes),
+      gdServiceId: 1,
+      lastRequestTime: lastRequestTime,
+      isIntegrated: isIntegrated
+    }
+    getApp().globalData.firstCarListRequsetTime = newTime;
+    return switchParam;
+  },
+  // 点击跳转服务及乘车须知
+  onClickAgreeMent() {
+    let obj = {};
+    if (this.goingData &amp;&amp; this.goingData.cpInfo &amp;&amp; this.goingData.amapServiceID) {
+      obj = {
+        cpSource: this.goingData.cpInfo.cpSource || &#039;&#039;,
+        productType: this.goingData.cpInfo.productType || &#039;&#039;,
+        rideType: this.goingData.cpInfo.rideType || &#039;&#039;,
+        gdServiceId: this.goingData.amapServiceID || &#039;&#039;,
+        iconUrl: this.goingData.cpInfo.brandIconUrl || &#039;&#039;,
+        brandName: this.goingData.cpInfo.brandName || &#039;&#039;,
+        gdRideTypeNamePanel: this.goingData.cpInfo.amapRideTypeName || &#039;&#039;,
+        capacity: this.goingData.cpInfo.numberOfSeats || &#039;&#039;
+      };
+    }
+    my.navigateTo({
+      url: &#039;/page/car-type/car-service/car-service?params=&#039; + JSON.stringify(obj) + &#039;&amp;amapOrderId=&#039; + this.amapOrderId
+    });
+  },
+  formatDay(startTime, endTime) {
+    let obj = {};
+    let date = new Date(startTime);
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    let d1 = new Date(year + &#039;/&#039; + month + &#039;/&#039; + day);
+
+    let endTimes = new Date(endTime);
+    let y = endTimes.getFullYear();
+    let m = endTimes.getMonth() + 1;
+    let d = endTimes.getDate();
+    let d2 = new Date(y + &#039;/&#039; + m + &#039;/&#039; + d);
+    let iday = parseInt(d2 - d1) / 1000 / 60 / 60 / 24;
+    if (iday &gt;= 0 &amp;&amp; iday &lt; 1) {
+      obj.day = &quot;今天&quot;;
+    } else if (iday &gt;= 1 &amp;&amp; iday &lt; 2) {
+      obj.day = &quot;明天&quot;;
+    } else if (iday &gt;= 2 || iday &lt; 0) {
+      obj.day = endTimes.getMonth() + 1 + &quot;月&quot; + endTimes.getDate() + &quot;日&quot;;
+    } else {
+      obj.day = false;
+    }
+
+    obj.clock = (endTimes.getHours() &lt; 10 ? &quot;0&quot; + endTimes.getHours() : endTimes.getHours()) + &quot;:&quot; + (endTimes.getMinutes() &lt; 10 ? &quot;0&quot; + endTimes.getMinutes() : endTimes.getMinutes());
+
+    return obj;
+  },
+  onCallTheDriver() {
+    //点击拨打司机电话
+    let that = this;
+    let request = new GetPrivacyNumber();
+    request.setParam({
+      amapOrderId: this.amapOrderId
+    });
+    request.doRequest(res =&gt; {
+      if (res &amp;&amp; res.data &amp;&amp; res.code == 1 &amp;&amp; res.data.allowChange) {
+        //请求成功且cp支持隐私号功能
+        if (res.data.passengerPhone &amp;&amp; res.data.privacyNumber) {
+          //请求成功判断是否弹出教育弹窗
+          my.getStorage({
+            key: &#039;PRIVACYNUMBERGUIDELINES&#039;,
+            success: function (res) {
+              if (res &amp;&amp; res.data) {
+                //已经弹出过指引页面
+                that.setData({
+                  privacyNumberGuide: false,
+                  privacyNumberDial: true,
+                });
+              } else {
+                //没有弹出过指引页面则弹出
+                that.setData({
+                  privacyNumberGuide: true,
+                  privacyNumberDial: false,
+                });
+                //存储一下
+                my.setStorage({
+                  key: &#039;PRIVACYNUMBERGUIDELINES&#039;,
+                  data: true,
+                  success: (res) =&gt; {
+                  },
+                });
+              }
+            }
+          });
+          that.setData({
+            userPrivacyNumber: res.data.passengerPhone,
+            driverPrivacyNumber: res.data.privacyNumber
+          });
+        }
+      } else if (that.data.driverData &amp;&amp; that.data.driverData.phoneNumber) {
+        // 请求失败直接拨打司机电话
+        my.makePhoneCall({ number: that.data.driverData.phoneNumber });
+      } else {
+        // 没有电话时的兜底弹窗
+        my.alert({
+          title: &quot;未获取到司机电话&quot;,
+          success: (res) =&gt; {
+            my.makePhoneCall({ number: that.data.driverData.phoneNumber || &#039;&#039; });
+          },
+        });
+      }
+    });
+  },
+  onGotIt() {
+    //点击关闭指引页面
+    this.setData({
+      privacyNumberGuide: false,
+      privacyNumberDial: true
+    });
+  },
+  onDialCancel(judge) {
+    //点击关闭拨号页
+    this.setData({
+      privacyNumberGuide: false,
+      privacyNumberDial: false
+    },()=&gt;{
+        if(judge){
+          my.makePhoneCall({ number: this.data.driverPrivacyNumber || &quot;&quot; });
+        }
+    });
+  },
+  refreshGoingData() {
+    if (!getApp().globalData.network.networkAvailable) {
+      my.showToast({
+        content: &quot;请检查网络后重试&quot;
+      });
+    } else {
+      this.mapCtx = my.createMapContext(&#039;userMap&#039;);
+      this.mapCtx.showsScale &amp;&amp; this.mapCtx.showsScale({ isShowsScale: 0 });
+      this.mapCtx.showsCompass &amp;&amp; this.mapCtx.showsCompass({ isShowsCompass: 0 });
+
+      /**检查数据的完整性 */
+      this.isLoading = false;
+      this.goingData = DataHelper.getInstance().orderDetailWithAmapOrderId(this.amapOrderId)
+      if (!this.goingData) {
+        this.isLoading = true;
+        getApp().showLoading();
+        let param = {
+          amapOrderId: this.amapOrderId,
+          extension: &quot;all&quot;,
+          cpOno: &#039;&#039;,
+          cpSource: &#039;&#039;
+        }
+        DataHelper.getInstance().fetchOrderDetail(this.amapOrderId, param, (res) =&gt; {
+          this.isLoading = false;
+          getApp().hideLoading();
+          if (res &amp;&amp; res.code == 1) {
+            this.goingData = res.orderDetail;
+            this.onStateChange();
+          } else if (res &amp;&amp; res.code == 14) {
+            LoginBindHelper.login({
+              onSuccess: this.loginSuccessFunc, // 登录成功回调
+              onFail: this.loginFailFunc,       // 登录失败回调
+              ctx: this                         // this
+            });
+            return;
+          } else if (!getApp().globalData.network.networkAvailable &amp;&amp; (!this.goingData || !this.goingData.status)) {
+            this.setData({
+              noNetwork: true
+            })
+          }
+        })
+      } else {
+        this.onStateChange();
+      }
+    }
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

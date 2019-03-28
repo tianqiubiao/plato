@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/safe-helper/safe-helper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/safe-helper/safe-helper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">63.99</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">193</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">39.31</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.76</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import DataHelper from &#039;../../service/datacenter/DataHelper.js&#039;;
+import LoginBindHelper from &#039;../../common/login/LoginBindHelper.js&#039;;
+
+Page({
+  data: {
+    myPhone: &#039;&#039;,
+    dirverName: &#039;&#039;,
+    dirverPhone: &#039;&#039;,
+    carNumber: &#039;&#039;,
+    // 车型
+    carType: &#039;&#039;,
+    carColor: &#039;&#039;,
+    // cp
+    cpName: &#039;&#039;,
+    cpPhone: &#039;&#039;,
+    // 城市
+    city: &#039;&#039;,
+    start: &#039;&#039;,
+    end: &#039;&#039;,
+    titleText: &#039;&#039;,
+    hasHistory: false,
+    // 是否为当前行程
+    isNow: false,
+    amapOrderId: &#039;&#039;,
+    copyData: &#039;&#039;,
+    tapText: &#039;&#039;,
+    loading: true,
+    // 防止电话多次点击的锁
+    lock: true
+  },
+  onLoad(query) {
+    getApp().globalData.isNotMap = true
+    if (getApp().globalData.network.networkAvailable == false) {
+      this.setData({
+        loading: false,
+        hasHistory: false,
+        titleText: &#039;遇到危险时，高德打车会自动帮你生成一段求助信息并支持分享。&#039;
+      })
+      return;
+    }
+    my.showLoading({});
+    if (query.amapOrderId) {
+      this.setData({
+        isNow: true,
+        tapText: &#039;当前行程&#039;
+      })
+      this.getData(query.amapOrderId);
+    } else {
+      this.setData({
+        isNow: false,
+        tapText: &#039;最近行程&#039;
+      })
+      //   let paramObj = {
+      //   pageNo: pageNo || 1,// 当前页码	
+      //   scope: scope || 0,// 0 正常订单列表 2-已完成订单列表
+      //   pageSize: pageSize || self.data.pageSize,// 分页大小
+      //   cpSource: cpSource || &#039;&#039;,// 参见CP来源 为空则取所有
+      //   containDriverPhone: containDriverPhone || true,//司机电话,默认为true
+      // }
+      DataHelper.getInstance().fetchOrderList({}, (res) =&gt; {
+        let orders = res.orders || [];
+        // console.log(&#039;orders--------------------&#039;, orders)
+        if (orders &amp;&amp; orders.length &gt; 0) { this.getData(orders[0].amapOrderId) } else {
+          this.getData(false)
+        }
+        // console.log(&#039;orders--------------&#039;,orders)
+      })
+      // MessageCenter.fetchtRecentlyOrderId((amapOrderId) =&gt; {   ------TODO
+      //   this.getData(amapOrderId);
+      // })
+    }
+  },
+  onReady() {
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  // 复制到剪切板
+  onCopyData() {
+    my.setClipboard({
+      text: this.data.copyData,
+      success: () =&gt; {
+        my.showToast({
+          content: &#039;复制成功，你可以将求助信息分享给你的联系人&#039;
+        });
+      },
+    })
+  },
+  // 获取信息数据
+  getData(amapOrderId) {
+    let dataHelper = DataHelper.getInstance();
+    // 传过来行程中id
+    if (amapOrderId) {
+      this.setData({
+        hasHistory: true,
+        titleText: &#039;遇到紧急危险可发送文本求助&#039;
+      })
+      let param = {
+        amapOrderId: amapOrderId,
+        extension: &quot;all&quot;,
+        cpOno: &#039;&#039;,
+        cpSource: &#039;&#039;
+      }
+      DataHelper.getInstance().fetchOrderDetail(amapOrderId, param, (res) =&gt; {
+        if (res.code == &#039;1&#039;) {
+          // console.log(&#039;详情信息 -----------------&#039;, res)
+          let startInfo = res.orderDetail.startPoi || {};
+          let endInfo = res.orderDetail.endPoi || {};
+          let dirverData = res.orderDetail.driver || {};
+          let cpData = res.orderDetail.cpInfo || {};
+          let vehicleData = res.orderDetail.vehicle || {};
+          // console.log(&#039;startInfo--------------------&#039;, startInfo)
+          // console.log(&#039;endInfo--------------------&#039;, endInfo)
+          // console.log(&#039;dirverData--------------------&#039;, dirverData)
+          // console.log(&#039;startInfo--------------------&#039;, startInfo)
+          // console.log(&#039;cpData--------------------&#039;, cpData)
+          // console.log(&#039;vehicleData--------------------&#039;, vehicleData)
+          this.setData({
+            myPhone: LoginBindHelper.getUserMobile() || &#039;&#039;,
+            dirverName: dirverData.name || &#039;&#039;,
+            dirverPhone: dirverData.phoneNumber || &#039;&#039;,
+            carNumber: vehicleData.licensePlate || &#039;&#039;,
+            carType: vehicleData.carType || &#039;&#039;,
+            carColor: vehicleData.color || &#039;&#039;,
+            cpName: cpData.brandName || &#039;&#039;,
+            cpPhone: cpData.serviceTel || &#039;&#039;,
+            start: startInfo.name || &#039;&#039;,
+            end: endInfo.name || &#039;&#039;
+          })
+          this.handleData();
+        } else {
+          this.setData({
+            hasHistory: false,
+            titleText: &#039;遇到危险时，高德打车会自动帮你生成一段求助信息并支持分享。&#039;
+          })
+        }
+
+        my.hideLoading();
+        this.setData({ loading: false });
+      })
+    } else {
+      // 没有最近行程
+      this.setData({
+        hasHistory: false,
+        titleText: &#039;遇到危险时，高德打车会自动帮你生成一段求助信息并支持分享。&#039;
+      })
+      my.hideLoading();
+      this.setData({ loading: false });
+    }
+  },
+  // 处理信息数据
+  handleData() {
+    let copyData = this.data.copyData;
+    let copyDataHead = &#039;【求助】我在打车时遇到了危险，请帮帮我！&#039;;
+    let _this = this;
+    let obj = {
+      myPhone: _this.data.myPhone ? `我的电话 ${_this.data.myPhone} ，` : &#039;&#039;,
+      dirverName: _this.data.dirverName ? `司机姓名${_this.data.dirverName}，` : &#039;&#039;,
+      dirverPhone: _this.data.dirverName ? `司机电话 ${_this.data.dirverPhone} ，` : &#039;&#039;,
+      carNumber: _this.data.carNumber ? `车牌号 ${_this.data.carNumber} ，` : &#039;&#039;,
+      carType: _this.data.carType ? `车型是 ${_this.data.carType}` : &#039;&#039;,
+      carColor: _this.data.carColor &amp;&amp; _this.data.carType ? ` ${_this.data.carColor}` : &#039;&#039;,
+      period: _this.data.carType ? &#039;。&#039; : &#039;&#039;,
+      cpName: _this.data.cpName ? `你可以帮我联系${_this.data.cpName}的客服 ${_this.data.cpPhone} ，或帮我报警。` : &#039;&#039;,
+      myTravel: _this.data.city || (_this.data.start &amp;&amp; _this.data.end) ? &#039;我的行程&#039; : &#039;&#039;,
+      city: _this.data.city ? `在${_this.data.city}，` : &#039;&#039;,
+      start: _this.data.start &amp;&amp; _this.data.end ? `从${_this.data.start}到${_this.data.end}。` : &#039;&#039;
+    }
+    for (let key in obj) {
+      copyData += obj[key]
+    }
+    // 如果有数据
+    if (copyData != &#039;&#039;) {
+      copyData = copyDataHead.concat(copyData).slice(0, -1) + &#039;。&#039;;
+    } else {
+      copyData = copyDataHead
+    }
+    this.setData({
+      copyData: copyData
+    })
+  },
+  // 点击打电话事件
+  callPhone(value) {
+    if (this.data.lock &amp;&amp; value) {
+      this.data.lock = false;
+      my.makePhoneCall({ number: value })
+      setTimeout(() =&gt; {
+        this.data.lock = true
+      }, 300)
+    }
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

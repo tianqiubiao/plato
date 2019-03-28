@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/invoice/invoice/invoice.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/invoice/invoice/invoice.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">40.89</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">267</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">41.97</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.90</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import InvoiceHistoryRequest from &#039;/common/network/requests/InvoiceHistoryRequest.js&#039;;
+Page({
+  data: {
+    isShow: false,
+    defaultValue: {
+      type: 2,             //发票类型
+      invoiceType: 0,      //抬头类型
+      amount: &#039;&#039;,    //金额
+      taxno: &#039;&#039;,     //税号
+      title: &#039;&#039;,     //抬头
+      content: &#039;&#039;,         //发票内容
+
+      cpInfos: &#039;&#039;,//开具发票的cp信息，json字符串
+      cpSource: &#039;&#039;,//cp来源
+
+
+      province: &#039;&#039;,	      //收件人省	   
+      city: &#039;&#039;,	          //收件人市	  
+      district: &#039;&#039;,	      //收件人区	    
+      zipCode: &#039;&#039;,        //邮政编码	   
+      address: &#039;&#039;,        //收件人详细地址	 
+      name: &#039;&#039;,	          //收件人	         
+      phone: &#039;&#039;,	          //收件人电话	    
+      email: &#039;&#039;,           //收件人邮箱
+      invoiceTitleQueryProvider: &#039;&#039;,
+      moreInfo: {
+        remark: &#039;&#039;,	          //备注	          
+        registerAddress: &#039;&#039;,  //注册地址	      
+        registerPhone: &#039;&#039;,    //注册手机号	
+        openBank: &#039;&#039;,	        //开户银行	
+        bankAccount: &#039;&#039;,      //银行账号
+        moreInfoTip: &#039;&#039;
+      }
+    },
+    reg_phone : /^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,
+    reg_email : /^[A-Za-z0-9._]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+    reg_taxno : /^[A-Z0-9]{15}$|^[A-Z0-9]{17}$|^[A-Z0-9]{18}$|^[A-Z0-9]{20}$/
+  },
+  //分享信息设置
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onLoad() {
+
+    let cpString, content;
+    let getValue = my.getStorageSync({
+      key: &#039;invoiceGetValue&#039;, // 缓存数据的key
+    }).data;
+    let str = &quot;开具电子发票&quot;
+    if (getValue) {
+      if (getValue.type === 1) {
+        str = &quot;开具纸质发票&quot;
+      }
+      cpString = getValue.cpString
+      content = getValue.content
+    } else {
+      getValue = {
+        type: 2,
+        amount: 0,
+        tips: {
+          invoiceTitleQueryProvider: &#039;&#039;,
+          moreInfo: &#039;&#039;,
+          content: &#039;客运服务费&#039;
+        }
+      }
+    }
+
+    my.setNavigationBar({
+      title: str
+    });
+    let invoiceType = 0,
+      taxno = &#039;&#039;,
+      title = &#039;&#039;,
+      comtitle = &#039;&#039;,
+      peotitle = &#039;&#039;,
+      remark = &#039;&#039;,
+      registerAddress = &#039;&#039;,
+      registerPhone = &#039;&#039;,
+      openBank = &#039;&#039;,
+      bankAccount = &#039;&#039;,
+      name = &#039;&#039;,
+      address = &#039;&#039;,
+      email = &#039;&#039;,
+      phone = &#039;&#039;,
+      province = &#039;&#039;,
+      city = &#039;&#039;,
+      district = &#039;&#039;,
+      protoAmount = getValue.protoAmount;
+    let res = my.getStorageSync({ key: &#039;invoice_info&#039; });
+    if (res.data) {
+      invoiceType = parseFloat(res.data.invoiceType);
+      taxno = res.data.taxno;
+      title = res.data.title;
+      comtitle = res.data.comtitle,
+      peotitle = res.data.peotitle,
+
+      remark = res.data.remark;
+      registerAddress = res.data.registerAddress;
+      registerPhone = res.data.registerPhone;
+      openBank = res.data.openBank;
+      bankAccount = res.data.bankAccount;
+
+      name = res.data.name;
+      address = res.data.address;
+      email = res.data.email;
+      phone = res.data.phone;
+      province = res.data.province;
+      city = res.data.city;
+      district = res.data.district;
+
+      this.setData({
+        defaultValue: {
+          amount: parseFloat(getValue.amount).toFixed(2),
+          &quot;postFree&quot;: parseFloat(getValue.postFree),
+          protoAmount,
+          type: getValue.type,
+          &quot;invoiceType&quot;: invoiceType,
+          &quot;title&quot;: title,
+          &quot;comtitle&quot;:comtitle,
+          &quot;peotitle&quot;:peotitle,
+          &quot;taxno&quot;: taxno,
+          &quot;content&quot;: content,
+          invoiceTitleQueryProvider: getValue.tips.invoiceTitleQueryProvider,
+          &quot;moreInfo&quot;: {
+            remark: remark,	          //备注	          
+            registerAddress: registerAddress,  //注册地址	      
+            registerPhone: registerPhone,    //注册手机号	
+            openBank: openBank,	        //开户银行	
+            bankAccount: bankAccount,      //银行账号
+            moreInfoTip: getValue.tips.moreInfo
+          },
+          &quot;zipCode&quot;: &quot;&quot;,
+          &quot;province&quot;: province,
+          &quot;city&quot;: city,
+          &quot;district&quot;: district,
+          &quot;address&quot;: address,
+
+          &quot;name&quot;: name,
+          &quot;phone&quot;: phone,
+          &quot;email&quot;: email,
+          &quot;cpString&quot;: cpString
+        },
+        isShow: true
+
+      })
+    } else {
+      my.showLoading({
+        content: &#039;加载中...&#039;
+      });
+      let request = new InvoiceHistoryRequest();
+      request.setParam({ &quot;invoiceType&quot;: 0 });
+      request.doRequest(res=&gt;{
+        my.hideLoading();
+        if(res.code == 0){
+           my.showToast({
+            type: &#039;none&#039;,
+            content: res.message,
+            duration: 3000,
+          });
+        }
+        if (res.code === 1) {
+          taxno = res.data.taxno || &#039;&#039;;
+          title = res.data.title;
+          name = res.data.name;
+          address = res.data.address;
+          email = res.data.email;
+          phone = res.data.phone;
+          province = res.data.province || &#039;&#039;;
+          city = res.data.city || &#039;&#039;;
+          district = res.data.district|| &#039;&#039;;
+          invoiceType=res.data.invoiceType;
+          remark = res.data.remark || &#039;&#039;;
+          registerAddress = res.data.registerAddress || &#039;&#039;;
+          registerPhone = res.data.registerPhone || &#039;&#039;;
+          openBank = res.data.openBank || &#039;&#039;;
+          bankAccount = res.data.bankAccount || &#039;&#039;;
+        }
+        if (res.code === 14) {
+          let text = &quot;您尚未登录，请先登录&quot;
+          my.showToast({
+            type: &#039;none&#039;,
+            content: text,
+            duration: 3000,
+          });
+        }
+        this.setData({
+          defaultValue: {
+            amount: parseFloat(getValue.amount).toFixed(2),
+            protoAmount,
+            &quot;postFree&quot;: parseFloat(getValue.postFree),
+            type: getValue.type,
+            invoiceType,
+            &quot;title&quot;: title,
+            &quot;comtitle&quot;:title,
+            &quot;peotitle&quot;:peotitle,
+            &quot;taxno&quot;: taxno,
+            &quot;content&quot;: content,
+            invoiceTitleQueryProvider: getValue.tips.invoiceTitleQueryProvider,
+            &quot;moreInfo&quot;: {
+              remark: remark,	          //备注	          
+              registerAddress: registerAddress,  //注册地址	      
+              registerPhone: registerPhone,    //注册手机号	
+              openBank: openBank,	        //开户银行	
+              bankAccount: bankAccount,      //银行账号
+              moreInfoTip: getValue.tips.moreInfo
+            },
+            &quot;zipCode&quot;: &quot;&quot;,
+            &quot;province&quot;: province,
+            &quot;city&quot;: city,
+            &quot;district&quot;: district,
+            &quot;address&quot;: address,
+
+            &quot;name&quot;: name,
+            &quot;phone&quot;: phone,
+            &quot;email&quot;: email,
+            &quot;cpString&quot;: cpString
+          },
+          isShow: true
+
+        })
+      })
+    }
+
+
+
+
+
+
+  },
+  onReady() {
+    // 页面加载完成
+
+  },
+  onShow() {
+    // 页面显示
+    let getValue = my.getStorageSync({
+      key: &#039;invoiceGetValue&#039;, 
+    }).data;
+    let str = &quot;开具电子发票&quot;
+    if (getValue) {
+      if (getValue.type === 1) {
+        str = &quot;开具纸质发票&quot;
+      }
+    }
+    my.setNavigationBar({
+      title: str
+    });
+  },
+  onHide() {
+    // 页面隐藏 
+  },
+  onUnload() {
+    // 页面被关闭
+  },
+  onTitleClick() {
+    // 标题被点击
+  },
+  onPullDownRefresh() {
+    // 页面被下拉
+  },
+  onReachBottom() {
+    // 页面被拉到底部
+  }
+
+});
+
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

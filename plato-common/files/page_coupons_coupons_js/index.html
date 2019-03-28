@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/coupons/coupons.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/coupons/coupons.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">83.23</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">211</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">49.08</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">1.64</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import CouponListRequest from &#039;../../common/network/requests/CouponListRequest.js&#039;;
+import NetworkHelper from &#039;../../common/network/NetworkHelper.js&#039;;
+import GetLocationHelper from &#039;../../common/util/GetLocationHelper.js&#039;;
+import { LoginBindHelper } from &#039;../../common/login/LoginBindHelper.js&#039;;
+
+Page({
+  data: {
+    status: 1,//奖品状态  1未过期奖品； 0 过期奖品
+    page: 1,//翻页
+    limit: 20,//每页数量
+    adcode: &#039;&#039;,//城市码
+    couponsList: [],//优惠券列表
+    moreCoupons: false,//底部暂无更多是否显示
+    showErrorPage: false,//是否显示异常页
+    errorType: &#039;&#039;,//错误类型
+    text: &quot;&quot;,
+    refreshText: &quot;&quot;,
+    style: &quot;gray&quot;,//背景颜色
+    pullUpSwitch: false,// 上拉加载开关 true为允许上拉
+    alipayListLength:0,//支付宝券列表的长度
+    couponsShow:false,//控制列表显示
+  },
+
+  onLoad() {
+  this.isFirst=true;
+  },
+
+  onShow() {
+    getApp().hideLoading();
+    if (this.isFirst) {
+      this.networkLocation();
+      this.isFirst = false;
+    }
+
+  },
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  networkLocation(){  //网络及定位
+    getApp().showLoading();
+    if (getApp().globalData.network.networkAvailable) {
+      let that = this;
+      GetLocationHelper.getLocation(1).then(res=&gt;{
+           that.setData({
+            adcode: res.cityAdcode || &#039;&#039;
+          });
+          that.onRequsetCouponsList();
+      }).catch(res=&gt;{
+           that.setData({
+            adcode: res.cityAdcode || &#039;&#039;
+          })
+          that.onRequsetCouponsList();
+      });
+   
+    } else {
+      getApp().hideLoading();
+      if(this.data.couponsList.length) {
+        my.showToast({
+          content: &#039;请检查您的网络&#039;,
+          duration: 2000,
+        });
+      }else {
+        this.setData({// 没网显示错误页
+          showErrorPage: true,
+          errorType: &#039;1&#039;,
+          text: &#039;当前网络不佳，请&#039;,
+          refreshText: &#039;刷新重试&#039;,
+          couponsShow:false
+        })
+      }
+    }
+  },
+  onClickRefresh() { //错误页点击刷新
+    this.networkLocation()
+  },
+  onRequsetCouponsList() {//请求服务器数据
+    let page = this.data.page;
+    let limit = this.data.limit;
+    let couponsListRequest = new CouponListRequest();
+    couponsListRequest.setParam({// 参数
+      // channel: &quot;alipay_mini&quot;,
+      status: this.data.status,// 奖品状态	 1未过期奖品； 0 过期奖品
+      page: this.data.page,//     翻页		  默认为 1
+      limit: this.data.limit,//   每页数量	 默认为 10，支持 20, 30, 40, 50
+      adcode: this.data.adcode,// 城市码		  默认为全国,
+      uid:LoginBindHelper.getAmapUserId() || &#039;&#039;
+    });
+    couponsListRequest.doRequest(res=&gt;{
+      getApp().hideLoading();
+      if(!res){
+        return;
+      }
+      this.dealPage(page, res);
+      this.setData({
+        pullUpSwitch: true
+      })
+    })
+  },
+  dealPage(page, res) { //处理分页
+    if (res.code == 1) {
+      this.setData({
+        showErrorPage: false,
+        couponsShow:true
+      })
+      this.disposeCouponsList(res);
+    } else if (res.code == 14) {
+      my.showToast({
+        content: &#039;登录状态获取失败&#039;,
+        duration: 1500,
+        success: () =&gt; {
+          my.navigateBack({});
+        },
+      });
+    } else {
+      this.setData({// 服务错误 
+        errorType: &#039;2&#039;,
+        showErrorPage: true,
+        text: &#039;服务错误，请&#039;,
+        refreshText: &#039;刷新重试&#039;,
+        page: page &gt; 1 ? page -= 1 : page,
+        couponsShow:false
+      })
+    }
+  },
+  disposeCouponsList(res) { //处理优惠列表
+    let requestList = [];                      //每次请求到的优惠券列表
+    let couponsList = this.data.couponsList;   //页面所展示的优惠券列表
+    let alipayList = res.data.alipay_awards;   //每次请求到的支付宝券
+    let virtualList = res.data.virtual_awards; //每次请求到的虚拟券列表
+    let awardList = res.data.award_list;       //每次请求到的实体券列表
+    if (this.data.page == 1) { //首次进入页面
+      alipayList.forEach(function(alipay){
+        requestList.push(alipay)
+      })
+      this.setData({
+        alipayListLength: requestList.length
+      })
+      virtualList.forEach(function(virtual){
+        requestList.push(virtual)
+      })
+      awardList.forEach(function (award) {
+        requestList.push(award)
+      })
+      couponsList = [];
+      couponsList = couponsList.concat(requestList);
+      this.setData({
+        couponsList: couponsList
+      })
+      if (!this.data.couponsList.length) {
+        this.setData({
+          showErrorPage: true,
+          errorType: &#039;0&#039;,
+          text: &#039;暂无优惠券&#039;,
+          src: &#039;/image/coupons/coupons-no.png&#039;,
+          refreshText:&#039;&#039;
+        })
+      }
+    } else { //上拉加载
+      if (awardList.length &lt; this.data.limit) {//获取的真实券小于设置的每页优惠券数量  加入列表并显示暂无更多
+        // 插入支付宝券
+        if(res.data.alipay_awards.length!=0){
+          this.$spliceData({ couponsList: [this.data.alipayListLength, 0, ...alipayList] })
+          // console.log(&#039;alipayList+++&#039;+JSON.stringify(alipayList))
+          // console.log(&#039;couponsList+++&#039;+JSON.stringify(this.data.couponsList))
+          this.setData({
+            alipayListLength:this.data.alipayListLength + res.data.alipay_awards.length
+          })
+        }
+        this.setData({
+          moreCoupons: true,
+          couponsList:this.data.couponsList.concat(awardList)
+        })
+        // console.log(&#039;+++&#039;+JSON.stringify(this.data.couponsList))
+      } else if (awardList.length == this.data.limit) {
+        awardList.forEach(function (award) {
+          requestList.push(award)
+        })
+        couponsList = couponsList.concat(requestList);
+        this.setData({
+          couponsList: couponsList
+        })
+      } else if (!awardList) {  //下拉没有真实券显示暂无更多
+        this.setData({
+          moreCoupons: true,
+        })
+      }
+    }
+  },
+  onReachBottom() { //上拉加载
+    getApp().showLoading();
+    if (getApp().globalData.network.networkAvailable) {// 如果有网发请求
+      if (this.data.pullUpSwitch) {
+        this.setData({
+          showErrorPage: false,
+          pullUpSwitch: false,
+          page: this.data.page += 1// 请求下一页
+        })
+        this.onRequsetCouponsList()
+      }
+    } else {
+      getApp().hideLoading();
+      // 提示
+      my.showToast({
+        content: &#039;网络连接失败，请重试&#039;,
+        duration: 2000,
+      });
+    }
+  },
+
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

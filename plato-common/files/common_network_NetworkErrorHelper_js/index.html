@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/network/NetworkErrorHelper.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/network/NetworkErrorHelper.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">51.10</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">84</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">32.11</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.39</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">/**
+ * code（返回码）	message（返回码描述）	描述
+   0	  Unknow Exception	  未知异常(包括支付宝错误)
+   2  	Failure	            处理失败	_
+   3	  Params Error	      参数错误	_
+   4	  Signature Error	    签名错误	_
+   7	  NOT_FOUND	          找不到指定对象	_
+   14 	NOT_LOGIN	          未登录	_
+   28	  USER MESSAGE	      用户信息透出	_
+ * 
+ * 
+ */
+import TaxiLog from &#039;../TaxiLog.js&#039;;
+
+export default class NetworkErrorHelper {
+  /**处理支付宝返回的错误信息 */
+  static handleAliPayNetWorkError(res) {
+    let status = res.status;
+    let code = 1;
+    let message = &#039;&#039;;
+    let error = res.error;
+    if (parseInt(status) == 200) {
+      message = &#039;成功&#039;;
+    } else {
+      code = 0; //参考公用参数请求错误  http://groups.alidemo.cn/LIST-DOCS/Travel/_book/error_code.html
+      if (parseInt(status) == 579) {
+        message = &#039;安全代理没有打开&#039;;
+      } else if (parseInt(status) == 500 || parseInt(status) == 502) {
+        message = &#039;没有连接高德服务&#039;;
+      }
+      switch (parseInt(error)) {
+        case 19:
+          message = &#039;HTTP错误&#039;;
+          break;
+        case 14:
+          message = &#039;解码失败&#039;;
+          break;
+        case 13:
+          message = &#039;支付宝服务超时&#039;;
+          break;
+        case 12:
+          message = &#039;网络出错&#039;;
+          break;
+        case 11:
+          message = &#039;无权跨域&#039;;
+          break;
+      }
+    }
+    let aliPayError = {
+      code: code,
+      message: message
+    }
+    return aliPayError;
+  }
+
+  /***将支付宝的错误信息和AOS的信息合并 */
+  static handleResponse(res, aliPayError) {
+    let respose = res;
+    if (respose){
+       if(respose.code || respose.message) {
+          let code = respose.code;
+          if(code &amp;&amp; typeof(code) === &#039;string&#039;){
+             respose.code = parseInt(code);
+          }
+
+         return  respose;
+
+       }else{
+        let newRespose = {};
+        newRespose.code = 0;
+        newRespose.message = &#039;高德服务内部出错,可能404&#039;;
+        return newRespose;
+       }
+      
+    } else {
+      respose = aliPayError;
+      if (aliPayError.code == 1) {//服务内部出错，
+        respose.code = 0;
+        respose.message = &#039;高德服务内部出错&#039;;
+      }
+     return respose;
+    }
+  }
+}</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

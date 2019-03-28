@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/cancel-page/cancel-page.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/cancel-page/cancel-page.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">61.33</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">120</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">20.13</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.84</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">
+import DataFormatter from &#039;../../common/DataFormatter.js&#039;;
+import GlobalConfigHelper from &quot;../../common/GlobalConfigHelper.js&quot;;
+import SubmitCancelReasonRequest from &#039;../../common/network/requests/SubmitCancelReasonRequest.js&#039;;
+
+Page({
+    data: {
+        loading: false,
+        cancelReason: false,
+        orderId: &#039;&#039;,
+        statusCode: &#039;&#039;
+    },
+    onLoad(query) {
+        my.showLoading({
+            content: &quot;加载中&quot;
+        });
+        this.amapOrderId = query[&quot;amapOrderId&quot;];
+        this.phoneNum = query[&#039;phoneNum&#039;];
+        this.showReason = query[&#039;showReason&#039;];
+        this.travelTime = query[&#039;travelTime&#039;];
+        this.statusCode = query[&#039;statusCode&#039;];
+        if (this.showReason) {
+            my.setNavigationBar({
+                title: &quot;取消原因&quot;
+            });
+            this.setData({
+                cancelReason: true,
+                orderId: this.amapOrderId,
+            })
+            my.hideLoading();
+        } else {
+            this.setData({ statusCode: this.statusCode })
+            let initData;
+            GlobalConfigHelper.getInstance().getConfigForKey(&#039;cancelPage&#039;, (config) =&gt; {
+                if (config) {
+                    initData = config;
+                    if (this.statusCode == 103 &amp;&amp; this.travelTime) {
+                        initData.contextList[0] = `司机还有${DataFormatter.formatMoment(this.travelTime)}到达，这是离你最近的司机，重新叫车可能需要等待更久，建议你再等等。`
+                    } else {
+                        initData.contextList[0] = initData.contextList[1]
+                    }
+                } else {
+                    initData.contextList = [&quot;这是离你最近的司机，重新叫车可能需要等待更久，建议你再等等。&quot;, &quot;这是离你最近的司机，重新叫车可能需要等待更久，建议你再等等。&quot;, &quot;司机接单后取消，可能需要支付取消费。&quot;, &quot;司机已到达您的上车地，确认取消本次行程？&quot;, &quot;司机到达后取消，可能需要支付取消费。 &quot;],
+                        initData.buttonNo = &quot;暂不取消&quot;,
+                        initData.buttonYes = &quot;确认取消&quot;
+                }
+                this.setData({
+                    initData,
+                    loading: true
+                })
+                my.hideLoading();
+            })
+
+        }
+    },
+    noCancel() {
+        my.navigateBack({
+            delta: 1
+        });
+        my.reportAnalytics(&quot;cancelback&quot;, {
+            status: this.statusCode
+        });
+    },
+    onYesCancel() {
+        my.navigateBack({
+            delta: 1
+        });
+        my.reportAnalytics(&quot;clickyescancel&quot;, {
+            status: this.statusCode
+        });
+        getApp().emitter.trigger(&#039;CANCELTIPS&#039;);
+    },
+    jumpRule() {
+        my.navigateTo({
+            url: &#039;/page/cancel-page/cancel-page-rule/cancel-page-rule?phoneNum=&#039; + this.phoneNum
+        })
+        my.reportAnalytics(&quot;cancelrule&quot;, {
+            status: this.statusCode
+        });
+    },
+    // 提交取消原因
+    onSubmitReason(array) {
+        my.showLoading({
+            content: &quot;正在提交&quot;
+        })
+        if (!getApp().globalData.network.networkAvailable) {
+            my.hideLoading();
+            my.showToast({
+                type: &#039;none&#039;,
+                content: &#039;提交失败&#039;
+            })
+        } else {
+            let getSubmitCancelReasonRequest = new SubmitCancelReasonRequest();
+            getSubmitCancelReasonRequest.setParam({
+                &#039;amapOrderId&#039;: this.amapOrderId,
+                &#039;reasonId&#039;: array[0]
+            })
+            getSubmitCancelReasonRequest.doRequest((res) =&gt; {
+                if (res &amp;&amp; res.code == 1) {
+                    my.navigateBack({
+                        delta: 1
+                    })
+                    my.showToast({
+                        content: &#039;提交成功&#039;
+                    })
+                } else {
+                    my.hideLoading();
+                    my.showToast({
+                        type: &#039;none&#039;,
+                        content: &#039;提交失败&#039;
+                    })
+                }
+            })
+
+        }
+    },
+
+
+})
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

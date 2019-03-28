@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - common/payment/paymentUtility.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>common/payment/paymentUtility.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">70.58</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">318</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">54.02</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.21</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import OrderPayRequest from &quot;../../common/network/requests/OrderPayRequest.js&quot;;
+import BillInfoRequest from &quot;../../common/network/requests/BillInfoRequest.js&quot;;
+import CostDetailedRequest from &quot;../../common/network/requests/CostDetailedRequest.js&quot;;
+import OrderPayStatusRequest from &quot;../../common/network/requests/OrderPayStatusRequest.js&quot;;
+import BindAlipayRequest from &quot;../../common/network/requests/BindAlipayRequest.js&quot;;
+import UnbindAlipayRequest from &quot;../../common/network/requests/UnbindAlipayRequest.js&quot;;
+import PaymentStatusRequest from &quot;../../common/network/requests/PaymentStatusRequest.js&quot;;
+import DriverEvaluationRequest  from &quot;../../common/network/requests/DriverEvaluationRequest.js&quot;;
+import EvaluationSubmitRequest  from &quot;../../common/network/requests/EvaluationSubmitRequest.js&quot;;
+import TaxiLog from &#039;../../common/TaxiLog.js&#039;;
+const PAYINGORDERKEY = &quot;PAYINGORDERKEY&quot;;
+const PAYFAILEDORDERKEY = &quot;PAYFAILEDORDERKEY&quot;;
+
+let globalBillRequest = undefined;
+let globalPayStatusRequest = undefined;
+let globalCostRequest  = undefined;
+
+export default class paymentUtility {
+
+    // 绑定免密支付
+    static bindOneStepAlipay(resFunc) {
+        my.showLoading({});
+        TaxiLog(&#039;bindOneStepAlipay +++++++ &#039;);
+        let bindRequest = new BindAlipayRequest();
+        bindRequest.setParam({
+            &#039;product&#039; : &#039;3&#039;
+        });
+        bindRequest.doRequest((res) =&gt; {
+            my.hideLoading();
+            let result = res.result || false;
+            if (result == true) {
+                let signUrl = res.data.url || &#039;&#039;;
+                if (signUrl.length &gt; 0) {
+                    my.paySignCenter &amp;&amp; my.paySignCenter({
+                        signStr : signUrl,
+                        complete : (res) =&gt; {
+                            let resultStatus = res.resultStatus;
+                            if (resultStatus == 7001 || resultStatus == 6001) {
+                                TaxiLog(&quot;走进来了&quot;)
+                                this.getOneStepBindStatus((statusRes) =&gt; {
+                                    let result = statusRes ? {resultStatus : 7000} : {resultStatus : 7002};
+                                    resFunc(result);
+                                });
+                            } else {
+                                resFunc(res);
+                            }
+                        }
+                    }); 
+                }
+            } else {
+                // 请求问题，直接返回绑定失败
+                let resCode = typeof(res.code) != &#039;undefined&#039; ? res.code : -1;
+                if (resCode &gt; 0) {
+                    if (resCode == 10055) {
+                        // 已经绑定了，返回 7000
+                        resFunc({resultStatus : 7000});
+                    } else if (resCode == 14) {
+                        // 未登录
+                        my.showToast({
+                            content: &quot;您尚未登录，请先登录&quot;
+                        });
+                    } else {
+                        // 失败情况
+                        resFunc({resultStatus : 7002});
+                    }
+                } else {
+                    // 失败情况
+                    resFunc({resultStatus : 7002});
+                }
+            }
+        });
+        
+    }
+
+    // 解绑免密支付
+    static unbindOneStepAlipay(resFunc) {
+        my.showLoading({});
+
+        let unBindRequest = new UnbindAlipayRequest();
+        unBindRequest.setParam({
+            &#039;product&#039; : &#039;3&#039;
+        });
+
+        unBindRequest.doRequest((res) =&gt; {
+            my.hideLoading();
+           TaxiLog(&#039;unbindOneStepAlipay request back +++++ res = &#039; + res);
+            
+            resFunc(res);
+        });
+    }
+
+    // 获取绑定免密状态
+    static getOneStepBindStatus(resFunc) {
+
+        let oneStepBindStatusRequest = new PaymentStatusRequest();
+        oneStepBindStatusRequest.setParam({
+            &#039;product&#039; : &#039;3&#039;,
+            &#039;type&#039; : &#039;1&#039;
+        });
+
+        oneStepBindStatusRequest.doRequest((res) =&gt; {
+            let resultData = res.data || {};
+            if (JSON.stringify(resultData) != &quot;{}&quot;) {
+                let resStatus = resultData.status || false;
+                resFunc(resStatus);
+            } else {
+                resFunc(false);
+            }
+        });
+    }
+
+    // 账单及支付信息
+    static getTaxiBillDetail(amapOrderId, resFunc) {
+
+       TaxiLog(&#039;getTaxiBillDetail +++++++++ &#039; + amapOrderId);
+        let getbillAndPayRequest = new BillInfoRequest();
+        globalBillRequest = getbillAndPayRequest;
+        getbillAndPayRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId,
+        });
+        getbillAndPayRequest.doRequest((res) =&gt; {
+          TaxiLog(&#039;bill and pay request back +++++++ &#039; + JSON.stringify(res));
+            resFunc(res);
+        });
+    }
+
+    // 费用明细接口数据
+    static getCostDetailed(amapOrderId, resFunc) {
+        let getCostDetailedRequest = new CostDetailedRequest();
+        globalCostRequest = getCostDetailedRequest;
+        getCostDetailedRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId, 
+
+        })
+        getCostDetailedRequest.doRequest((res)=&gt;{
+            resFunc(res);
+        })
+    }
+
+
+    // 司机评价下载数据接口
+    static getDriverEvaluation(amapOrderId, resFunc) {
+        let getDriverEvaluationRequest = new DriverEvaluationRequest ();
+        getDriverEvaluationRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId,
+        })
+        getDriverEvaluationRequest.doRequest((res)=&gt;{
+            resFunc(res);
+        })
+    }
+
+
+    // 司机评价上传数据接口
+    static postEvaluationSubmit(amapOrderId,remark,score,resFunc) {
+        let postEvaluationSubmitRequest = new EvaluationSubmitRequest ();
+        postEvaluationSubmitRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId,
+            &#039;remark&#039;:remark,
+            &#039;score&#039;:score
+        })
+        postEvaluationSubmitRequest.doRequest((res)=&gt;{
+            resFunc(res);
+        })
+    }
+
+    // 支付状态
+    static getPayStatus(amapOrderId, resFunc) {
+        TaxiLog(&#039;getPayStatus ++++++++++ &#039; + amapOrderId);
+        let getPayStatusRequest = new OrderPayStatusRequest();
+        getPayStatusRequest.setTimeOut(10 * 1000);
+        globalPayStatusRequest = getPayStatusRequest;
+        getPayStatusRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId,
+        });
+        getPayStatusRequest.doRequest((res) =&gt; {
+            TaxiLog(&#039;get pay status request back +++++++ &#039; + JSON.stringify(res));
+            resFunc(res);
+        });
+    }
+
+    // 免密支付
+    static payOneStep(amapOrderId, resFunc) {
+        TaxiLog(&#039;payOneStep ++++++++&#039; + amapOrderId);
+        let payOneStepStatusRequest = new OrderPayRequest();
+        payOneStepStatusRequest.setParam({
+            &#039;amapOrderId&#039;: amapOrderId,
+        });
+        payOneStepStatusRequest.doRequest((res) =&gt; {
+            TaxiLog(&#039;pay one step request back +++++++ &#039; + JSON.stringify(res));
+            resFunc(res);
+        });
+    }
+
+    // 唤起收银台支付
+    static callLocalAlipay(orderStr, callBack) {
+        my.tradePay({
+            orderStr : orderStr,
+            complete: (res) =&gt; {
+                TaxiLog(&#039;local alipay call back +++++++&#039; + JSON.stringify(res));
+                callBack(res);
+            }
+        });
+    }
+
+    // 判断 object 中是否有 amapOrderId 为 key 的 value
+    static isPayingOrder(amapOrderId) {
+        if (amapOrderId) {
+            let payingOrderDicData = my.getStorageSync({
+                key: PAYINGORDERKEY, // 缓存数据的key
+            });
+            let payingOrderDic = payingOrderDicData.data || {};
+            if(JSON.stringify(payingOrderDic) != &#039;{}&#039;){
+                return payingOrderDic.hasOwnProperty(amapOrderId);
+            }else{
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // 添加 amapOrderId 为 key, payString 为 value 到 obejct 中，缓存起来
+    static addPayingOrder(amapOrderId, payString) {
+        if (amapOrderId &amp;&amp; payString) {
+            if (!this.isPayingOrder(amapOrderId)) {
+                let payingOrderDicData = my.getStorageSync({
+                    key: PAYINGORDERKEY, // 缓存数据的key
+                });
+                let payingOrderDic = payingOrderDicData.data || {};
+                payingOrderDic[amapOrderId] = payString;
+                my.setStorageSync({
+                    key: PAYINGORDERKEY, // 缓存数据的key
+                    data: payingOrderDic, // 要缓存的数据
+                });
+            }
+        }
+    }
+
+    // 移除 object 中对应的 amapOrderId 的 data
+    static removePayingOrder(amapOrderId) {
+        if (amapOrderId &amp;&amp; this.isPayingOrder(amapOrderId)) {
+            let payingOrderDicData = my.getStorageSync({
+                key: PAYINGORDERKEY, // 缓存数据的key
+            });
+            let payingOrderDic = payingOrderDicData.data || {};
+            delete payingOrderDic[amapOrderId];
+            my.setStorageSync({
+              key: PAYINGORDERKEY, // 缓存数据的key
+              data: payingOrderDic, // 要缓存的数据
+            });
+        }
+    }
+
+    // 判断是不是支付失败的订单
+    static isPayFailedOrder(amapOrderId) {
+        if (amapOrderId) {
+            let payFailedOrderDicData = my.getStorageSync({
+              key: PAYFAILEDORDERKEY, // 缓存数据的key
+            });
+            let payFailedOrderDic = payFailedOrderDicData.data || {};
+            return payFailedOrderDic.hasOwnProperty(amapOrderId);
+        }
+        return false;
+    }
+
+    // 添加 支付失败 object 
+    static addPayFailedOrder(amapOrderId, failedErrorMessage) {
+        if (amapOrderId) {
+            if(!this.isPayFailedOrder(amapOrderId)) {
+                let payFailedOrderDicData = my.getStorageSync({
+                    key: PAYFAILEDORDERKEY, // 缓存数据的key
+                });
+                let payFailedOrderDic = payFailedOrderDicData.data || {};
+                payFailedOrderDic[amapOrderId] = failedErrorMessage || &#039;支付失败&#039;;
+                my.setStorageSync({
+                  key: PAYFAILEDORDERKEY, // 缓存数据的key
+                  data: payFailedOrderDic, // 要缓存的数据
+                });
+            }
+        }
+    }
+
+    // 移除 支付失败 object 中对应的 amapOrderId 的 data
+    static removePayFailedOrder(amapOrderId) {
+        if (amapOrderId &amp;&amp; this.isPayFailedOrder(amapOrderId)) {
+            let payFailedOrderDicData = my.getStorageSync({
+              key: PAYFAILEDORDERKEY, // 缓存数据的key
+            });
+            let payFailedOrderDic = payFailedOrderDicData.data || {};
+            delete payFailedOrderDic[amapOrderId];
+            my.setStorageSync({
+              key: PAYFAILEDORDERKEY, // 缓存数据的key
+              data: payFailedOrderDic, // 要缓存的数据
+            });
+        }
+    }
+
+    // 取消 billAndPay 接口调用
+    static cancelBillRequest() {
+        if (globalBillRequest) {
+            globalBillRequest.cancel();
+        }
+    }
+
+    // 取消 payStatus 接口调用
+    static cancelPayStatusRequest() {
+        if (globalPayStatusRequest) {
+            globalPayStatusRequest.cancel();
+        }
+    }
+
+   // 取消 CostDetailed 接口调用
+    static cancelgetCostDetailedRequest() {
+        if (globalCostRequest) {
+            globalCostRequest.cancel();
+        }
+    }
+}
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

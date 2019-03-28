@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/user-feedback/details/details.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/user-feedback/details/details.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">82.45</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">568</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">56.19</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">4.28</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import FeedbackConfigTypesRequest from &#039;../../../common/network/requests/FeedbackConfigTypesRequest.js&#039;;
+import FeedbackReportRequest from &#039;../../../common/network/requests/FeedbackReportRequest.js&#039;;
+import ServiceDetails from &#039;../../../common/network/requests/CarServiceRequest.js&#039;;
+import TaxiLog from &#039;../../../common/TaxiLog.js&#039;;
+import CheckoutPhoneNumber from &#039;/common/checkoutPhoneNumber/checkoutPhoneNumber.js&#039;;
+import GetLocationHelper from &#039;../../../common/util/GetLocationHelper.js&#039;;
+import paymentUtility from &#039;../../../common/payment/paymentUtility.js&#039;;
+import TaxiMessageService from &#039;../../../service/messagecenter/TaxiMessageService.js&#039;
+
+Page({
+  data: {
+    show: false,//防止跳屏
+    proposal: false,//是否为反馈与建议页面
+    feedbackSwitch: true,  //是否有反馈原因组件
+    sourceUrl: &#039;&#039;,  //来源判断
+    type: &#039;&#039;, //用户上报的一级分类
+    selectionReason: &#039;&#039;,  //用户选择的原因
+    selectionReasonChinese: &#039;&#039;,//用户选择的原因中文描述
+    problemDescription: &#039;&#039;,  //用户问题描述
+    contact: &#039;&#039;,  //用户联系方式
+    adcode: &#039;&#039;,//用户地区编码
+    prohibitButtom: false,//是否禁用按钮
+    order: &#039;&#039;,  //订单详情
+    type_infos: {},//详情页的信息
+    showErrorPage: false, //网络请求是否成功 报错页
+    errorType: &#039;&#039;,//错误类型
+    errorText: &#039;&#039;,//错误文案
+    refreshText:&#039;&#039;,//变色字
+    title: &#039;&#039;,//本页标题
+    switch: false,//开关控制是否显示订单状态
+    sourcepage: &#039;&#039;,//投诉反馈的来源
+    remind: true,//提示显示开关
+    detailedSwitch: false,//快照组件的显示隐藏
+    detailedRequest: false,//快照接口是否请求完成
+    FeedbackRequest: false,//feedback接口是否请求完成
+    serviceDetailsRequest: false,//erviceDetails接口是否请求完成
+    acceptedCp: &#039;&#039;,//快照接口用到的数据
+    otherSubmitInfo: &#039;&#039;,//快照接口用到的数据
+    from: &#039;&#039;,//
+    serviceDetails: null, // 服务详情信息
+    FeedbackResult: null,
+    detailedResault: null,
+    serviceDetailsStatus: false, // 服务详情
+    tampType: &#039;&#039; // 自定义订单type临时变量
+  },
+   //分享信息设置
+  onShareAppMessage() {
+    return getApp().getShareAppMessage();
+  },
+  onLoad(query) {
+    TaxiMessageService.shareInstance().registerMessageObserver(&quot;my-travel_cardDetails&quot;, this, this.processingMessage); // 设置监听 监听我的行程列表中单个行程卡片点击后发送的消息
+    this.queryData = query
+    //拿到地址参数
+    this.setData({
+      sourceUrl: query.jump,
+      type: query.type  || &#039;&#039;,
+      contact: query.contact,
+      sourcepage: query.sourcepage,
+    });
+     //判断是否是反馈与建议
+    if(query.source &amp;&amp; query.source ==&#039;proposal&#039;){
+      this.setData({
+        proposalUrl: &#039;proposal&#039;,
+        proposal: true,
+        feedbackSwitch: false,
+        title: &#039;反馈与建议&#039;
+      });
+      // 更改标题
+      my.setNavigationBar({
+        title: this.data.title
+      });
+    }else {
+      this.setData({
+        proposal: false,
+        order: [JSON.parse(query.order)],
+        type: query.type,
+        title: query.title
+      });
+      my.setNavigationBar({
+        title: query.title
+      });
+    }
+    //判断是否为行程结束页进入
+    if(query.from == &#039;skip&#039;){
+      this.setData({
+        from: &#039;skip&#039;
+      });
+    }else {
+      this.setData({
+        from: &#039;feedbackdetails&#039;
+      });
+    }
+    //拿到adcode
+    GetLocationHelper.getLocation(1).then(res=&gt;{
+        this.setData({
+            adcode: res.cityAdcode||&#039;&#039;
+        });
+    })
+    this.judgeNetwork();
+  },
+  onShow(){
+    // 加载动画
+    getApp().showLoading();
+    //从全局里拿order信息
+    // if(getApp().globalData.feedOrder &amp;&amp; JSON.stringify(getApp().globalData.feedOrder) != &quot;{}&quot;){
+    //   this.setData({
+    //     order: [getApp().globalData.feedOrder]
+    //   })
+    // }
+    this.judgeNetwork();
+  },
+  processingMessage(message) {
+     // 判断是否有网络
+    if(getApp().globalData.network.networkAvailable) {
+      this.setData({// 有网
+        showErrorPage: false
+      })
+      if(message &amp;&amp; message.messageType &amp;&amp; message.messageType === &#039;my-travel_cardDetails&#039;) {
+        if(message.data &amp;&amp; JSON.stringify(message.data) !== &#039;{}&#039;) {
+          // this.serviceTelJudge(message.data.amapOrderId);
+          this.setData({
+            // tampRype: message.data.amapOrderId,
+            order: [message.data],
+            lately: &#039;已选行程&#039;,
+            latelyLeft: &#039;选择其他行程&#039;
+          })
+        }
+      }
+    }else {
+      //取消loading
+      my.hideLoading();
+      this.setData({
+        // 没网显示错误页
+        feedback_box: true,
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        errorText: &#039;当前网络错误，请&#039;,
+        refreshText: &#039;点击刷新&#039;
+      })
+    }
+  },
+  onUnload(){
+    if(this.data.from == &#039;skip&#039;){
+      //关闭页面时清楚app里的order
+      // getApp().globalData.feedOrder = {};
+      getApp().globalData.isFeedbackDetails = false;
+    }
+    TaxiMessageService.shareInstance().unregisterMessageObserver(this);
+  },
+  judgeNetwork(){
+    //判断网络发请求
+    if(getApp().globalData.network.networkAvailable){
+
+    this.setData({
+      serviceDetailsRequest: false,
+      detailedRequest: false,//快照接口是否请求完成
+      FeedbackRequest: false,//feedback接口是否请求完成
+    });
+      if(this.data.title == &#039;接送机&#039;) { // 判断是不是接送机服务
+        this.getServiceDetails();
+      }
+      // 如果有网发请求
+      this.sendRequestFeedback();
+      this.sendRequestSnapshot();
+
+      this.setData({
+        showErrorPage: false
+      })
+    }else {
+      //取消loading
+       my.hideLoading();
+      // 没网显示错误页
+      this.setData({
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        errorText: &#039;当前网络错误,请&#039;,
+        refreshText: &#039;点击刷新&#039;,
+        show: true
+      })
+    }
+  },
+  sendRequestSnapshot(){
+    if(this.data.type==&#039;11502&#039;) { // 预估价价不准
+      if(this.data.order[0].status== 106 || this.data.order[0].status== 111 || this.data.order[0].status== 112){
+        let amapOrderId = this.data.order[0].amapOrderId;
+        paymentUtility.getCostDetailed(amapOrderId,(res)=&gt;{
+
+          this.setData({
+            detailedResault: res,
+            detailedRequest: true
+          });
+          this.checkRequestData();
+
+        })
+      }else {
+        this.setData({
+          detailedRequest: true,
+          detailedSwitch: false,
+          detailedResault: &quot;&quot;
+        })
+        this.checkRequestData();
+
+      }
+      
+    } else {
+      this.setData({
+        detailedRequest: true,
+        detailedSwitch: false,
+        detailedResault: &quot;&quot;
+      })
+      this.checkRequestData();
+
+    }
+  },
+  sendRequestFeedback(){
+    //发拿数据的请求
+    let request = new FeedbackConfigTypesRequest();
+    request.setParam({
+      sub_type_code: this.data.type
+    });
+    request.doRequest(res =&gt; {
+
+      this.setData({
+        FeedbackResult: res,
+        FeedbackRequest: true
+      });
+      this.checkRequestData();
+
+
+    });
+  },
+  checkRequestData(){
+    if (this.data.detailedRequest==false || this.data.FeedbackRequest==false){
+      return
+    }
+
+    if (this.data.title == &#039;接送机&#039; &amp;&amp; this.data.serviceDetailsRequest==false) {
+      return
+    }
+    
+    my.hideLoading();
+
+    // Snapshot 结果处理
+    {
+      let res = this.data.detailedResault;
+      if(res &amp;&amp; res.code !=0) {
+        let resCode = res.code || -1;
+        let aggregateData = res.data || &#039;&#039;;
+        if(resCode == 1) {
+          this.setData({
+            acceptedCp : aggregateData.acceptedCp || &#039;&#039;, 
+            otherSubmitInfo : aggregateData.otherSubmitInfo || &#039;&#039;,
+            detailedRequest: true
+          })
+          if(this.data.acceptedCp){
+            this.setData({
+              detailedSwitch: true,
+              feedbackSwitch: false
+            })
+          }
+        }else{
+          // 接口失败
+          this.setData({
+            detailedRequest: true,
+            detailedSwitch: false
+          })
+
+        }
+      }else{
+        // 接口失败
+        this.setData({
+          detailedRequest: true,
+          detailedSwitch: false
+        })
+    }
+  }
+
+
+  // 处理 FeedbackRequest 结果
+  let res = this.data.FeedbackResult;
+  {
+    
+    if (res &amp;&amp; res.data) {
+        if (res.code == 1) {
+          // 请求成功
+          this.setData({
+            showErrorPage: false,
+            FeedbackRequest:true
+          })
+          this.haveData(res);
+        } else {
+          //显示错误页
+          this.setData({
+            errorType: &#039;2&#039;,
+            showErrorPage: true,
+            errorText: &#039;加载失败，请&#039;,
+            refreshText: &#039;点击刷新&#039;,
+            show: true,
+            FeedbackRequest:true
+          })
+        }
+      } else {
+        // 没拿到数据显示错误页
+        this.setData({
+          errorType: &#039;2&#039;,
+          showErrorPage: true,
+          errorText: &#039;加载失败，请&#039;,
+          refreshText: &#039;点击刷新&#039;,
+          show: true,
+          FeedbackRequest:true
+        })
+      }
+    }
+
+    // 处理服务详情结果
+    if(this.data.serviceDetails &amp;&amp; this.data.serviceDetails.code == 1) {
+      if(res &amp;&amp; res.code == 1) {
+        this.setData({
+          serviceDetailsStatus: true
+        })
+      }
+    }
+
+    this.setData({
+      show: true
+    })
+
+  },
+  haveData(res){
+    // 操作拿到的数据
+    this.setData({
+      type_infos: res.data.type_infos[0]
+    })
+
+    //控制提示组件是否显示
+    if(res.data.type_infos[0].text == &#039;&#039;){
+      this.setData({
+        remind: false
+      })
+    }
+
+    //判断是不是反馈与建议
+    if(this.data.proposal == true){
+      this.setData({
+        feedbackSwitch: false
+      })
+    } else {
+
+      //有没有反馈原因列表
+      if(res.data.type_infos[0].types.length == 1){
+        this.setData({
+          feedbackSwitch: false,
+          selectionReason: this.data.type_infos.types[0].type 
+        })
+      }else {
+        this.setData({
+          feedbackSwitch: true
+        })
+      }
+    }
+  },
+  onFeedback(value,selectionReason) {
+    // 选择原因
+    this.setData({
+      selectionReason: value,
+      selectionReasonChinese: selectionReason
+    })
+  },
+  onDescribe(data) {
+    // 问题描述
+    this.setData({
+      problemDescription: data
+    })
+  },
+  onContact(data) {
+    //联系方式
+    this.setData({
+      contact: data
+    })
+  },
+  judgeSubmit(){
+    // 判断按钮是否可点
+    if(this.data.feedbackSwitch == false){
+      if(String(this.data.problemDescription).length&lt;5) {
+        // 判断问题描述是否够五个字
+        my.hideLoading();
+        my.showToast({
+          type: &#039;none&#039;,
+          content: &#039;请输入至少5个字&#039;,
+          duration: 1500,
+          success: () =&gt; {
+          }
+        });
+      }else if(!(CheckoutPhoneNumber.verification(this.data.contact))){
+        // 判断手机号是否正确
+        my.hideLoading();
+        my.showToast({
+          type: &#039;none&#039;,
+          content: &#039;请输入正确的手机号&#039;,
+          duration: 1500,
+          success: () =&gt; {
+          }
+        });
+      }else {
+        this.sendData();
+      }
+    }else {
+       if(this.data.selectionReason == &#039;&#039;){
+        // 判断是否选择了原因了
+        my.showToast({
+          type: &#039;none&#039;,
+          content: &#039;请选择反馈原因&#039;,
+          duration: 1500,
+          success: () =&gt; {
+          }
+        });
+      }else if(!(CheckoutPhoneNumber.verification(this.data.contact))){
+        // 判断手机号是否正确
+        my.showToast({
+          type: &#039;none&#039;,
+          content: &#039;请输入正确的手机号&#039;,
+          duration: 1500,
+          success: () =&gt; {
+          }
+        });
+      }else {
+        this.sendData();
+      }
+    }
+  },
+  onSubmit() {
+    // 提交前检查网络
+    //判断网络发请求
+    if(getApp().globalData.network.networkAvailable){
+      this.judgeSubmit();
+    }else {
+      my.showToast({
+        type: &#039;none&#039;,
+        content: &#039;网络链接不佳&#039;,
+        duration: 1500,
+        success: () =&gt; {
+        }
+      });
+    }
+  },
+  //向服务器发送请求
+  sendData(){
+    getApp().showLoading();
+    let request = new FeedbackReportRequest();
+    if(this.data.proposal){
+      let type_ = 21034;
+      let description_ = JSON.stringify({&quot;uDes&quot;: this.data.problemDescription,&quot;reDes&quot;:[{&quot;des&quot;:this.data.selectionReasonChinese}]});
+      request.setParam({
+        adcode: this.data.adcode,
+        contact: this.data.contact,
+        description: description_,
+        error_id: &#039;&#039;,
+        subtype: this.data.title,
+        type: type_,
+        sourcepage: this.data.sourcepage
+      });
+    } else {
+      let type_ = this.data.selectionReason;
+      //uDes：问题一级描述，二级描述，问题描述   des：问题描述二级分类
+      let description_ = JSON.stringify({&quot;uDes&quot;: this.data.problemDescription,&quot;reDes&quot;:[{&quot;des&quot;:this.data.selectionReasonChinese}]});
+      let extra_info_ = JSON.stringify({&quot;amap_order_id&quot;:this.data.order[0].amapOrderId,&quot;cp_order_id&quot;:this.data.order[0].cpOrderId});
+      request.setParam({
+        adcode: this.data.adcode,//城市编码
+        contact: this.data.contact,//用户手机号
+        description: description_,
+        endpoint: this.data.order[0].endName,//终点
+        error_id: &#039;&#039;,
+        extra_info: extra_info_,
+        startpoint: this.data.order[0].startName,//起点
+        subtype: this.data.type_infos.sub_type,//一级分类
+        type: type_,//二级分类code码
+        sourcepage: this.data.sourcepage//来源
+      });
+    }
+    
+    request.doRequest(res =&gt; {
+        if (res.code == 1) {
+          //提交成功
+          my.hideLoading();
+          this.onJumpSuccess(res.record_id);
+          
+        } else {
+          my.hideLoading();
+          // 提交失败
+          my.showToast({
+            type: &#039;none&#039;,
+            content: &#039;提交失败&#039;,
+            duration: 1500,
+            success: () =&gt; {
+            }
+          });
+        }
+    });
+  },
+  onJumpAllTrip(){
+    //跳转全部行程
+    my.navigateTo({
+      url: &#039;/page/my-travel/my-travel?source=&#039;+this.data.from,
+    })
+    //onShow时隐藏页面防止闪屏
+    this.setData({
+      show: false
+    })
+  },
+  onJumpSuccess(recordid){
+    //跳转成功页
+    // if(this.data.from == &#039;skip&#039;){
+      my.navigateTo({
+        url: &#039;/page/user-feedback/details/success/success?source=&#039;+this.data.sourceUrl+&quot;&amp;recordid=&quot;+recordid+&quot;&amp;proposal=&quot;+this.data.proposalUrl
+      })
+    // }else {
+    //   my.navigateTo({
+    //     url: &#039;/page/user-feedback/details/success/success?source=&#039;+this.data.sourceUrl+&quot;&amp;recordid=&quot;+recordid+&quot;&amp;proposal=&quot;+this.data.proposalUrl
+    //   })
+    // }
+    
+  },
+  onClickRefresh() {
+
+    this.setData({
+      serviceDetailsRequest: false,
+      detailedRequest: false,//快照接口是否请求完成
+      FeedbackRequest: false,//feedback接口是否请求完成
+    });
+
+
+    if(this.data.title == &#039;接送机&#039;) { // 判断是不是接送机服务
+      this.getServiceDetails();
+    }
+
+    // 重新请求数据
+    this.sendRequestSnapshot();
+    this.sendRequestFeedback();
+
+  },
+  getServiceDetails() { // 获取服务详情信息
+    let request = new ServiceDetails();
+    
+    if(this.queryData.order &amp;&amp; this.queryData.order.length &gt; 0) {
+      request.setParam({
+        cpSource: this.data.order[0].cpSource,
+        gdServiceId: 4,
+        rideType: this.data.order[0].rideType,
+        productType: this.data.order[0].productType
+      });
+    } else {
+      request.setParam({
+        cpSource: &#039;&#039;,
+        gdServiceId: &#039;&#039;,
+        rideType: &#039;&#039;,
+        productType: &#039;&#039;
+      });
+    }
+    request.doRequest(res =&gt; {
+      this.setData({
+        serviceDetails: res,
+        serviceDetailsRequest: true
+      });
+      this.checkRequestData();
+    })
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

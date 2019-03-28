@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - page/coupons-details/coupons-details.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato.css" rel="stylesheet" type="text/css">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="https://github.com/the-simian/es6-plato">ES6 Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+      <li class="active">
+        <a href="display.html">Summary Display</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>page/coupons-details/coupons-details.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">52.95</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">94</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">19.08</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">0.53</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import CouponInfoRequest from &#039;../../common/network/requests/CouponInfoRequest.js&#039;;
+import NetworkHelper from &#039;../../common/network/NetworkHelper.js&#039;;
+let WxParse = require(&#039;../../common/wxParse-alipay/wxParse.js&#039;);
+Page({
+  data: {
+    detailsList: [],
+    scrollY: true,//允许纵向滚动
+    showErrorPage: false,//错误页
+    couponsDetailsShow: false,//页面
+    networkAvailable: true,
+    style:&#039;white&#039;,//错误页图颜色
+    couponsStyle:&#039;&#039;,//背景颜色
+  },
+  onLoad(query) {
+    this.data.record_id = query.record_id
+    this.data.award_id = query.award_id
+  },
+  onReady() {
+    // 页面加载完成
+    this.setData({
+      networkAvailable: getApp().globalData.network.networkAvailable
+    })
+    // 页面加载完成
+    if (this.data.networkAvailable) {
+      this.requestCouponsDetailsList()
+    } else {
+      my.hideLoading();// 去掉loading
+      this.setData({// 没网显示错误页
+        errorType: &#039;1&#039;,
+        showErrorPage: true,
+        text: &#039;当前网络不佳，请&#039;,
+        refreshText: &#039;刷新重试&#039;,
+        couponsStyle:&#039;active&#039;
+      })
+    }
+  },
+  // 请求优惠券详情数据的方法
+  requestCouponsDetailsList() {
+    getApp().showLoading()
+    let couponInfoRequest = new CouponInfoRequest();
+    couponInfoRequest.setParam({// 参数
+      award_id: this.data.award_id,
+      record_id: this.data.record_id,
+    });
+    couponInfoRequest.doRequest(res=&gt;{
+      getApp().hideLoading();// 去掉loading
+      // console.log(&#039;---------------------------------？-------------------------------&#039;)
+      // console.log(&#039;详情---》&#039; + JSON.stringify(res))
+      // console.log(&#039;-----------------------------------？-----------------------------&#039;)
+      if (res &amp;&amp; res.code == 1) {// 成功 并且有数据
+        this.setData({
+          detailsList: res.data,
+          couponsDetailsShow: true,
+          couponsStyle:&#039;coupons&#039;
+        })
+        /**
+        * WxParse.wxParse(bindName , type, data, target,imagePadding)
+        * 1.bindName绑定的数据名(必填)
+        * 2.type可以为html或者md(必填)
+        * 3.data为传入的具体数据(必填)
+        * 4.target为Page对象,一般为this(必填)
+        * 5.imagePadding为当图片自适应是左右的单一padding(默认为0,可选)
+        */
+        WxParse.wxParse(&#039;article&#039;, &#039;html&#039;, res.data.description, this, 0);
+      } else {
+        this.setData({
+          networkAvailable: getApp().globalData.network.networkAvailable
+        })
+        if (this.data.networkAvailable) {
+          this.setData({// 服务错误 
+            errorType: &#039;2&#039;,
+            showErrorPage: true,
+            text: &#039;加载失败，请&#039;,
+            refreshText: &#039;刷新重试&#039;,
+            couponsStyle:&#039;active&#039;
+          })
+        } else {
+          this.setData({// 没网显示错误页
+            errorType: &#039;1&#039;,
+            showErrorPage: true,
+            text: &#039;当前网络不佳，请&#039;,
+            refreshText: &#039;刷新重试&#039;,
+            couponsStyle:&#039;active&#039;
+          })
+        }
+      }
+    });
+  },
+  onClickRefresh() {//点击错误页
+    this.data.showLoading = true
+    this.requestCouponsDetailsList()
+  }
+});
+</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
